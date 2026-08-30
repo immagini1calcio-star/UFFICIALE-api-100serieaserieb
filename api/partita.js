@@ -12,19 +12,20 @@ module.exports = async (req, res) => {
     }
 
     const data = await espnFetch(
-      `/summary?event=${encodeURIComponent(id)}`
+      `/ita.1/summary?event=${encodeURIComponent(id)}`
     );
 
-    const evento = data.header?.competitions?.[0];
+    const header = data.header;
+    const competizione = header?.competitions?.[0];
 
-    if (!evento) {
+    if (!header || !competizione) {
       return res.status(404).json({
         success: false,
         errore: "Partita non trovata"
       });
     }
 
-    const squadre = evento.competitors || [];
+    const squadre = competizione.competitors || [];
 
     const casa = squadre.find(
       (squadra) => squadra.homeAway === "home"
@@ -34,16 +35,16 @@ module.exports = async (req, res) => {
       (squadra) => squadra.homeAway === "away"
     );
 
-    const stato = evento.status || data.header?.status;
+    const stato = competizione.status || header.status;
 
     const partita = {
-      id: data.header?.id || id,
+      id: header.id || id,
 
-      data: evento.date || data.header?.competitions?.[0]?.date || null,
+      data: competizione.date || null,
 
       competizione: {
-        id: data.header?.season?.slug || null,
-        nome: evento.name || null
+        id: "ita.1",
+        nome: "Serie A"
       },
 
       stato: {
@@ -71,29 +72,17 @@ module.exports = async (req, res) => {
       },
 
       stadio:
-        evento.venue?.fullName ||
-        data.header?.competitions?.[0]?.venue?.fullName ||
+        data.gameInfo?.venue?.fullName ||
+        competizione.venue?.fullName ||
         null,
 
-      nome: data.header?.competitions?.[0]?.competitors
+      nome: header.competitions?.[0]?.competitors
         ? `${trasferta?.team?.displayName || ""} at ${casa?.team?.displayName || ""}`
         : null,
 
       link: {
-        partita:
-          data.meta?.links?.find((link) =>
-            link.rel?.includes("summary")
-          )?.href ||
-          data.header?.links?.find((link) =>
-            link.rel?.includes("summary")
-          )?.href ||
-          null,
-
-        statistiche:
-          data.meta?.links?.find((link) =>
-            link.rel?.includes("stats")
-          )?.href ||
-          `https://www.espn.com/soccer/matchstats/_/gameId/${id}`
+        partita: `https://www.espn.com/soccer/match/_/gameId/${id}`,
+        statistiche: `https://www.espn.com/soccer/matchstats/_/gameId/${id}`
       }
     };
 
