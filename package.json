@@ -1,0 +1,10 @@
+{
+  "name": "api-100serieaserieb",
+  "version": "1.0.0",
+  "private": true,
+  "description": "API calcio 100%SerieA&SerieB",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {}
+}
