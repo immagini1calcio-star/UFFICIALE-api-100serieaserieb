@@ -1,528 +1,803 @@
 const { espnFetch } = require("../lib/espn");
 
-module.exports = async (req, res) => {
-  try {
-    const id = req.query.id;
-    const competizioneQuery =
-      req.query.competizione ||
-      req.query.league ||
-      req.query.leagueId ||
-      "ita.1";
+/*
+|--------------------------------------------------------------------------
+| COMPETIZIONI
+|--------------------------------------------------------------------------
+*/
 
-    if (!id) {
-      return res.status(400).json({
-        success: false,
-        errore: "Parametro id obbligatorio"
-      });
-    }
+const COMPETIZIONI = {
+  "ita.1": {
+    nome: "Serie A",
+    paese: "Italia"
+  },
 
-    /*
-     * ============================================================
-     * COMPETIZIONI ESPN SUPPORTATE
-     * ============================================================
-     */
+  "ita.2": {
+    nome: "Serie B",
+    paese: "Italia"
+  },
 
-    const competizioni = {
-      "ita.1": "Serie A",
-      "ita.2": "Serie B",
-      "ita.coppa_italia": "Coppa Italia",
-      "ita.nazionale": "Nazionale Italiana",
+  "ita.coppa_italia": {
+    nome: "Coppa Italia",
+    paese: "Italia"
+  },
 
-      "eng.1": "Premier League",
-      "esp.1": "LaLiga",
-      "ger.1": "Bundesliga",
-      "fra.1": "Ligue 1",
-      "ned.1": "Eredivisie",
-      "por.1": "Liga Portugal",
-      "sau.1": "Saudi Pro League",
+  "ita.nazionale": {
+    nome: "Nazionale Italiana",
+    paese: "Italia"
+  },
 
-      "uefa.champions": "Champions League",
-      "uefa.europa": "Europa League",
-      "uefa.europa.conf": "Conference League"
+  "eng.1": {
+    nome: "Premier League",
+    paese: "Inghilterra"
+  },
+
+  "esp.1": {
+    nome: "LaLiga",
+    paese: "Spagna"
+  },
+
+  "ger.1": {
+    nome: "Bundesliga",
+    paese: "Germania"
+  },
+
+  "fra.1": {
+    nome: "Ligue 1",
+    paese: "Francia"
+  },
+
+  "ned.1": {
+    nome: "Eredivisie",
+    paese: "Paesi Bassi"
+  },
+
+  "por.1": {
+    nome: "Liga Portugal",
+    paese: "Portogallo"
+  },
+
+  "ksa.1": {
+    nome: "Saudi Pro League",
+    paese: "Arabia Saudita"
+  },
+
+  "uefa.champions": {
+    nome: "Champions League",
+    paese: "Europa"
+  },
+
+  "uefa.europa": {
+    nome: "Europa League",
+    paese: "Europa"
+  },
+
+  "uefa.europa.conf": {
+    nome: "Conference League",
+    paese: "Europa"
+  }
+};
+
+
+/*
+|--------------------------------------------------------------------------
+| FUNZIONI GENERALI
+|--------------------------------------------------------------------------
+*/
+
+function nomeCompetizione(id) {
+  return COMPETIZIONI[id] || {
+    nome: id || "Sconosciuta",
+    paese: null
+  };
+}
+
+
+function ultimoNome(athlete) {
+  if (!athlete) return null;
+
+  const nome =
+    athlete.displayName ||
+    athlete.fullName ||
+    athlete.name ||
+    "";
+
+  const parti = nome.trim().split(/\s+/);
+
+  return parti.length
+    ? parti[parti.length - 1]
+    : null;
+}
+
+
+function getGiocatore(obj) {
+  if (!obj) return null;
+
+  return ultimoNome(
+    obj.athlete ||
+    obj.athletesInvolved?.[0] ||
+    obj.participants?.[0]?.athlete ||
+    obj
+  );
+}
+
+
+function getAssist(obj) {
+  if (!obj) return null;
+
+  return ultimoNome(
+    obj.assistedBy ||
+    obj.assist ||
+    obj.athletesInvolved?.[1] ||
+    obj.participants?.[1]?.athlete
+  );
+}
+
+
+function getMinuto(obj) {
+  return (
+    obj?.clock?.displayValue ||
+    obj?.time?.displayValue ||
+    obj?.clock?.value ||
+    obj?.time?.value ||
+    null
+  );
+}
+
+
+function getSquadra(obj) {
+  return (
+    obj?.team?.displayName ||
+    obj?.team?.name ||
+    obj?.team?.shortDisplayName ||
+    null
+  );
+}
+
+
+function getTipo(obj) {
+  return String(
+    obj?.type?.text ||
+    obj?.type?.description ||
+    obj?.type?.name ||
+    obj?.alternativeType?.text ||
+    obj?.text ||
+    ""
+  ).toLowerCase();
+}
+
+
+function getLogo(team) {
+  return (
+    team?.logo ||
+    team?.logos?.[0]?.href ||
+    team?.logos?.[0]?.url ||
+    null
+  );
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| SQUADRA
+|--------------------------------------------------------------------------
+*/
+
+function convertiSquadra(competitor) {
+
+  if (!competitor) {
+    return {
+      id: null,
+      nome: null,
+      abbreviazione: null,
+      logo: null,
+      gol: 0
     };
+  }
 
-    const nomeCompetizione =
-      competizioni[competizioneQuery] || competizioneQuery;
+  return {
 
-    /*
-     * ============================================================
-     * RECUPERO DATI ESPN
-     * ============================================================
-     */
+    id:
+      competitor.team?.id ||
+      null,
 
-    const d = await espnFetch(
-      `/${encodeURIComponent(competizioneQuery)}/summary?event=${encodeURIComponent(id)}`
-    );
+    nome:
+      competitor.team?.displayName ||
+      competitor.team?.name ||
+      competitor.team?.shortDisplayName ||
+      null,
 
-    const c = d.header?.competitions?.[0];
+    abbreviazione:
+      competitor.team?.abbreviation ||
+      null,
 
-    if (!c) {
-      return res.status(404).json({
-        success: false,
-        errore: "Partita non trovata"
-      });
-    }
+    logo:
+      getLogo(competitor.team),
 
-    const teams = c.competitors || [];
+    gol:
+      competitor.score !== undefined &&
+      competitor.score !== null
+        ? Number(competitor.score)
+        : 0
+  };
+}
 
-    const home = teams.find(
-      x => x.homeAway === "home"
-    );
 
-    const away = teams.find(
-      x => x.homeAway === "away"
-    );
+/*
+|--------------------------------------------------------------------------
+| MARCATORI
+|--------------------------------------------------------------------------
+*/
 
-    /*
-     * ============================================================
-     * FUNZIONI UTILI
-     * ============================================================
-     */
+function estraiMarcatori(plays) {
 
-    const cognome = value => {
-      if (!value) return null;
+  return plays
+    .filter(play => {
 
-      const nome =
-        value.displayName ||
-        value.fullName ||
-        value.name ||
-        value.shortName ||
-        "";
+      const tipo = getTipo(play);
 
-      const parti = nome.trim().split(/\s+/);
+      return (
+        play.scoringPlay === true ||
+        tipo.includes("goal") ||
+        tipo.includes("gol") ||
+        tipo.includes("own goal") ||
+        tipo.includes("autogol")
+      );
 
-      return parti.length
-        ? parti[parti.length - 1]
-        : null;
-    };
+    })
+    .map(play => ({
 
-    const nomeGiocatore = value => {
-      if (!value) return null;
+      minuto:
+        getMinuto(play),
 
-      return cognome(value);
-    };
+      giocatore:
+        getGiocatore(play),
 
-    const getTeamName = team =>
-      team?.team?.displayName ||
-      team?.team?.fullName ||
-      team?.team?.name ||
-      null;
+      assist:
+        getAssist(play),
 
-    const getTeamId = team =>
-      team?.team?.id || null;
+      squadra:
+        getSquadra(play),
 
-    const getLogo = team =>
-      team?.team?.logo ||
-      team?.team?.logos?.[0]?.href ||
-      null;
+      autorete:
+        play.ownGoal === true ||
+        getTipo(play).includes("own goal") ||
+        getTipo(play).includes("autogol")
 
-    const getScore = team => {
-      const score = Number(team?.score);
+    }));
 
-      return Number.isFinite(score)
-        ? score
-        : 0;
-    };
+}
 
-    const team = x => ({
-      id: getTeamId(x),
-      nome: getTeamName(x),
-      abbreviazione: x?.team?.abbreviation || null,
-      logo: getLogo(x),
-      gol: getScore(x)
+
+/*
+|--------------------------------------------------------------------------
+| CARTELLINI
+|--------------------------------------------------------------------------
+*/
+
+function estraiCartellini(plays) {
+
+  return plays
+    .filter(play => {
+
+      const tipo = getTipo(play);
+
+      return (
+        tipo.includes("yellow") ||
+        tipo.includes("red") ||
+        tipo.includes("giallo") ||
+        tipo.includes("rosso")
+      );
+
+    })
+    .map(play => {
+
+      const tipo = getTipo(play);
+
+      return {
+
+        minuto:
+          getMinuto(play),
+
+        giocatore:
+          getGiocatore(play),
+
+        squadra:
+          getSquadra(play),
+
+        tipo:
+          (
+            tipo.includes("red") ||
+            tipo.includes("rosso")
+          )
+            ? "rosso"
+            : "giallo"
+
+      };
+
     });
 
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| SOSTITUZIONI
+|--------------------------------------------------------------------------
+*/
+
+function estraiSostituzioni(plays) {
+
+  return plays
+    .filter(play => {
+
+      const tipo = getTipo(play);
+
+      return (
+        tipo.includes("substitution") ||
+        tipo.includes("sostituzione")
+      );
+
+    })
+    .map(play => {
+
+      let entrato =
+        play.substitution?.in ||
+        play.substitution?.playerIn ||
+        play.participants?.[0]?.athlete ||
+        play.athletesInvolved?.[0];
+
+      let uscito =
+        play.substitution?.out ||
+        play.substitution?.playerOut ||
+        play.participants?.[1]?.athlete ||
+        play.athletesInvolved?.[1];
+
+      return {
+
+        minuto:
+          getMinuto(play),
+
+        entrato:
+          ultimoNome(entrato),
+
+        uscito:
+          ultimoNome(uscito),
+
+        squadra:
+          getSquadra(play)
+
+      };
+
+    });
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| STATISTICHE
+|--------------------------------------------------------------------------
+*/
+
+function estraiStatistiche(boxscore) {
+
+  const statistiche = {
+    casa: [],
+    trasferta: []
+  };
+
+  for (const squadra of boxscore?.teams || []) {
+
+    const lista =
+      squadra.statistics || [];
+
+    const dati =
+      lista.map(stat => ({
+
+        nome:
+          stat.name ||
+          null,
+
+        label:
+          stat.label ||
+          stat.displayName ||
+          null,
+
+        valore:
+          stat.displayValue !== undefined
+            ? stat.displayValue
+            : stat.value !== undefined
+              ? String(stat.value)
+              : null
+
+      }));
+
+    if (squadra.homeAway === "home") {
+      statistiche.casa = dati;
+    }
+
+    if (squadra.homeAway === "away") {
+      statistiche.trasferta = dati;
+    }
+
+  }
+
+  return statistiche;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| FORMAZIONI
+|--------------------------------------------------------------------------
+*/
+
+function estraiFormazioni(rosters, home, away) {
+
+  const formazioni = {
+    casa: null,
+    trasferta: null
+  };
+
+
+  for (const roster of rosters || []) {
+
+    const formazione = {
+
+      modulo:
+        roster.formation ||
+        roster.formationUsed ||
+        roster.formation?.displayName ||
+        null,
+
+      allenatore:
+        roster.coach?.displayName ||
+        roster.coaches?.[0]?.displayName ||
+        null,
+
+      titolari: [],
+
+      riserve: []
+
+    };
+
+
+    const giocatori =
+      roster.roster ||
+      roster.athletes ||
+      [];
+
+
+    for (const giocatore of giocatori) {
+
+      const atleta =
+        giocatore.athlete ||
+        giocatore;
+
+
+      const elemento = {
+
+        cognome:
+          ultimoNome(atleta),
+
+        numero:
+          giocatore.jersey ||
+          atleta.jersey ||
+          null,
+
+        ruolo:
+          giocatore.position?.abbreviation ||
+          giocatore.position?.displayName ||
+          atleta.position?.abbreviation ||
+          null,
+
+        titolare:
+          giocatore.starter === true ||
+          giocatore.lineupStatus === "starter"
+
+      };
+
+
+      if (elemento.titolare) {
+
+        formazione.titolari.push(elemento);
+
+      } else {
+
+        formazione.riserve.push(elemento);
+
+      }
+
+    }
+
+
+    const rosterTeamId =
+      roster.team?.id ||
+      roster.team?.teamId ||
+      null;
+
+
+    if (
+      rosterTeamId &&
+      String(rosterTeamId) ===
+      String(home?.team?.id)
+    ) {
+
+      formazioni.casa = formaçãoSeCorretta(formazione);
+
+    }
+
+
+    if (
+      rosterTeamId &&
+      String(rosterTeamId) ===
+      String(away?.team?.id)
+    ) {
+
+      formazioni.trasferta = formaçãoSeCorretta(formazione);
+
+    }
+
+  }
+
+
+  return formazioni;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| CORREZIONE FORMAZIONE
+|--------------------------------------------------------------------------
+*/
+
+function formaçãoSeCorretta(formazione) {
+
+  return {
+
+    modulo:
+      formazione.modulo,
+
+    allenatore:
+      formazione.allenatore,
+
+    titolari:
+      formazione.titolari,
+
+    riserve:
+      formazione.riserve
+
+  };
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| EVENTI
+|--------------------------------------------------------------------------
+*/
+
+function estraiEventi(plays) {
+
+  return plays.map(play => ({
+
+    id:
+      play.id ||
+      null,
+
+    minuto:
+      getMinuto(play),
+
+    tipo:
+      play.type?.text ||
+      play.type?.description ||
+      play.type?.name ||
+      null,
+
+    giocatore:
+      getGiocatore(play),
+
+    assist:
+      getAssist(play),
+
+    squadra:
+      getSquadra(play)
+
+  }));
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| API
+|--------------------------------------------------------------------------
+*/
+
+module.exports = async (req, res) => {
+
+  try {
+
+    const id =
+      req.query.id;
+
+
     /*
-     * ============================================================
-     * EVENTI ESPN
-     * ============================================================
+     * ID obbligatorio
+     */
+
+    if (!id) {
+
+      return res.status(400).json({
+
+        success: false,
+
+        errore:
+          "Parametro id obbligatorio"
+
+      });
+
+    }
+
+
+    /*
+     * Recupero dati ESPN
+     */
+
+    const data =
+      await espnFetch(
+        `/ita.1/summary?event=${encodeURIComponent(id)}`
+      );
+
+
+    /*
+     * Competizione della partita
+     */
+
+    const header =
+      data.header || {};
+
+    const competitionHeader =
+      header.competitions?.[0] || {};
+
+    const competition =
+      competitionHeader.competition || {};
+
+    const competitionId =
+      competition.id ||
+      header.league?.id ||
+      "ita.1";
+
+
+    const infoCompetizione =
+      nomeCompetizione(competitionId);
+
+
+    /*
+     * Partita
+     */
+
+    const c =
+      header.competitions?.[0];
+
+
+    if (!c) {
+
+      return res.status(404).json({
+
+        success: false,
+
+        errore:
+          "Partita non trovata"
+
+      });
+
+    }
+
+
+    /*
+     * Squadre
+     */
+
+    const teams =
+      c.competitors || [];
+
+
+    const home =
+      teams.find(
+        team =>
+          team.homeAway === "home"
+      );
+
+
+    const away =
+      teams.find(
+        team =>
+          team.homeAway === "away"
+      );
+
+
+    /*
+     * Eventi ESPN
      */
 
     const plays =
-      d.plays ||
-      d.keyEvents ||
+      data.plays ||
+      data.keyEvents ||
       [];
 
-    const getPlayerFromPlay = p => {
-      return (
-        p?.athlete ||
-        p?.athletesInvolved?.[0] ||
-        p?.participants?.[0]?.athlete ||
-        null
+
+    /*
+     * Statistiche
+     */
+
+    const statistiche =
+      estraiStatistiche(
+        data.boxscore
       );
-    };
 
-    const getAssistFromPlay = p => {
-      return (
-        p?.assistedBy ||
-        p?.assist ||
-        p?.athletesInvolved?.[1] ||
-        p?.participants?.[1]?.athlete ||
-        null
+
+    /*
+     * Formazioni
+     */
+
+    const formazioni =
+      estraiFormazioni(
+        data.rosters ||
+        data.lineups ||
+        [],
+        home,
+        away
       );
-    };
 
-    const getMinute = p => {
-      return (
-        p?.clock?.displayValue ||
-        p?.time?.displayValue ||
-        p?.clock?.value ||
-        p?.time?.value ||
-        null
-      );
-    };
-
-    const getSquadra = p => {
-      return (
-        p?.team?.displayName ||
-        p?.team?.fullName ||
-        p?.team?.name ||
-        null
-      );
-    };
-
-    const getTipo = p => {
-      return String(
-        p?.type?.text ||
-        p?.type?.description ||
-        p?.type?.name ||
-        p?.alternativeType?.text ||
-        p?.text ||
-        ""
-      ).toLowerCase();
-    };
 
     /*
-     * ============================================================
-     * MARCATORI
-     * ============================================================
-     */
-
-    const marcatori = plays
-      .filter(p => {
-        const tipo = getTipo(p);
-
-        return (
-          p?.scoringPlay === true ||
-          tipo.includes("goal") ||
-          tipo.includes("gol")
-        );
-      })
-      .map(p => ({
-        minuto: getMinute(p),
-        giocatore: nomeGiocatore(
-          getPlayerFromPlay(p)
-        ),
-        assist: nomeGiocatore(
-          getAssistFromPlay(p)
-        ),
-        squadra: getSquadra(p),
-        autorete:
-          p?.ownGoal === true ||
-          p?.ownGoal === "true" ||
-          getTipo(p).includes("own goal") ||
-          getTipo(p).includes("own-goal") ||
-          getTipo(p).includes("autogol")
-      }));
-
-    /*
-     * ============================================================
-     * CARTELLINI
-     * ============================================================
-     */
-
-    const cartellini = plays
-      .filter(p => {
-        const tipo = getTipo(p);
-
-        return (
-          tipo.includes("yellow") ||
-          tipo.includes("red") ||
-          tipo.includes("giallo") ||
-          tipo.includes("rosso")
-        );
-      })
-      .map(p => {
-        const tipo = getTipo(p);
-
-        let colore = "giallo";
-
-        if (
-          tipo.includes("red") ||
-          tipo.includes("rosso")
-        ) {
-          colore = "rosso";
-        }
-
-        return {
-          minuto: getMinute(p),
-          giocatore: nomeGiocatore(
-            getPlayerFromPlay(p)
-          ),
-          squadra: getSquadra(p),
-          tipo: colore
-        };
-      });
-
-    /*
-     * ============================================================
-     * ESPULSIONI
-     * ============================================================
-     */
-
-    const espulsioni = cartellini
-      .filter(x => x.tipo === "rosso")
-      .map(x => ({
-        minuto: x.minuto,
-        giocatore: x.giocatore,
-        squadra: x.squadra
-      }));
-
-    /*
-     * ============================================================
-     * SOSTITUZIONI
-     * ============================================================
-     */
-
-    const sostituzioni = plays
-      .filter(p => {
-        const tipo = getTipo(p);
-
-        return (
-          tipo.includes("substitution") ||
-          tipo.includes("sostituzione")
-        );
-      })
-      .map(p => ({
-        minuto: getMinute(p),
-
-        entrato: nomeGiocatore(
-          p?.substitution?.in ||
-          p?.participants?.[0]?.athlete ||
-          p?.athletesInvolved?.[0]
-        ),
-
-        uscito: nomeGiocatore(
-          p?.substitution?.out ||
-          p?.participants?.[1]?.athlete ||
-          p?.athletesInvolved?.[1]
-        ),
-
-        squadra: getSquadra(p)
-      }));
-
-    /*
-     * ============================================================
-     * STATISTICHE
-     * ============================================================
-     */
-
-    const statistiche = {
-      casa: [],
-      trasferta: []
-    };
-
-    for (
-      const t of d.boxscore?.teams || []
-    ) {
-      const statisticheTeam =
-        (t.statistics || []).map(x => ({
-          nome: x.name || null,
-          label: x.label || null,
-          valore:
-            x.displayValue ??
-            x.value ??
-            null
-        }));
-
-      if (t.homeAway === "home") {
-        statistiche.casa = statisticheTeam;
-      }
-
-      if (t.homeAway === "away") {
-        statistiche.trasferta =
-          statisticheTeam;
-      }
-    }
-
-    /*
-     * ============================================================
-     * FORMAZIONI
-     * ============================================================
-     */
-
-    const formazioni = {
-      casa: null,
-      trasferta: null
-    };
-
-    const rosters =
-      d.rosters ||
-      d.lineups ||
-      [];
-
-    for (const r of rosters) {
-      const formazione = {
-        modulo:
-          r.formation ||
-          r.formationUsed ||
-          null,
-
-        allenatore:
-          r.coach?.displayName ||
-          r.coaches?.[0]?.displayName ||
-          null,
-
-        titolari: [],
-        riserve: []
-      };
-
-      const giocatori =
-        r.roster ||
-        r.athletes ||
-        [];
-
-      for (const p of giocatori) {
-        const atleta =
-          p.athlete ||
-          p;
-
-        const giocatore = {
-          cognome: cognome(atleta),
-
-          numero:
-            p.jersey ||
-            atleta?.jersey ||
-            null,
-
-          ruolo:
-            p.position?.abbreviation ||
-            atleta?.position?.abbreviation ||
-            null,
-
-          titolare:
-            p.starter === true ||
-            p.lineupStatus === "starter"
-        };
-
-        if (giocatore.titolare) {
-          formazione.titolari.push(
-            giocatore
-          );
-        } else {
-          formazione.riserve.push(
-            giocatore
-          );
-        }
-      }
-
-      const idSquadra =
-        r.team?.id ||
-        r.team?.uid?.split(":").pop();
-
-      if (
-        String(idSquadra) ===
-        String(getTeamId(home))
-      ) {
-        formazioni.casa =
-          formazione;
-      }
-
-      if (
-        String(idSquadra) ===
-        String(getTeamId(away))
-      ) {
-        formazioni.trasferta =
-          formazione;
-      }
-    }
-
-    /*
-     * ============================================================
-     * EVENTI COMPLETI
-     * ============================================================
-     */
-
-    const eventi = plays.map(p => ({
-      id: p.id || null,
-
-      minuto: getMinute(p),
-
-      tipo:
-        p?.type?.text ||
-        p?.type?.description ||
-        p?.type?.name ||
-        null,
-
-      giocatore:
-        nomeGiocatore(
-          getPlayerFromPlay(p)
-        ),
-
-      assist:
-        nomeGiocatore(
-          getAssistFromPlay(p)
-        ),
-
-      squadra: getSquadra(p)
-    }));
-
-    /*
-     * ============================================================
-     * INFO STADIO / ARBITRO
-     * ============================================================
-     */
-
-    const venue =
-      d.gameInfo?.venue ||
-      c.venue ||
-      {};
-
-    const stadio =
-      venue.fullName ||
-      venue.name ||
-      null;
-
-    const address =
-      venue.address ||
-      {};
-
-    const arbitro =
-      c.officials?.[0]?.displayName ||
-      null;
-
-    /*
-     * ============================================================
-     * RISPOSTA
-     * ============================================================
+     * Risposta
      */
 
     return res.status(200).json({
+
       success: true,
 
+
       partita: {
+
         id:
-          d.header?.id ||
-          c.id ||
+          header.id ||
           id,
+
 
         data:
           c.date ||
-          d.header?.date ||
+          header.date ||
           null,
 
+
         competizione: {
-          id: competizioneQuery,
-          nome: nomeCompetizione
+
+          id:
+            competitionId,
+
+          nome:
+            infoCompetizione.nome,
+
+          paese:
+            infoCompetizione.paese
+
         },
 
+
         stato: {
+
           nome:
             c.status?.type?.name ||
             null,
 
           descrizione:
             c.status?.type?.description ||
+            c.status?.type?.detail ||
             null,
 
           stato:
@@ -530,67 +805,112 @@ module.exports = async (req, res) => {
             null,
 
           completata:
-            c.status?.type?.completed ||
-            false,
+            c.status?.type?.completed === true,
 
           minuto:
             c.status?.displayClock ||
             null
+
         },
 
-        casa: team(home),
 
-        trasferta: team(away),
+        casa:
+          convertiSquadra(home),
 
-        stadio,
+
+        trasferta:
+          convertiSquadra(away),
+
+
+        stadio:
+          data.gameInfo?.venue?.fullName ||
+          c.venue?.fullName ||
+          c.venue?.displayName ||
+          null,
+
 
         nome:
-          `${getTeamName(away) || ""} at ${getTeamName(home) || ""}`,
+          `${away?.team?.displayName || ""} at ${home?.team?.displayName || ""}`.trim(),
+
 
         link: {
+
           partita:
             `https://www.espn.com/soccer/match/_/gameId/${id}`,
 
           statistiche:
             `https://www.espn.com/soccer/matchstats/_/gameId/${id}`
+
         }
+
       },
 
-      info: {
-        arbitro,
 
-        stadio,
+      info: {
+
+        arbitro:
+          c.officials?.[0]?.displayName ||
+          data.gameInfo?.officials?.[0]?.displayName ||
+          null,
+
+        stadio:
+          data.gameInfo?.venue?.fullName ||
+          c.venue?.fullName ||
+          null,
 
         citta:
-          address.city ||
+          data.gameInfo?.venue?.address?.city ||
           null,
 
         paese:
-          address.country ||
+          data.gameInfo?.venue?.address?.country ||
           null
+
       },
 
-      marcatori,
 
-      cartellini,
+      marcatori:
+        estraiMarcatori(plays),
 
-      espulsioni,
 
-      sostituzioni,
+      cartellini:
+        estraiCartellini(plays),
+
+
+      sostituzioni:
+        estraiSostituzioni(plays),
+
 
       statistiche,
 
+
       formazioni,
 
-      eventi
+
+      eventi:
+        estraiEventi(plays)
+
     });
 
-  } catch (e) {
-    console.error(e);
+
+  } catch (errore) {
+
+    console.error(
+      "ERRORE API PARTITA:",
+      errore
+    );
+
 
     return res.status(500).json({
+
       success: false,
-      errore: e.message
+
+      errore:
+        errore.message ||
+        "Errore interno"
+
     });
+
   }
+
 };
