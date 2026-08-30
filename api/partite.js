@@ -3,94 +3,97 @@ const { espnFetch } = require("../lib/espn");
 module.exports = async (req, res) => {
   try {
     const competizione = req.query.competizione || "ita.1";
-    const data = req.query.data;
+    const data = req.query.data || new Date().toISOString().slice(0, 10);
 
-    let path = `/${encodeURIComponent(competizione)}/scoreboard`;
+    const dataESPN = data.replace(/-/g, "");
 
-    if (data) {
-      const dataESPN = data.replace(/-/g, "");
-      path += `?dates=${dataESPN}`;
-    }
+    const path = `/${competizione}/scoreboard?dates=${dataESPN}`;
 
-    const dataESPN = await espnFetch(path);
+    const dataESPNResponse = await espnFetch(path);
 
-    const partite = (dataESPN.events || []).map((event) => {
-      const competition = event.competitions?.[0];
-      const competitors = competition?.competitors || [];
+    const eventi = dataESPNResponse.events || [];
 
-      const casa = competitors.find(
-        (team) => team.homeAway === "home"
-      );
+    const partite = eventi.map((evento) => {
+      const competizioneESPN =
+        evento.competitions?.[0] || {};
 
-      const trasferta = competitors.find(
-        (team) => team.homeAway === "away"
-      );
+      const squadre =
+        competizioneESPN.competitors || [];
+
+      const casa =
+        squadre.find((squadra) => squadra.homeAway === "home");
+
+      const trasferta =
+        squadre.find((squadra) => squadra.homeAway === "away");
 
       return {
-        id: event.id,
-
-        data: event.date,
+        id: evento.id,
+        data: evento.date,
 
         competizione: {
           id: competizione,
-          nome: competition?.league?.name || "Serie A"
+          nome:
+            competizione === "ita.1"
+              ? "Serie A"
+              : competizione
         },
 
         stato: {
-          nome: event.status?.type?.name || null,
-          descrizione: event.status?.type?.description || null,
-          stato: event.status?.type?.state || null,
-          completata: event.status?.type?.completed || false
+          nome: evento.status?.type?.name || null,
+          descrizione: evento.status?.type?.description || null,
+          stato: evento.status?.type?.state || null,
+          completata: evento.status?.type?.completed || false
         },
 
-        casa: casa
-          ? {
-              id: casa.team?.id || null,
-              nome: casa.team?.displayName || null,
-              abbreviazione: casa.team?.abbreviation || null,
-              logo: casa.team?.logo || null,
-              gol: Number(casa.score || 0)
-            }
-          : null,
+        casa: {
+          id: casa?.team?.id || null,
+          nome: casa?.team?.displayName || null,
+          abbreviazione: casa?.team?.abbreviation || null,
+          logo: casa?.team?.logo || null,
+          gol: Number(casa?.score || 0)
+        },
 
-        trasferta: trasferta
-          ? {
-              id: trasferta.team?.id || null,
-              nome: trasferta.team?.displayName || null,
-              abbreviazione: trasferta.team?.abbreviation || null,
-              logo: trasferta.team?.logo || null,
-              gol: Number(trasferta.score || 0)
-            }
-          : null,
+        trasferta: {
+          id: trasferta?.team?.id || null,
+          nome: trasferta?.team?.displayName || null,
+          abbreviazione: trasferta?.team?.abbreviation || null,
+          logo: trasferta?.team?.logo || null,
+          gol: Number(trasferta?.score || 0)
+        },
 
         stadio:
-          competition?.venue?.fullName ||
-          event.venue?.displayName ||
+          competizioneESPN.venue?.fullName ||
+          evento.venue?.displayName ||
           null,
 
-        nome: event.name || null,
+        nome: evento.name || null,
 
         link: {
-          partita: `https://www.espn.com/soccer/match/_/gameId/${event.id}`,
-          statistiche: `https://www.espn.com/soccer/matchstats/_/gameId/${event.id}`
+          partita:
+            evento.links?.find((link) =>
+              link.rel?.includes("summary")
+            )?.href || null,
+
+          statistiche:
+            evento.links?.find((link) =>
+              link.rel?.includes("stats")
+            )?.href || null
         }
       };
     });
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       competizione,
-      data: data || null,
+      data,
       totale: partite.length,
       partite
     });
 
-  } catch (error) {
-    console.error("Errore API partite:", error);
-
-    res.status(500).json({
+  } catch (errore) {
+    return res.status(500).json({
       success: false,
-      errore: error.message
+      errore: errore.message
     });
   }
 };
