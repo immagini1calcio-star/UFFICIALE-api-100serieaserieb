@@ -2,15 +2,14 @@ const { espnFetch } = require("../lib/espn");
 
 module.exports = async (req, res) => {
   try {
-    const {
-      competizione = "ita.1",
-      data
-    } = req.query;
+    const competizione = req.query.competizione || "ita.1";
+    const data = req.query.data;
 
-    let path = `/scoreboard?league=${encodeURIComponent(competizione)}`;
+    let path = `/${encodeURIComponent(competizione)}/scoreboard`;
 
     if (data) {
-      path += `&dates=${encodeURIComponent(data)}`;
+      const dataESPN = data.replace(/-/g, "");
+      path += `?dates=${dataESPN}`;
     }
 
     const dataESPN = await espnFetch(path);
@@ -30,12 +29,12 @@ module.exports = async (req, res) => {
       return {
         id: event.id,
 
-        competizione: {
-          id: dataESPN.leagues?.[0]?.id || null,
-          nome: dataESPN.leagues?.[0]?.name || null
-        },
-
         data: event.date,
+
+        competizione: {
+          id: competizione,
+          nome: competition?.league?.name || "Serie A"
+        },
 
         stato: {
           nome: event.status?.type?.name || null,
@@ -50,7 +49,7 @@ module.exports = async (req, res) => {
               nome: casa.team?.displayName || null,
               abbreviazione: casa.team?.abbreviation || null,
               logo: casa.team?.logo || null,
-              gol: casa.score || "0"
+              gol: Number(casa.score || 0)
             }
           : null,
 
@@ -60,13 +59,16 @@ module.exports = async (req, res) => {
               nome: trasferta.team?.displayName || null,
               abbreviazione: trasferta.team?.abbreviation || null,
               logo: trasferta.team?.logo || null,
-              gol: trasferta.score || "0"
+              gol: Number(trasferta.score || 0)
             }
           : null,
 
-        stadio: competition?.venue?.fullName || event.venue?.displayName || null,
+        stadio:
+          competition?.venue?.fullName ||
+          event.venue?.displayName ||
+          null,
 
-        dettagli: event.name || null,
+        nome: event.name || null,
 
         link: {
           partita: `https://www.espn.com/soccer/match/_/gameId/${event.id}`,
