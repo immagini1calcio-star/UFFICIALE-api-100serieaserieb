@@ -374,3 +374,21 @@ module.exports = async (req, res) => {
 
   }
 };
+function tipoEventoItaliano(tipo) {
+  if (!tipo) return null;
+
+  const t = String(tipo).toLowerCase();
+
+  if (t.includes("goal") || t.includes("gol")) return "Gol";
+  if (t.includes("yellow") || t.includes("giallo")) return "Cartellino giallo";
+  if (t.includes("red") || t.includes("rosso")) return "Cartellino rosso";
+  if (t.includes("substitution") || t.includes("sostituzione")) return "Sostituzione";
+  if (t.includes("kickoff")) return "Calcio d'inizio";
+  if (t.includes("halftime")) return "Fine primo tempo";
+  if (t.includes("start 2nd half")) return "Inizio secondo tempo";
+  if (t.includes("end regular time")) return "Fine partita";
+  if (t.includes("start delay")) return "Inizio interruzione";
+  if (t.includes("end delay")) return "Fine interruzione";
+
+  return tipo;
+}
