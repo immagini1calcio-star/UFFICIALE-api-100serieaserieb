@@ -1,29 +1,48 @@
-const { getScoreboard } = require("../lib/espn");
+const { espnFetch } = require("../lib/espn");
 
 module.exports = async (req, res) => {
   try {
-    const competizione = req.query.competizione || "seriea";
-    const date = req.query.date || "";
+    const {
+      competizione = "ita.1",
+      data
+    } = req.query;
 
-    const data = await getScoreboard(competizione, date);
+    let path = `/scoreboard?league=${encodeURIComponent(competizione)}`;
 
-    const eventi = data.events || [];
+    if (data) {
+      path += `&dates=${encodeURIComponent(data)}`;
+    }
 
-    const partite = eventi.map((evento) => {
-      const competizioneEvento = evento.competitions?.[0];
-      const squadre = competizioneEvento?.competitors || [];
+    const dataESPN = await espnFetch(path);
 
-      const casa = squadre.find((squadra) => squadra.homeAway === "home");
-      const trasferta = squadre.find(
-        (squadra) => squadra.homeAway === "away"
+    const partite = (dataESPN.events || []).map((event) => {
+      const competition = event.competitions?.[0];
+      const competitors = competition?.competitors || [];
+
+      const casa = competitors.find(
+        (team) => team.homeAway === "home"
+      );
+
+      const trasferta = competitors.find(
+        (team) => team.homeAway === "away"
       );
 
       return {
-        id: evento.id || null,
-        data: evento.date || null,
-        stato: evento.status?.type?.state || null,
-        descrizione: evento.status?.type?.description || null,
-        dettaglio: evento.status?.type?.detail || null,
+        id: event.id,
+
+        competizione: {
+          id: dataESPN.leagues?.[0]?.id || null,
+          nome: dataESPN.leagues?.[0]?.name || null
+        },
+
+        data: event.date,
+
+        stato: {
+          nome: event.status?.type?.name || null,
+          descrizione: event.status?.type?.description || null,
+          stato: event.status?.type?.state || null,
+          completata: event.status?.type?.completed || false
+        },
 
         casa: casa
           ? {
@@ -31,7 +50,7 @@ module.exports = async (req, res) => {
               nome: casa.team?.displayName || null,
               abbreviazione: casa.team?.abbreviation || null,
               logo: casa.team?.logo || null,
-              punteggio: casa.score ?? null
+              gol: casa.score || "0"
             }
           : null,
 
@@ -41,34 +60,35 @@ module.exports = async (req, res) => {
               nome: trasferta.team?.displayName || null,
               abbreviazione: trasferta.team?.abbreviation || null,
               logo: trasferta.team?.logo || null,
-              punteggio: trasferta.score ?? null
+              gol: trasferta.score || "0"
             }
           : null,
 
-        stadio: competizioneEvento?.venue?.fullName || null,
-        citta: competizioneEvento?.venue?.address?.city || null,
+        stadio: competition?.venue?.fullName || event.venue?.displayName || null,
 
-        competizione:
-          competizioneEvento?.notes?.[0]?.headline ||
-          competizioneEvento?.altGameNote ||
-          null
+        dettagli: event.name || null,
+
+        link: {
+          partita: `https://www.espn.com/soccer/match/_/gameId/${event.id}`,
+          statistiche: `https://www.espn.com/soccer/matchstats/_/gameId/${event.id}`
+        }
       };
     });
 
-    return res.status(200).json({
-      ok: true,
-      source: "ESPN",
+    res.status(200).json({
+      success: true,
       competizione,
-      date: date || null,
+      data: data || null,
       totale: partite.length,
       partite
     });
-  } catch (error) {
-    console.error("Errore /api/partite:", error);
 
-    return res.status(500).json({
-      ok: false,
-      error: "Errore nel recupero delle partite da ESPN"
+  } catch (error) {
+    console.error("Errore API partite:", error);
+
+    res.status(500).json({
+      success: false,
+      errore: error.message
     });
   }
 };
