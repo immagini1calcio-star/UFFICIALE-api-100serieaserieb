@@ -1,6 +1,8 @@
 const { espnFetch } = require("../lib/espn");
 
+
 const COMPETIZIONI = {
+
   "ita.1": {
     nome: "Serie A",
     paese: "Italia"
@@ -17,7 +19,7 @@ const COMPETIZIONI = {
   },
 
   "ita.nazionale": {
-    nome: "Nazionale Italiana",
+    nome: "Nazionale Italia",
     paese: "Italia"
   },
 
@@ -27,7 +29,7 @@ const COMPETIZIONI = {
   },
 
   "esp.1": {
-    nome: "LaLiga",
+    nome: "La Liga",
     paese: "Spagna"
   },
 
@@ -74,14 +76,23 @@ const COMPETIZIONI = {
 
 
 function getCompetizione(codice) {
-  return COMPETIZIONI[codice] || {
-    nome: codice,
-    paese: null
-  };
+
+  return (
+    COMPETIZIONI[codice] || {
+
+      nome:
+        codice,
+
+      paese:
+        null
+
+    }
+  );
 }
 
 
 function getLogo(team) {
+
   return (
     team?.logo ||
     team?.logos?.[0]?.href ||
@@ -92,18 +103,25 @@ function getLogo(team) {
 
 
 function getTeam(competitor) {
+
   if (!competitor) {
+
     return {
+
       id: null,
       nome: null,
       abbreviazione: null,
       logo: null,
       gol: 0
+
     };
   }
 
   return {
-    id: competitor.team?.id || null,
+
+    id:
+      competitor.team?.id ||
+      null,
 
     nome:
       competitor.team?.displayName ||
@@ -115,23 +133,36 @@ function getTeam(competitor) {
       competitor.team?.abbreviation ||
       null,
 
-    logo: getLogo(competitor.team),
+    logo:
+      getLogo(
+        competitor.team
+      ),
 
     gol:
       competitor.score !== undefined &&
       competitor.score !== null
         ? Number(competitor.score)
         : 0
+
   };
 }
 
 
 function getStato(evento) {
-  const status = evento?.status || {};
-  const type = status.type || {};
+
+  const status =
+    evento?.status ||
+    {};
+
+  const type =
+    status.type ||
+    {};
 
   return {
-    nome: type.name || null,
+
+    nome:
+      type.name ||
+      null,
 
     descrizione:
       type.description ||
@@ -148,14 +179,19 @@ function getStato(evento) {
     minuto:
       status.displayClock ||
       null
+
   };
 }
 
 
 function getLink(evento, tipo) {
-  const links = evento?.links || [];
+
+  const links =
+    evento?.links ||
+    [];
 
   if (tipo === "partita") {
+
     return (
       links.find(link =>
         Array.isArray(link.rel) &&
@@ -163,11 +199,13 @@ function getLink(evento, tipo) {
           link.rel.includes("summary") ||
           link.rel.includes("game")
         )
-      )?.href || null
+      )?.href ||
+      null
     );
   }
 
   if (tipo === "statistiche") {
+
     return (
       links.find(link =>
         Array.isArray(link.rel) &&
@@ -175,7 +213,8 @@ function getLink(evento, tipo) {
           link.rel.includes("stats") ||
           link.rel.includes("statistics")
         )
-      )?.href || null
+      )?.href ||
+      null
     );
   }
 
@@ -183,7 +222,11 @@ function getLink(evento, tipo) {
 }
 
 
-module.exports = async (req, res) => {
+module.exports = async function handler(
+  req,
+  res
+) {
+
   try {
 
     const competizione =
@@ -192,19 +235,37 @@ module.exports = async (req, res) => {
 
     const data =
       req.query.data ||
-      new Date().toISOString().slice(0, 10);
+      new Date()
+        .toISOString()
+        .slice(0, 10);
 
 
     /*
      * Controllo competizione
      */
 
-    if (!COMPETIZIONI[competizione]) {
+    if (
+      !COMPETIZIONI[
+        competizione
+      ]
+    ) {
+
       return res.status(400).json({
+
         success: false,
-        errore: "Competizione non supportata",
-        competizione,
-        competizioni_disponibili: Object.keys(COMPETIZIONI)
+
+        errore:
+          "Competizione non supportata",
+
+        competizione:
+
+          competizione,
+
+        competizioni_disponibili:
+          Object.keys(
+            COMPETIZIONI
+          )
+
       });
     }
 
@@ -213,7 +274,11 @@ module.exports = async (req, res) => {
      * Conversione data
      */
 
-    const dataESPN = data.replace(/-/g, "");
+    const dataESPN =
+      data.replace(
+        /-/g,
+        ""
+      );
 
 
     /*
@@ -224,110 +289,135 @@ module.exports = async (req, res) => {
       `/${competizione}/scoreboard?dates=${dataESPN}`;
 
     const risposta =
-      await espnFetch(path);
+      await espnFetch(
+        path
+      );
 
 
     const eventi =
-      risposta.events || [];
+      Array.isArray(
+        risposta?.events
+      )
+        ? risposta.events
+        : [];
 
 
     const infoCompetizione =
-      getCompetizione(competizione);
+      getCompetizione(
+        competizione
+      );
 
 
     /*
      * Conversione partite
      */
 
-    const partite = eventi.map(evento => {
+    const partite =
+      eventi.map(function (evento) {
 
-      const gara =
-        evento.competitions?.[0] || {};
+        const gara =
+          evento.competitions?.[0] ||
+          {};
 
-      const squadre =
-        gara.competitors || [];
+        const squadre =
+          gara.competitors ||
+          [];
 
+        const casa =
+          squadre.find(
+            function (squadra) {
 
-      const casa =
-        squadre.find(
-          squadra =>
-            squadra.homeAway === "home"
-        );
+              return (
+                squadra.homeAway ===
+                "home"
+              );
 
+            }
+          );
 
-      const trasferta =
-        squadre.find(
-          squadra =>
-            squadra.homeAway === "away"
-        );
+        const trasferta =
+          squadre.find(
+            function (squadra) {
 
+              return (
+                squadra.homeAway ===
+                "away"
+              );
 
-      return {
+            }
+          );
 
-        id:
-          evento.id ||
-          null,
-
-
-        data:
-          evento.date ||
-          gara.date ||
-          null,
-
-
-        competizione: {
+        return {
 
           id:
-            competizione,
+            evento.id ||
+            null,
+
+          data:
+            evento.date ||
+            gara.date ||
+            null,
+
+          competizione: {
+
+            id:
+              competizione,
+
+            nome:
+              infoCompetizione.nome,
+
+            paese:
+              infoCompetizione.paese
+
+          },
+
+          stato:
+            getStato(
+              evento
+            ),
+
+          casa:
+            getTeam(
+              casa
+            ),
+
+          trasferta:
+            getTeam(
+              trasferta
+            ),
+
+          stadio:
+            gara.venue?.fullName ||
+            gara.venue?.displayName ||
+            evento.venue?.displayName ||
+            null,
 
           nome:
-            infoCompetizione.nome,
+            evento.name ||
+            `${trasferta?.team?.displayName || ""} at ${casa?.team?.displayName || ""}`
+              .trim(),
 
-          paese:
-            infoCompetizione.paese
+          link: {
 
-        },
+            partita:
+              getLink(
+                evento,
+                "partita"
+              ) ||
+              `https://www.espn.com/soccer/match/_/gameId/${evento.id}`,
 
+            statistiche:
+              getLink(
+                evento,
+                "statistiche"
+              ) ||
+              `https://www.espn.com/soccer/matchstats/_/gameId/${evento.id}`
 
-        stato:
-          getStato(evento),
+          }
 
+        };
 
-        casa:
-          getTeam(casa),
-
-
-        trasferta:
-          getTeam(trasferta),
-
-
-        stadio:
-          gara.venue?.fullName ||
-          gara.venue?.displayName ||
-          evento.venue?.displayName ||
-          null,
-
-
-        nome:
-          evento.name ||
-          `${trasferta?.team?.displayName || ""} at ${casa?.team?.displayName || ""}`.trim(),
-
-
-        link: {
-
-          partita:
-            getLink(evento, "partita") ||
-            `https://www.espn.com/soccer/match/_/gameId/${evento.id}`,
-
-          statistiche:
-            getLink(evento, "statistiche") ||
-            `https://www.espn.com/soccer/matchstats/_/gameId/${evento.id}`
-
-        }
-
-      };
-
-    });
+      });
 
 
     /*
@@ -360,35 +450,21 @@ module.exports = async (req, res) => {
 
     });
 
-
   } catch (errore) {
+
+    console.error(
+      "Errore /api/partite:",
+      errore
+    );
 
     return res.status(500).json({
 
       success: false,
 
       errore:
-        errore.message
+        errore?.message ||
+        "Errore interno del server"
 
     });
-
   }
 };
-function tipoEventoItaliano(tipo) {
-  if (!tipo) return null;
-
-  const t = String(tipo).toLowerCase();
-
-  if (t.includes("goal") || t.includes("gol")) return "Gol";
-  if (t.includes("yellow") || t.includes("giallo")) return "Cartellino giallo";
-  if (t.includes("red") || t.includes("rosso")) return "Cartellino rosso";
-  if (t.includes("substitution") || t.includes("sostituzione")) return "Sostituzione";
-  if (t.includes("kickoff")) return "Calcio d'inizio";
-  if (t.includes("halftime")) return "Fine primo tempo";
-  if (t.includes("start 2nd half")) return "Inizio secondo tempo";
-  if (t.includes("end regular time")) return "Fine partita";
-  if (t.includes("start delay")) return "Inizio interruzione";
-  if (t.includes("end delay")) return "Fine interruzione";
-
-  return tipo;
-}
