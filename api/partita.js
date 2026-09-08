@@ -1,6028 +1,2661 @@
-const { espnFetch } = require("../lib/espn");
+/**
+ * ============================================================
+ * API CALCIO 100%SerieA&SerieB
+ * FILE: api/partita.js
+ *
+ * FONTE DATI: SOLO ESPN
+ *
+ * LOGICA FASE/TURNO:
+ * 1) identifica la competizione ESPN
+ * 2) trova il codice competizione (es. ita.1)
+ * 3) cerca quel codice in FINESTRE_GIORNATE
+ * 4) legge la DATA REALE della partita da ESPN
+ * 5) cerca la finestra che contiene quella data
+ * 6) restituisce ESATTAMENTE la faseTurno della finestra
+ *
+ * Per i campionati:
+ *   ita.1  -> Serie A
+ *   ita.2  -> Serie B
+ *   fra.1  -> Ligue 1
+ *   esp.1  -> La Liga
+ *   eng.1  -> Premier League
+ *   ksa.1  -> Saudi Pro League
+ *   por.1  -> Liga Portugal
+ *   ned.1  -> Eredivisie
+ *   ger.1  -> Bundesliga
+ *
+ * NESSUN BASE44
+ * NESSUNA API A PAGAMENTO
+ * NESSUNA API KEY ESPN
+ * ============================================================
+ */
 
-/*
+const ESPN_BASE =
+  "https://site.api.espn.com/apis/site/v2/sports/soccer";
 
-API CALCIO 100%SERIEA&SERIEB
-/api/partita
+const ESPN_CORE =
+  "https://sports.core.api.espn.com/v2/sports/soccer";
 
-FONTE UNICA:
-ESPN
-
-NESSUN BASE44
-NESSUNA API CALCIO ESTERNA
-
-*/
-
-/* ============================================================
-   COMPETIZIONI
-============================================================ */
+// ============================================================
+// COMPETIZIONI
+// ============================================================
 
 const COMPETIZIONI = {
-
   "ita.1": {
     nome: "Serie A",
-    paese: "Italia",
-    tipo: "campionato",
-    giornate: 38
+    slug: "ita.1",
+    paese: "Italia"
   },
 
   "ita.2": {
     nome: "Serie B",
-    paese: "Italia",
-    tipo: "campionato",
-    giornate: 38
+    slug: "ita.2",
+    paese: "Italia"
   },
 
   "ita.coppa_italia": {
     nome: "Coppa Italia",
-    paese: "Italia",
-    tipo: "coppa"
+    slug: "ita.coppa_italia",
+    paese: "Italia"
   },
 
   "ita.fifa": {
     nome: "Nazionale Italia",
-    paese: "Italia",
-    tipo: "nazionale"
+    slug: "ita.fifa",
+    paese: "Italia"
   },
 
   "uefa.champions": {
     nome: "Champions League",
-    paese: "Europa",
-    tipo: "coppa",
-    giornate: 8
+    slug: "uefa.champions",
+    paese: "Europa"
   },
 
   "uefa.europa": {
     nome: "Europa League",
-    paese: "Europa",
-    tipo: "coppa",
-    giornate: 8
+    slug: "uefa.europa",
+    paese: "Europa"
   },
 
   "uefa.europa.conf": {
     nome: "Conference League",
-    paese: "Europa",
-    tipo: "coppa",
-    giornate: 6
+    slug: "uefa.europa.conf",
+    paese: "Europa"
   },
 
   "fra.1": {
     nome: "Ligue 1",
-    paese: "Francia",
-    tipo: "campionato",
-    giornate: 34
+    slug: "fra.1",
+    paese: "Francia"
   },
 
   "esp.1": {
     nome: "La Liga",
-    paese: "Spagna",
-    tipo: "campionato",
-    giornate: 38
+    slug: "esp.1",
+    paese: "Spagna"
   },
 
   "eng.1": {
     nome: "Premier League",
-    paese: "Inghilterra",
-    tipo: "campionato",
-    giornate: 38
+    slug: "eng.1",
+    paese: "Inghilterra"
   },
 
   "ksa.1": {
     nome: "Saudi Pro League",
-    paese: "Arabia Saudita",
-    tipo: "campionato",
-    giornate: 34
+    slug: "ksa.1",
+    paese: "Arabia Saudita"
   },
 
   "por.1": {
     nome: "Liga Portugal",
-    paese: "Portogallo",
-    tipo: "campionato",
-    giornate: 34
+    slug: "por.1",
+    paese: "Portogallo"
   },
 
   "ned.1": {
     nome: "Eredivisie",
-    paese: "Paesi Bassi",
-    tipo: "campionato",
-    giornate: 34
+    slug: "ned.1",
+    paese: "Paesi Bassi"
   },
 
   "ger.1": {
     nome: "Bundesliga",
-    paese: "Germania",
-    tipo: "campionato",
-    giornate: 34
+    slug: "ger.1",
+    paese: "Germania"
   }
 };
 
-/* ============================================================
-   FINESTRE GIORNATE
-   Ogni finestra ha già il Fase/Turno corretto.
-============================================================ */
+// ============================================================
+// FINESTRE UFFICIALI
+//
+// IMPORTANTE:
+// Ogni elemento contiene:
+//   competizione
+//   giornata
+//   dal
+//   al
+//   faseTurno
+//
+// La data viene confrontata con queste finestre.
+// ============================================================
 
 const FINESTRE_GIORNATE = {
 
-  /* =========================
-     SERIE A
-  ========================= */
+  // ==========================================================
+  // SERIE A
+  // ==========================================================
 
   "ita.1": [
-    { inizio:"2026-08-20", fine:"2026-08-25", faseTurno:"Giornata 1" },
-    { inizio:"2026-08-27", fine:"2026-09-01", faseTurno:"Giornata 2" },
-    { inizio:"2026-09-03", fine:"2026-09-08", faseTurno:"Giornata 3" },
-    { inizio:"2026-09-10", fine:"2026-09-15", faseTurno:"Giornata 4" },
-    { inizio:"2026-09-17", fine:"2026-09-22", faseTurno:"Giornata 5" },
-    { inizio:"2026-10-08", fine:"2026-10-13", faseTurno:"Giornata 6" },
-    { inizio:"2026-10-15", fine:"2026-10-20", faseTurno:"Giornata 7" },
-    { inizio:"2026-10-22", fine:"2026-10-26", faseTurno:"Giornata 8" },
-    { inizio:"2026-10-27", fine:"2026-10-30", faseTurno:"Giornata 9" },
-    { inizio:"2026-10-31", fine:"2026-11-03", faseTurno:"Giornata 10" },
-    { inizio:"2026-11-05", fine:"2026-11-10", faseTurno:"Giornata 11" },
-    { inizio:"2026-11-19", fine:"2026-11-24", faseTurno:"Giornata 12" },
-    { inizio:"2026-11-26", fine:"2026-12-01", faseTurno:"Giornata 13" },
-    { inizio:"2026-12-03", fine:"2026-12-08", faseTurno:"Giornata 14" },
-    { inizio:"2026-12-10", fine:"2026-12-15", faseTurno:"Giornata 15" },
-    { inizio:"2026-12-17", fine:"2026-12-22", faseTurno:"Giornata 16" },
-    { inizio:"2026-12-31", fine:"2027-01-05", faseTurno:"Giornata 17" },
-    { inizio:"2027-01-06", fine:"2027-01-09", faseTurno:"Giornata 18" },
-    { inizio:"2027-01-10", fine:"2027-01-12", faseTurno:"Giornata 19" },
-    { inizio:"2027-01-14", fine:"2027-01-19", faseTurno:"Giornata 20" },
-    { inizio:"2027-01-21", fine:"2027-01-26", faseTurno:"Giornata 21" },
-    { inizio:"2027-01-28", fine:"2027-02-02", faseTurno:"Giornata 22" },
-    { inizio:"2027-02-04", fine:"2027-02-09", faseTurno:"Giornata 23" },
-    { inizio:"2027-02-11", fine:"2027-02-16", faseTurno:"Giornata 24" },
-    { inizio:"2027-02-18", fine:"2027-02-23", faseTurno:"Giornata 25" },
-    { inizio:"2027-02-25", fine:"2027-03-02", faseTurno:"Giornata 26" },
-    { inizio:"2027-03-04", fine:"2027-03-09", faseTurno:"Giornata 27" },
-    { inizio:"2027-03-11", fine:"2027-03-16", faseTurno:"Giornata 28" },
-    { inizio:"2027-03-18", fine:"2027-03-23", faseTurno:"Giornata 29" },
-    { inizio:"2027-04-01", fine:"2027-04-06", faseTurno:"Giornata 30" },
-    { inizio:"2027-04-08", fine:"2027-04-13", faseTurno:"Giornata 31" },
-    { inizio:"2027-04-15", fine:"2027-04-20", faseTurno:"Giornata 32" },
-    { inizio:"2027-04-22", fine:"2027-04-27", faseTurno:"Giornata 33" },
-    { inizio:"2027-04-29", fine:"2027-05-04", faseTurno:"Giornata 34" },
-    { inizio:"2027-05-06", fine:"2027-05-11", faseTurno:"Giornata 35" },
-    { inizio:"2027-05-13", fine:"2027-05-18", faseTurno:"Giornata 36" },
-    { inizio:"2027-05-20", fine:"2027-05-25", faseTurno:"Giornata 37" },
-    { inizio:"2027-05-27", fine:"2027-06-01", faseTurno:"Giornata 38" }
+    ["2026-08-20", "2026-08-25", "Giornata 1"],
+    ["2026-08-27", "2026-09-01", "Giornata 2"],
+    ["2026-09-03", "2026-09-08", "Giornata 3"],
+    ["2026-09-10", "2026-09-15", "Giornata 4"],
+    ["2026-09-17", "2026-09-22", "Giornata 5"],
+    ["2026-10-08", "2026-10-13", "Giornata 6"],
+    ["2026-10-15", "2026-10-20", "Giornata 7"],
+    ["2026-10-22", "2026-10-26", "Giornata 8"],
+    ["2026-10-27", "2026-10-30", "Giornata 9"],
+    ["2026-10-31", "2026-11-03", "Giornata 10"],
+    ["2026-11-05", "2026-11-10", "Giornata 11"],
+    ["2026-11-19", "2026-11-24", "Giornata 12"],
+    ["2026-11-26", "2026-12-01", "Giornata 13"],
+    ["2026-12-03", "2026-12-08", "Giornata 14"],
+    ["2026-12-10", "2026-12-15", "Giornata 15"],
+    ["2026-12-17", "2026-12-22", "Giornata 16"],
+    ["2026-12-31", "2027-01-05", "Giornata 17"],
+    ["2027-01-06", "2027-01-09", "Giornata 18"],
+    ["2027-01-10", "2027-01-12", "Giornata 19"],
+    ["2027-01-14", "2027-01-19", "Giornata 20"],
+    ["2027-01-21", "2027-01-26", "Giornata 21"],
+    ["2027-01-28", "2027-02-02", "Giornata 22"],
+    ["2027-02-04", "2027-02-09", "Giornata 23"],
+    ["2027-02-11", "2027-02-16", "Giornata 24"],
+    ["2027-02-18", "2027-02-23", "Giornata 25"],
+    ["2027-02-25", "2027-03-02", "Giornata 26"],
+    ["2027-03-04", "2027-03-09", "Giornata 27"],
+    ["2027-03-11", "2027-03-16", "Giornata 28"],
+    ["2027-03-18", "2027-03-23", "Giornata 29"],
+    ["2027-04-01", "2027-04-06", "Giornata 30"],
+    ["2027-04-08", "2027-04-13", "Giornata 31"],
+    ["2027-04-15", "2027-04-20", "Giornata 32"],
+    ["2027-04-22", "2027-04-27", "Giornata 33"],
+    ["2027-04-29", "2027-05-04", "Giornata 34"],
+    ["2027-05-06", "2027-05-11", "Giornata 35"],
+    ["2027-05-13", "2027-05-18", "Giornata 36"],
+    ["2027-05-20", "2027-05-25", "Giornata 37"],
+    ["2027-05-27", "2027-06-01", "Giornata 38"]
   ],
 
-  /* =========================
-     SERIE B
-  ========================= */
+  // ==========================================================
+  // SERIE B
+  // ==========================================================
 
   "ita.2": [
-    { inizio:"2026-08-20", fine:"2026-08-25", faseTurno:"Giornata 1" },
-    { inizio:"2026-08-27", fine:"2026-09-01", faseTurno:"Giornata 2" },
-    { inizio:"2026-09-03", fine:"2026-09-08", faseTurno:"Giornata 3" },
-    { inizio:"2026-09-10", fine:"2026-09-15", faseTurno:"Giornata 4" },
-    { inizio:"2026-09-16", fine:"2026-09-22", faseTurno:"Giornata 5" },
-    { inizio:"2026-10-08", fine:"2026-10-13", faseTurno:"Giornata 6" },
-    { inizio:"2026-10-15", fine:"2026-10-20", faseTurno:"Giornata 7" },
-    { inizio:"2026-10-22", fine:"2026-10-26", faseTurno:"Giornata 8" },
-    { inizio:"2026-10-27", fine:"2026-10-30", faseTurno:"Giornata 9" },
-    { inizio:"2026-10-31", fine:"2026-11-03", faseTurno:"Giornata 10" },
-    { inizio:"2026-11-05", fine:"2026-11-10", faseTurno:"Giornata 11" },
-    { inizio:"2026-11-19", fine:"2026-11-23", faseTurno:"Giornata 12" },
-    { inizio:"2026-11-24", fine:"2026-11-27", faseTurno:"Giornata 13" },
-    { inizio:"2026-11-28", fine:"2026-12-01", faseTurno:"Giornata 14" },
-    { inizio:"2026-12-03", fine:"2026-12-07", faseTurno:"Giornata 15" },
-    { inizio:"2026-12-08", fine:"2026-12-11", faseTurno:"Giornata 16" },
-    { inizio:"2026-12-12", fine:"2026-12-15", faseTurno:"Giornata 17" },
-    { inizio:"2026-12-17", fine:"2026-12-22", faseTurno:"Giornata 18" },
-    { inizio:"2026-12-24", fine:"2026-12-29", faseTurno:"Giornata 19" },
-    { inizio:"2027-01-07", fine:"2027-01-12", faseTurno:"Giornata 20" },
-    { inizio:"2027-01-14", fine:"2027-01-19", faseTurno:"Giornata 21" },
-    { inizio:"2027-01-21", fine:"2027-01-26", faseTurno:"Giornata 22" },
-    { inizio:"2027-01-28", fine:"2027-02-02", faseTurno:"Giornata 23" },
-    { inizio:"2027-02-04", fine:"2027-02-09", faseTurno:"Giornata 24" },
-    { inizio:"2027-02-11", fine:"2027-02-16", faseTurno:"Giornata 25" },
-    { inizio:"2027-02-18", fine:"2027-02-23", faseTurno:"Giornata 26" },
-    { inizio:"2027-02-25", fine:"2027-03-01", faseTurno:"Giornata 27" },
-    { inizio:"2027-03-02", fine:"2027-03-05", faseTurno:"Giornata 28" },
-    { inizio:"2027-03-06", fine:"2027-03-09", faseTurno:"Giornata 29" },
-    { inizio:"2027-03-11", fine:"2027-03-16", faseTurno:"Giornata 30" },
-    { inizio:"2027-03-18", fine:"2027-03-23", faseTurno:"Giornata 31" },
-    { inizio:"2027-04-01", fine:"2027-04-06", faseTurno:"Giornata 32" },
-    { inizio:"2027-04-08", fine:"2027-04-13", faseTurno:"Giornata 33" },
-    { inizio:"2027-04-15", fine:"2027-04-20", faseTurno:"Giornata 34" },
-    { inizio:"2027-04-22", fine:"2027-04-27", faseTurno:"Giornata 35" },
-    { inizio:"2027-04-29", fine:"2027-05-04", faseTurno:"Giornata 36" },
-    { inizio:"2027-05-06", fine:"2027-05-11", faseTurno:"Giornata 37" },
-    { inizio:"2027-05-13", fine:"2027-05-18", faseTurno:"Giornata 38" }
+    ["2026-08-20", "2026-08-25", "Giornata 1"],
+    ["2026-08-27", "2026-09-01", "Giornata 2"],
+    ["2026-09-03", "2026-09-08", "Giornata 3"],
+    ["2026-09-10", "2026-09-15", "Giornata 4"],
+    ["2026-09-16", "2026-09-22", "Giornata 5"],
+    ["2026-10-08", "2026-10-13", "Giornata 6"],
+    ["2026-10-15", "2026-10-20", "Giornata 7"],
+    ["2026-10-22", "2026-10-26", "Giornata 8"],
+    ["2026-10-27", "2026-10-30", "Giornata 9"],
+    ["2026-10-31", "2026-11-03", "Giornata 10"],
+    ["2026-11-05", "2026-11-10", "Giornata 11"],
+    ["2026-11-19", "2026-11-23", "Giornata 12"],
+    ["2026-11-24", "2026-11-27", "Giornata 13"],
+    ["2026-11-28", "2026-12-01", "Giornata 14"],
+    ["2026-12-03", "2026-12-07", "Giornata 15"],
+    ["2026-12-08", "2026-12-11", "Giornata 16"],
+    ["2026-12-12", "2026-12-15", "Giornata 17"],
+    ["2026-12-17", "2026-12-22", "Giornata 18"],
+    ["2026-12-24", "2026-12-29", "Giornata 19"],
+    ["2027-01-07", "2027-01-12", "Giornata 20"],
+    ["2027-01-14", "2027-01-19", "Giornata 21"],
+    ["2027-01-21", "2027-01-26", "Giornata 22"],
+    ["2027-01-28", "2027-02-02", "Giornata 23"],
+    ["2027-02-04", "2027-02-09", "Giornata 24"],
+    ["2027-02-11", "2027-02-16", "Giornata 25"],
+    ["2027-02-18", "2027-02-23", "Giornata 26"],
+    ["2027-02-25", "2027-03-01", "Giornata 27"],
+    ["2027-03-02", "2027-03-05", "Giornata 28"],
+    ["2027-03-06", "2027-03-09", "Giornata 29"],
+    ["2027-03-11", "2027-03-16", "Giornata 30"],
+    ["2027-03-18", "2027-03-23", "Giornata 31"],
+    ["2027-04-01", "2027-04-06", "Giornata 32"],
+    ["2027-04-08", "2027-04-13", "Giornata 33"],
+    ["2027-04-15", "2027-04-20", "Giornata 34"],
+    ["2027-04-22", "2027-04-27", "Giornata 35"],
+    ["2027-04-29", "2027-05-04", "Giornata 36"],
+    ["2027-05-06", "2027-05-11", "Giornata 37"],
+    ["2027-05-13", "2027-05-18", "Giornata 38"]
   ],
 
-    /* =========================
-     LA LIGA
-  ========================= */
-
-  "esp.1": [
-    { inizio:"2026-08-13", fine:"2026-08-27", faseTurno:"Giornata 1" },
-    { inizio:"2026-08-20", fine:"2026-08-25", faseTurno:"Giornata 2" },
-    { inizio:"2026-08-27", fine:"2026-09-01", faseTurno:"Giornata 3" },
-    { inizio:"2026-09-03", fine:"2026-09-08", faseTurno:"Giornata 4" },
-    { inizio:"2026-09-11", fine:"2026-09-14", faseTurno:"Giornata 5" },
-    { inizio:"2026-09-15", fine:"2026-09-18", faseTurno:"Giornata 6" },
-    { inizio:"2026-09-19", fine:"2026-09-22", faseTurno:"Giornata 7" },
-    { inizio:"2026-10-09", fine:"2026-10-13", faseTurno:"Giornata 8" },
-    { inizio:"2026-10-16", fine:"2026-10-20", faseTurno:"Giornata 9" },
-    { inizio:"2026-10-23", fine:"2026-10-27", faseTurno:"Giornata 10" },
-    { inizio:"2026-10-30", fine:"2026-11-03", faseTurno:"Giornata 11" },
-    { inizio:"2026-11-06", fine:"2026-11-10", faseTurno:"Giornata 12" },
-    { inizio:"2026-11-19", fine:"2026-11-24", faseTurno:"Giornata 13" },
-    { inizio:"2026-11-26", fine:"2026-12-01", faseTurno:"Giornata 14" },
-    { inizio:"2026-12-03", fine:"2026-12-08", faseTurno:"Giornata 15" },
-    { inizio:"2026-12-10", fine:"2026-12-15", faseTurno:"Giornata 16" },
-    { inizio:"2026-12-17", fine:"2026-12-22", faseTurno:"Giornata 17" },
-    { inizio:"2026-12-31", fine:"2027-01-05", faseTurno:"Giornata 18" },
-    { inizio:"2027-01-07", fine:"2027-01-12", faseTurno:"Giornata 19" },
-    { inizio:"2027-01-14", fine:"2027-01-19", faseTurno:"Giornata 20" },
-    { inizio:"2027-01-21", fine:"2027-01-26", faseTurno:"Giornata 21" },
-    { inizio:"2027-01-28", fine:"2027-02-02", faseTurno:"Giornata 22" },
-    { inizio:"2027-02-04", fine:"2027-02-09", faseTurno:"Giornata 23" },
-    { inizio:"2027-02-11", fine:"2027-02-16", faseTurno:"Giornata 24" },
-    { inizio:"2027-02-18", fine:"2027-02-23", faseTurno:"Giornata 25" },
-    { inizio:"2027-02-25", fine:"2027-03-02", faseTurno:"Giornata 26" },
-    { inizio:"2027-03-04", fine:"2027-03-09", faseTurno:"Giornata 27" },
-    { inizio:"2027-03-11", fine:"2027-03-16", faseTurno:"Giornata 28" },
-    { inizio:"2027-03-18", fine:"2027-03-23", faseTurno:"Giornata 29" },
-    { inizio:"2027-04-01", fine:"2027-04-06", faseTurno:"Giornata 30" },
-    { inizio:"2027-04-08", fine:"2027-04-13", faseTurno:"Giornata 31" },
-    { inizio:"2027-04-15", fine:"2027-04-20", faseTurno:"Giornata 32" },
-    { inizio:"2027-04-22", fine:"2027-04-27", faseTurno:"Giornata 33" },
-    { inizio:"2027-04-29", fine:"2027-05-04", faseTurno:"Giornata 34" },
-    { inizio:"2027-05-06", fine:"2027-05-11", faseTurno:"Giornata 35" },
-    { inizio:"2027-05-13", fine:"2027-05-18", faseTurno:"Giornata 36" },
-    { inizio:"2027-05-20", fine:"2027-05-25", faseTurno:"Giornata 37" },
-    { inizio:"2027-05-27", fine:"2027-05-31", faseTurno:"Giornata 38" }
-  ],
-
-  /* =========================
-     PREMIER LEAGUE
-  ========================= */
+  // ==========================================================
+  // PREMIER LEAGUE
+  // ==========================================================
 
   "eng.1": [
-    { inizio:"2026-08-20", fine:"2026-08-25", faseTurno:"Giornata 1" },
-    { inizio:"2026-08-27", fine:"2026-09-01", faseTurno:"Giornata 2" },
-    { inizio:"2026-09-03", fine:"2026-09-08", faseTurno:"Giornata 3" },
-    { inizio:"2026-09-10", fine:"2026-09-15", faseTurno:"Giornata 4" },
-    { inizio:"2026-09-17", fine:"2026-09-22", faseTurno:"Giornata 5" },
-    { inizio:"2026-10-08", fine:"2026-10-13", faseTurno:"Giornata 6" },
-    { inizio:"2026-10-15", fine:"2026-10-20", faseTurno:"Giornata 7" },
-    { inizio:"2026-10-22", fine:"2026-10-27", faseTurno:"Giornata 8" },
-    { inizio:"2026-10-29", fine:"2026-11-03", faseTurno:"Giornata 9" },
-    { inizio:"2026-11-05", fine:"2026-11-10", faseTurno:"Giornata 10" },
-    { inizio:"2026-11-19", fine:"2026-11-24", faseTurno:"Giornata 11" },
-    { inizio:"2026-11-26", fine:"2026-12-01", faseTurno:"Giornata 12" },
-    { inizio:"2026-12-01", fine:"2026-12-04", faseTurno:"Giornata 13" },
-    { inizio:"2026-12-05", fine:"2026-12-08", faseTurno:"Giornata 14" },
-    { inizio:"2026-12-10", fine:"2026-12-15", faseTurno:"Giornata 15" },
-    { inizio:"2026-12-17", fine:"2026-12-22", faseTurno:"Giornata 16" },
-    { inizio:"2026-12-24", fine:"2026-12-28", faseTurno:"Giornata 17" },
-    { inizio:"2026-12-29", fine:"2027-01-01", faseTurno:"Giornata 18" },
-    { inizio:"2027-01-01", fine:"2027-01-04", faseTurno:"Giornata 19" },
-    { inizio:"2027-01-05", fine:"2027-01-08", faseTurno:"Giornata 20" },
-    { inizio:"2027-01-16", fine:"2027-01-19", faseTurno:"Giornata 21" },
-    { inizio:"2027-01-21", fine:"2027-01-26", faseTurno:"Giornata 22" },
-    { inizio:"2027-01-28", fine:"2027-02-02", faseTurno:"Giornata 23" },
-    { inizio:"2027-02-04", fine:"2027-02-09", faseTurno:"Giornata 24" },
-    { inizio:"2027-02-09", fine:"2027-02-12", faseTurno:"Giornata 25" },
-    { inizio:"2027-02-20", fine:"2027-02-23", faseTurno:"Giornata 26" },
-    { inizio:"2027-02-25", fine:"2027-03-02", faseTurno:"Giornata 27" },
-    { inizio:"2027-03-02", fine:"2027-03-05", faseTurno:"Giornata 28" },
-    { inizio:"2027-03-11", fine:"2027-03-16", faseTurno:"Giornata 29" },
-    { inizio:"2027-03-18", fine:"2027-03-23", faseTurno:"Giornata 30" },
-    { inizio:"2027-04-08", fine:"2027-04-13", faseTurno:"Giornata 31" },
-    { inizio:"2027-04-15", fine:"2027-04-20", faseTurno:"Giornata 32" },
-    { inizio:"2027-04-22", fine:"2027-04-27", faseTurno:"Giornata 33" },
-    { inizio:"2027-04-29", fine:"2027-05-04", faseTurno:"Giornata 34" },
-    { inizio:"2027-05-06", fine:"2027-05-11", faseTurno:"Giornata 35" },
-    { inizio:"2027-05-13", fine:"2027-05-18", faseTurno:"Giornata 36" },
-    { inizio:"2027-05-20", fine:"2027-05-25", faseTurno:"Giornata 37" },
-    { inizio:"2027-05-27", fine:"2027-05-30", faseTurno:"Giornata 38" }
+    ["2026-08-20", "2026-08-25", "Giornata 1"],
+    ["2026-08-27", "2026-09-01", "Giornata 2"],
+    ["2026-09-03", "2026-09-08", "Giornata 3"],
+    ["2026-09-10", "2026-09-15", "Giornata 4"],
+    ["2026-09-17", "2026-09-22", "Giornata 5"],
+    ["2026-10-08", "2026-10-13", "Giornata 6"],
+    ["2026-10-15", "2026-10-20", "Giornata 7"],
+    ["2026-10-22", "2026-10-27", "Giornata 8"],
+    ["2026-10-29", "2026-11-03", "Giornata 9"],
+    ["2026-11-05", "2026-11-10", "Giornata 10"],
+    ["2026-11-19", "2026-11-24", "Giornata 11"],
+    ["2026-11-26", "2026-12-01", "Giornata 12"],
+    ["2026-12-01", "2026-12-04", "Giornata 13"],
+    ["2026-12-05", "2026-12-08", "Giornata 14"],
+    ["2026-12-10", "2026-12-15", "Giornata 15"],
+    ["2026-12-17", "2026-12-22", "Giornata 16"],
+    ["2026-12-24", "2026-12-28", "Giornata 17"],
+    ["2026-12-29", "2027-01-01", "Giornata 18"],
+    ["2027-01-01", "2027-01-04", "Giornata 19"],
+    ["2027-01-05", "2027-01-08", "Giornata 20"],
+    ["2027-01-16", "2027-01-19", "Giornata 21"],
+    ["2027-01-21", "2027-01-26", "Giornata 22"],
+    ["2027-01-28", "2027-02-02", "Giornata 23"],
+    ["2027-02-04", "2027-02-09", "Giornata 24"],
+    ["2027-02-09", "2027-02-12", "Giornata 25"],
+    ["2027-02-20", "2027-02-23", "Giornata 26"],
+    ["2027-02-25", "2027-03-02", "Giornata 27"],
+    ["2027-03-02", "2027-03-05", "Giornata 28"],
+    ["2027-03-11", "2027-03-16", "Giornata 29"],
+    ["2027-03-18", "2027-03-23", "Giornata 30"],
+    ["2027-04-08", "2027-04-13", "Giornata 31"],
+    ["2027-04-15", "2027-04-20", "Giornata 32"],
+    ["2027-04-22", "2027-04-27", "Giornata 33"],
+    ["2027-04-29", "2027-05-04", "Giornata 34"],
+    ["2027-05-06", "2027-05-11", "Giornata 35"],
+    ["2027-05-13", "2027-05-18", "Giornata 36"],
+    ["2027-05-20", "2027-05-25", "Giornata 37"],
+    ["2027-05-27", "2027-05-30", "Giornata 38"]
   ],
 
-  /* =========================
-     LIGUE 1
-  ========================= */
+  // ==========================================================
+  // LA LIGA
+  // ==========================================================
+
+  "esp.1": [
+    ["2026-08-13", "2026-08-27", "Giornata 1"],
+    ["2026-08-20", "2026-08-25", "Giornata 2"],
+    ["2026-08-27", "2026-09-01", "Giornata 3"],
+    ["2026-09-03", "2026-09-08", "Giornata 4"],
+    ["2026-09-11", "2026-09-14", "Giornata 5"],
+    ["2026-09-15", "2026-09-18", "Giornata 6"],
+    ["2026-09-19", "2026-09-22", "Giornata 7"],
+    ["2026-10-09", "2026-10-13", "Giornata 8"],
+    ["2026-10-16", "2026-10-20", "Giornata 9"],
+    ["2026-10-23", "2026-10-27", "Giornata 10"],
+    ["2026-10-30", "2026-11-03", "Giornata 11"],
+    ["2026-11-06", "2026-11-10", "Giornata 12"],
+    ["2026-11-19", "2026-11-24", "Giornata 13"],
+    ["2026-11-26", "2026-12-01", "Giornata 14"],
+    ["2026-12-03", "2026-12-08", "Giornata 15"],
+    ["2026-12-10", "2026-12-15", "Giornata 16"],
+    ["2026-12-17", "2026-12-22", "Giornata 17"],
+    ["2026-12-31", "2027-01-05", "Giornata 18"],
+    ["2027-01-07", "2027-01-12", "Giornata 19"],
+    ["2027-01-14", "2027-01-19", "Giornata 20"],
+    ["2027-01-21", "2027-01-26", "Giornata 21"],
+    ["2027-01-28", "2027-02-02", "Giornata 22"],
+    ["2027-02-04", "2027-02-09", "Giornata 23"],
+    ["2027-02-11", "2027-02-16", "Giornata 24"],
+    ["2027-02-18", "2027-02-23", "Giornata 25"],
+    ["2027-02-25", "2027-03-02", "Giornata 26"],
+    ["2027-03-04", "2027-03-09", "Giornata 27"],
+    ["2027-03-11", "2027-03-16", "Giornata 28"],
+    ["2027-03-18", "2027-03-23", "Giornata 29"],
+    ["2027-04-01", "2027-04-06", "Giornata 30"],
+    ["2027-04-08", "2027-04-13", "Giornata 31"],
+    ["2027-04-15", "2027-04-20", "Giornata 32"],
+    ["2027-04-22", "2027-04-27", "Giornata 33"],
+    ["2027-04-29", "2027-05-04", "Giornata 34"],
+    ["2027-05-06", "2027-05-11", "Giornata 35"],
+    ["2027-05-13", "2027-05-18", "Giornata 36"],
+    ["2027-05-20", "2027-05-25", "Giornata 37"],
+    ["2027-05-27", "2027-05-31", "Giornata 38"]
+  ],
+
+  // ==========================================================
+  // LIGUE 1
+  // ==========================================================
 
   "fra.1": [
-    { inizio:"2026-08-20", fine:"2026-08-25", faseTurno:"Giornata 1" },
-    { inizio:"2026-08-27", fine:"2026-09-01", faseTurno:"Giornata 2" },
-    { inizio:"2026-09-03", fine:"2026-09-08", faseTurno:"Giornata 3" },
-    { inizio:"2026-09-10", fine:"2026-09-15", faseTurno:"Giornata 4" },
-    { inizio:"2026-09-17", fine:"2026-09-22", faseTurno:"Giornata 5" },
-    { inizio:"2026-10-08", fine:"2026-10-13", faseTurno:"Giornata 6" },
-    { inizio:"2026-10-15", fine:"2026-10-20", faseTurno:"Giornata 7" },
-    { inizio:"2026-10-22", fine:"2026-10-27", faseTurno:"Giornata 8" },
-    { inizio:"2026-10-29", fine:"2026-11-03", faseTurno:"Giornata 9" },
-    { inizio:"2026-11-05", fine:"2026-11-10", faseTurno:"Giornata 10" },
-    { inizio:"2026-11-19", fine:"2026-11-24", faseTurno:"Giornata 11" },
-    { inizio:"2026-11-26", fine:"2026-12-01", faseTurno:"Giornata 12" },
-    { inizio:"2026-12-03", fine:"2026-12-08", faseTurno:"Giornata 13" },
-    { inizio:"2026-12-10", fine:"2026-12-15", faseTurno:"Giornata 14" },
-    { inizio:"2026-12-31", fine:"2027-01-05", faseTurno:"Giornata 15" },
-    { inizio:"2027-01-14", fine:"2027-01-19", faseTurno:"Giornata 16" },
-    { inizio:"2027-01-21", fine:"2027-01-26", faseTurno:"Giornata 17" },
-    { inizio:"2027-01-28", fine:"2027-02-02", faseTurno:"Giornata 18" },
-    { inizio:"2027-02-04", fine:"2027-02-09", faseTurno:"Giornata 19" },
-    { inizio:"2027-02-11", fine:"2027-02-16", faseTurno:"Giornata 20" },
-    { inizio:"2027-02-18", fine:"2027-02-23", faseTurno:"Giornata 21" },
-    { inizio:"2027-02-25", fine:"2027-03-02", faseTurno:"Giornata 22" },
-    { inizio:"2027-03-04", fine:"2027-03-09", faseTurno:"Giornata 23" },
-    { inizio:"2027-03-11", fine:"2027-03-16", faseTurno:"Giornata 24" },
-    { inizio:"2027-03-18", fine:"2027-03-23", faseTurno:"Giornata 25" },
-    { inizio:"2027-04-01", fine:"2027-04-06", faseTurno:"Giornata 26" },
-    { inizio:"2027-04-08", fine:"2027-04-13", faseTurno:"Giornata 27" },
-    { inizio:"2027-04-15", fine:"2027-04-20", faseTurno:"Giornata 28" },
-    { inizio:"2027-04-22", fine:"2027-04-27", faseTurno:"Giornata 29" },
-    { inizio:"2027-04-29", fine:"2027-05-04", faseTurno:"Giornata 30" },
-    { inizio:"2027-05-06", fine:"2027-05-11", faseTurno:"Giornata 31" },
-    { inizio:"2027-05-13", fine:"2027-05-18", faseTurno:"Giornata 32" },
-    { inizio:"2027-05-20", fine:"2027-05-25", faseTurno:"Giornata 33" },
-    { inizio:"2027-05-27", fine:"2027-05-31", faseTurno:"Giornata 34" }
+    ["2026-08-20", "2026-08-25", "Giornata 1"],
+    ["2026-08-27", "2026-09-01", "Giornata 2"],
+    ["2026-09-03", "2026-09-08", "Giornata 3"],
+    ["2026-09-10", "2026-09-15", "Giornata 4"],
+    ["2026-09-17", "2026-09-22", "Giornata 5"],
+    ["2026-10-08", "2026-10-13", "Giornata 6"],
+    ["2026-10-15", "2026-10-20", "Giornata 7"],
+    ["2026-10-22", "2026-10-27", "Giornata 8"],
+    ["2026-10-29", "2026-11-03", "Giornata 9"],
+    ["2026-11-05", "2026-11-10", "Giornata 10"],
+    ["2026-11-19", "2026-11-24", "Giornata 11"],
+    ["2026-11-26", "2026-12-01", "Giornata 12"],
+    ["2026-12-03", "2026-12-08", "Giornata 13"],
+    ["2026-12-10", "2026-12-15", "Giornata 14"],
+    ["2026-12-31", "2027-01-05", "Giornata 15"],
+    ["2027-01-14", "2027-01-19", "Giornata 16"],
+    ["2027-01-21", "2027-01-26", "Giornata 17"],
+    ["2027-01-28", "2027-02-02", "Giornata 18"],
+    ["2027-02-04", "2027-02-09", "Giornata 19"],
+    ["2027-02-11", "2027-02-16", "Giornata 20"],
+    ["2027-02-18", "2027-02-23", "Giornata 21"],
+    ["2027-02-25", "2027-03-02", "Giornata 22"],
+    ["2027-03-04", "2027-03-09", "Giornata 23"],
+    ["2027-03-11", "2027-03-16", "Giornata 24"],
+    ["2027-03-18", "2027-03-23", "Giornata 25"],
+    ["2027-04-01", "2027-04-06", "Giornata 26"],
+    ["2027-04-08", "2027-04-13", "Giornata 27"],
+    ["2027-04-15", "2027-04-20", "Giornata 28"],
+    ["2027-04-22", "2027-04-27", "Giornata 29"],
+    ["2027-04-29", "2027-05-04", "Giornata 30"],
+    ["2027-05-06", "2027-05-11", "Giornata 31"],
+    ["2027-05-13", "2027-05-18", "Giornata 32"],
+    ["2027-05-20", "2027-05-25", "Giornata 33"],
+    ["2027-05-27", "2027-05-31", "Giornata 34"]
   ],
 
-  /* =========================
-     BUNDESLIGA
-  ========================= */
+  // ==========================================================
+  // BUNDESLIGA
+  // ==========================================================
 
   "ger.1": [
-    { inizio:"2026-08-27", fine:"2026-09-01", faseTurno:"Giornata 1" },
-    { inizio:"2026-09-03", fine:"2026-09-08", faseTurno:"Giornata 2" },
-    { inizio:"2026-09-10", fine:"2026-09-15", faseTurno:"Giornata 3" },
-    { inizio:"2026-09-17", fine:"2026-09-22", faseTurno:"Giornata 4" },
-    { inizio:"2026-10-08", fine:"2026-10-13", faseTurno:"Giornata 5" },
-    { inizio:"2026-10-15", fine:"2026-10-20", faseTurno:"Giornata 6" },
-    { inizio:"2026-10-22", fine:"2026-10-27", faseTurno:"Giornata 7" },
-    { inizio:"2026-10-29", fine:"2026-11-03", faseTurno:"Giornata 8" },
-    { inizio:"2026-11-05", fine:"2026-11-10", faseTurno:"Giornata 9" },
-    { inizio:"2026-11-19", fine:"2026-11-24", faseTurno:"Giornata 10" },
-    { inizio:"2026-11-26", fine:"2026-12-01", faseTurno:"Giornata 11" },
-    { inizio:"2026-12-03", fine:"2026-12-08", faseTurno:"Giornata 12" },
-    { inizio:"2026-12-10", fine:"2026-12-15", faseTurno:"Giornata 13" },
-    { inizio:"2026-12-17", fine:"2026-12-22", faseTurno:"Giornata 14" },
-    { inizio:"2027-01-07", fine:"2027-01-11", faseTurno:"Giornata 15" },
-    { inizio:"2027-01-12", fine:"2027-01-15", faseTurno:"Giornata 16" },
-    { inizio:"2027-01-16", fine:"2027-01-19", faseTurno:"Giornata 17" },
-    { inizio:"2027-01-21", fine:"2027-01-26", faseTurno:"Giornata 18" },
-    { inizio:"2027-01-28", fine:"2027-02-02", faseTurno:"Giornata 19" },
-    { inizio:"2027-02-04", fine:"2027-02-09", faseTurno:"Giornata 20" },
-    { inizio:"2027-02-11", fine:"2027-02-16", faseTurno:"Giornata 21" },
-    { inizio:"2027-02-18", fine:"2027-02-23", faseTurno:"Giornata 22" },
-    { inizio:"2027-02-25", fine:"2027-03-02", faseTurno:"Giornata 23" },
-    { inizio:"2027-03-02", fine:"2027-03-05", faseTurno:"Giornata 24" },
-    { inizio:"2027-03-06", fine:"2027-03-09", faseTurno:"Giornata 25" },
-    { inizio:"2027-03-11", fine:"2027-03-16", faseTurno:"Giornata 26" },
-    { inizio:"2027-03-18", fine:"2027-03-23", faseTurno:"Giornata 27" },
-    { inizio:"2027-04-01", fine:"2027-04-06", faseTurno:"Giornata 28" },
-    { inizio:"2027-04-08", fine:"2027-04-13", faseTurno:"Giornata 29" },
-    { inizio:"2027-04-15", fine:"2027-04-20", faseTurno:"Giornata 30" },
-    { inizio:"2027-04-22", fine:"2027-04-27", faseTurno:"Giornata 31" },
-    { inizio:"2027-05-06", fine:"2027-05-11", faseTurno:"Giornata 32" },
-    { inizio:"2027-05-13", fine:"2027-05-18", faseTurno:"Giornata 33" },
-    { inizio:"2027-05-20", fine:"2027-05-25", faseTurno:"Giornata 34" }
+    ["2026-08-27", "2026-09-01", "Giornata 1"],
+    ["2026-09-03", "2026-09-08", "Giornata 2"],
+    ["2026-09-10", "2026-09-15", "Giornata 3"],
+    ["2026-09-17", "2026-09-22", "Giornata 4"],
+    ["2026-10-08", "2026-10-13", "Giornata 5"],
+    ["2026-10-15", "2026-10-20", "Giornata 6"],
+    ["2026-10-22", "2026-10-27", "Giornata 7"],
+    ["2026-10-29", "2026-11-03", "Giornata 8"],
+    ["2026-11-05", "2026-11-10", "Giornata 9"],
+    ["2026-11-19", "2026-11-24", "Giornata 10"],
+    ["2026-11-26", "2026-12-01", "Giornata 11"],
+    ["2026-12-03", "2026-12-08", "Giornata 12"],
+    ["2026-12-10", "2026-12-15", "Giornata 13"],
+    ["2026-12-17", "2026-12-22", "Giornata 14"],
+    ["2027-01-07", "2027-01-11", "Giornata 15"],
+    ["2027-01-12", "2027-01-15", "Giornata 16"],
+    ["2027-01-16", "2027-01-19", "Giornata 17"],
+    ["2027-01-21", "2027-01-26", "Giornata 18"],
+    ["2027-01-28", "2027-02-02", "Giornata 19"],
+    ["2027-02-04", "2027-02-09", "Giornata 20"],
+    ["2027-02-11", "2027-02-16", "Giornata 21"],
+    ["2027-02-18", "2027-02-23", "Giornata 22"],
+    ["2027-02-25", "2027-03-02", "Giornata 23"],
+    ["2027-03-02", "2027-03-05", "Giornata 24"],
+    ["2027-03-06", "2027-03-09", "Giornata 25"],
+    ["2027-03-11", "2027-03-16", "Giornata 26"],
+    ["2027-03-18", "2027-03-23", "Giornata 27"],
+    ["2027-04-01", "2027-04-06", "Giornata 28"],
+    ["2027-04-08", "2027-04-13", "Giornata 29"],
+    ["2027-04-15", "2027-04-20", "Giornata 30"],
+    ["2027-04-22", "2027-04-27", "Giornata 31"],
+    ["2027-05-06", "2027-05-11", "Giornata 32"],
+    ["2027-05-13", "2027-05-18", "Giornata 33"],
+    ["2027-05-20", "2027-05-25", "Giornata 34"]
   ],
 
-  /* =========================
-     LIGA PORTUGAL
-  ========================= */
+  // ==========================================================
+  // LIGA PORTUGAL
+  // ==========================================================
 
   "por.1": [
-    { inizio:"2026-08-06", fine:"2026-08-11", faseTurno:"Giornata 1" },
-    { inizio:"2026-08-13", fine:"2026-08-18", faseTurno:"Giornata 2" },
-    { inizio:"2026-08-20", fine:"2026-08-25", faseTurno:"Giornata 3" },
-    { inizio:"2026-08-27", fine:"2026-09-01", faseTurno:"Giornata 4" },
-    { inizio:"2026-09-03", fine:"2026-09-08", faseTurno:"Giornata 5" },
-    { inizio:"2026-09-10", fine:"2026-09-15", faseTurno:"Giornata 6" },
-    { inizio:"2026-09-17", fine:"2026-09-22", faseTurno:"Giornata 7" },
-    { inizio:"2026-10-08", fine:"2026-10-13", faseTurno:"Giornata 8" },
-    { inizio:"2026-10-22", fine:"2026-10-27", faseTurno:"Giornata 9" },
-    { inizio:"2026-10-29", fine:"2026-11-03", faseTurno:"Giornata 10" },
-    { inizio:"2026-11-05", fine:"2026-11-10", faseTurno:"Giornata 11" },
-    { inizio:"2026-11-26", fine:"2026-12-01", faseTurno:"Giornata 12" },
-    { inizio:"2026-12-03", fine:"2026-12-08", faseTurno:"Giornata 13" },
-    { inizio:"2026-12-10", fine:"2026-12-15", faseTurno:"Giornata 14" },
-    { inizio:"2026-12-17", fine:"2026-12-22", faseTurno:"Giornata 15" },
-    { inizio:"2026-12-24", fine:"2026-12-29", faseTurno:"Giornata 16" },
-    { inizio:"2027-01-07", fine:"2027-01-12", faseTurno:"Giornata 17" },
-    { inizio:"2027-01-14", fine:"2027-01-19", faseTurno:"Giornata 18" },
-    { inizio:"2027-01-21", fine:"2027-01-26", faseTurno:"Giornata 19" },
-    { inizio:"2027-01-28", fine:"2027-02-02", faseTurno:"Giornata 20" },
-    { inizio:"2027-02-04", fine:"2027-02-09", faseTurno:"Giornata 21" },
-    { inizio:"2027-02-11", fine:"2027-02-16", faseTurno:"Giornata 22" },
-    { inizio:"2027-02-18", fine:"2027-02-23", faseTurno:"Giornata 23" },
-    { inizio:"2027-02-25", fine:"2027-03-02", faseTurno:"Giornata 24" },
-    { inizio:"2027-03-04", fine:"2027-03-09", faseTurno:"Giornata 25" },
-    { inizio:"2027-03-11", fine:"2027-03-16", faseTurno:"Giornata 26" },
-    { inizio:"2027-03-18", fine:"2027-03-23", faseTurno:"Giornata 27" },
-    { inizio:"2027-04-01", fine:"2027-04-06", faseTurno:"Giornata 28" },
-
-    /* CORRETTO COME RICHIESTO */
-    { inizio:"2027-04-09", fine:"2027-04-12", faseTurno:"Giornata 29" },
-    { inizio:"2027-04-16", fine:"2027-04-19", faseTurno:"Giornata 30" },
-
-    { inizio:"2027-04-22", fine:"2027-04-27", faseTurno:"Giornata 31" },
-    { inizio:"2027-04-29", fine:"2027-05-04", faseTurno:"Giornata 32" },
-    { inizio:"2027-05-06", fine:"2027-05-11", faseTurno:"Giornata 33" },
-    { inizio:"2027-05-13", fine:"2027-05-18", faseTurno:"Giornata 34" }
+    ["2026-08-06", "2026-08-11", "Giornata 1"],
+    ["2026-08-13", "2026-08-18", "Giornata 2"],
+    ["2026-08-20", "2026-08-25", "Giornata 3"],
+    ["2026-08-27", "2026-09-01", "Giornata 4"],
+    ["2026-09-03", "2026-09-08", "Giornata 5"],
+    ["2026-09-10", "2026-09-15", "Giornata 6"],
+    ["2026-09-17", "2026-09-22", "Giornata 7"],
+    ["2026-10-08", "2026-10-13", "Giornata 8"],
+    ["2026-10-22", "2026-10-27", "Giornata 9"],
+    ["2026-10-29", "2026-11-03", "Giornata 10"],
+    ["2026-11-05", "2026-11-10", "Giornata 11"],
+    ["2026-11-26", "2026-12-01", "Giornata 12"],
+    ["2026-12-03", "2026-12-08", "Giornata 13"],
+    ["2026-12-10", "2026-12-15", "Giornata 14"],
+    ["2026-12-17", "2026-12-22", "Giornata 15"],
+    ["2026-12-24", "2026-12-29", "Giornata 16"],
+    ["2027-01-07", "2027-01-12", "Giornata 17"],
+    ["2027-01-14", "2027-01-19", "Giornata 18"],
+    ["2027-01-21", "2027-01-26", "Giornata 19"],
+    ["2027-01-28", "2027-02-02", "Giornata 20"],
+    ["2027-02-04", "2027-02-09", "Giornata 21"],
+    ["2027-02-11", "2027-02-16", "Giornata 22"],
+    ["2027-02-18", "2027-02-23", "Giornata 23"],
+    ["2027-02-25", "2027-03-02", "Giornata 24"],
+    ["2027-03-04", "2027-03-09", "Giornata 25"],
+    ["2027-03-11", "2027-03-16", "Giornata 26"],
+    ["2027-03-18", "2027-03-23", "Giornata 27"],
+    ["2027-04-01", "2027-04-06", "Giornata 28"],
+    ["2027-04-09", "2027-04-12", "Giornata 29"],
+    ["2027-04-16", "2027-04-19", "Giornata 30"],
+    ["2027-04-22", "2027-04-27", "Giornata 31"],
+    ["2027-04-29", "2027-05-04", "Giornata 32"],
+    ["2027-05-06", "2027-05-11", "Giornata 33"],
+    ["2027-05-13", "2027-05-18", "Giornata 34"]
   ],
 
-  /* =========================
-     EREDIVISIE
-  ========================= */
+     // ==========================================================
+  // EREDIVISIE
+  // ==========================================================
 
   "ned.1": [
-    { inizio:"2026-08-06", fine:"2026-08-11", faseTurno:"Giornata 1" },
-    { inizio:"2026-08-13", fine:"2026-08-18", faseTurno:"Giornata 2" },
-    { inizio:"2026-08-20", fine:"2026-08-25", faseTurno:"Giornata 3" },
-    { inizio:"2026-08-27", fine:"2026-09-01", faseTurno:"Giornata 4" },
-    { inizio:"2026-09-03", fine:"2026-09-08", faseTurno:"Giornata 5" },
-    { inizio:"2026-09-10", fine:"2026-09-15", faseTurno:"Giornata 6" },
-    { inizio:"2026-09-17", fine:"2026-09-22", faseTurno:"Giornata 7" },
-    { inizio:"2026-10-08", fine:"2026-10-13", faseTurno:"Giornata 8" },
-    { inizio:"2026-10-15", fine:"2026-10-20", faseTurno:"Giornata 9" },
-    { inizio:"2026-10-22", fine:"2026-10-27", faseTurno:"Giornata 10" },
-    { inizio:"2026-10-29", fine:"2026-11-03", faseTurno:"Giornata 11" },
-    { inizio:"2026-11-05", fine:"2026-11-10", faseTurno:"Giornata 12" },
-    { inizio:"2026-11-19", fine:"2026-11-24", faseTurno:"Giornata 13" },
-    { inizio:"2026-11-26", fine:"2026-12-01", faseTurno:"Giornata 14" },
-    { inizio:"2026-12-03", fine:"2026-12-08", faseTurno:"Giornata 15" },
-    { inizio:"2026-12-10", fine:"2026-12-15", faseTurno:"Giornata 16" },
-    { inizio:"2026-12-17", fine:"2026-12-22", faseTurno:"Giornata 17" },
-    { inizio:"2027-01-07", fine:"2027-01-12", faseTurno:"Giornata 18" },
-    { inizio:"2027-01-14", fine:"2027-01-19", faseTurno:"Giornata 19" },
-    { inizio:"2027-01-21", fine:"2027-01-26", faseTurno:"Giornata 20" },
-    { inizio:"2027-01-28", fine:"2027-02-02", faseTurno:"Giornata 21" },
-    { inizio:"2027-02-11", fine:"2027-02-16", faseTurno:"Giornata 22" },
-    { inizio:"2027-02-18", fine:"2027-02-23", faseTurno:"Giornata 23" },
-    { inizio:"2027-02-25", fine:"2027-03-02", faseTurno:"Giornata 24" },
-    { inizio:"2027-03-04", fine:"2027-03-09", faseTurno:"Giornata 25" },
-    { inizio:"2027-03-11", fine:"2027-03-16", faseTurno:"Giornata 26" },
-    { inizio:"2027-03-18", fine:"2027-03-23", faseTurno:"Giornata 27" },
-    { inizio:"2027-04-01", fine:"2027-04-06", faseTurno:"Giornata 28" },
-    { inizio:"2027-04-08", fine:"2027-04-13", faseTurno:"Giornata 29" },
-    { inizio:"2027-04-22", fine:"2027-04-27", faseTurno:"Giornata 30" },
-    { inizio:"2027-04-29", fine:"2027-05-04", faseTurno:"Giornata 31" },
-    { inizio:"2027-05-06", fine:"2027-05-11", faseTurno:"Giornata 32" },
-    { inizio:"2027-05-13", fine:"2027-05-18", faseTurno:"Giornata 33" },
-    { inizio:"2027-05-20", fine:"2027-05-25", faseTurno:"Giornata 34" }
+    ["2026-08-06", "2026-08-11", "Giornata 1"],
+    ["2026-08-13", "2026-08-18", "Giornata 2"],
+    ["2026-08-20", "2026-08-25", "Giornata 3"],
+    ["2026-08-27", "2026-09-01", "Giornata 4"],
+    ["2026-09-03", "2026-09-08", "Giornata 5"],
+    ["2026-09-10", "2026-09-15", "Giornata 6"],
+    ["2026-09-17", "2026-09-22", "Giornata 7"],
+    ["2026-10-08", "2026-10-13", "Giornata 8"],
+    ["2026-10-15", "2026-10-20", "Giornata 9"],
+    ["2026-10-22", "2026-10-27", "Giornata 10"],
+    ["2026-10-29", "2026-11-03", "Giornata 11"],
+    ["2026-11-05", "2026-11-10", "Giornata 12"],
+    ["2026-11-19", "2026-11-24", "Giornata 13"],
+    ["2026-11-26", "2026-12-01", "Giornata 14"],
+    ["2026-12-03", "2026-12-08", "Giornata 15"],
+    ["2026-12-10", "2026-12-15", "Giornata 16"],
+    ["2026-12-17", "2026-12-22", "Giornata 17"],
+    ["2027-01-07", "2027-01-12", "Giornata 18"],
+    ["2027-01-14", "2027-01-19", "Giornata 19"],
+    ["2027-01-21", "2027-01-26", "Giornata 20"],
+    ["2027-01-28", "2027-02-02", "Giornata 21"],
+    ["2027-02-11", "2027-02-16", "Giornata 22"],
+    ["2027-02-18", "2027-02-23", "Giornata 23"],
+    ["2027-02-25", "2027-03-02", "Giornata 24"],
+    ["2027-03-04", "2027-03-09", "Giornata 25"],
+    ["2027-03-11", "2027-03-16", "Giornata 26"],
+    ["2027-03-18", "2027-03-23", "Giornata 27"],
+    ["2027-04-01", "2027-04-06", "Giornata 28"],
+    ["2027-04-08", "2027-04-13", "Giornata 29"],
+    ["2027-04-22", "2027-04-27", "Giornata 30"],
+    ["2027-04-29", "2027-05-04", "Giornata 31"],
+    ["2027-05-06", "2027-05-11", "Giornata 32"],
+    ["2027-05-13", "2027-05-18", "Giornata 33"],
+    ["2027-05-20", "2027-05-25", "Giornata 34"]
   ],
 
-  /* =========================
-     SAUDI PRO LEAGUE
-  ========================= */
+  // ==========================================================
+  // SAUDI PRO LEAGUE
+  // ==========================================================
 
   "ksa.1": [
-    { inizio:"2026-08-13", fine:"2026-08-18", faseTurno:"Giornata 1" },
-    { inizio:"2026-08-20", fine:"2026-08-25", faseTurno:"Giornata 2" },
-    { inizio:"2026-08-27", fine:"2026-09-01", faseTurno:"Giornata 3" },
-    { inizio:"2026-09-03", fine:"2026-09-08", faseTurno:"Giornata 4" },
-    { inizio:"2026-09-10", fine:"2026-09-15", faseTurno:"Giornata 5" },
-    { inizio:"2026-09-17", fine:"2026-09-22", faseTurno:"Giornata 6" },
-    { inizio:"2026-09-24", fine:"2026-09-29", faseTurno:"Giornata 7" },
-    { inizio:"2026-10-09", fine:"2026-10-11", faseTurno:"Giornata 8" },
-    { inizio:"2026-10-15", fine:"2026-10-17", faseTurno:"Giornata 9" },
-    { inizio:"2026-10-18", fine:"2026-10-20", faseTurno:"Giornata 10" },
-    { inizio:"2026-10-23", fine:"2026-10-27", faseTurno:"Giornata 11" },
-    { inizio:"2026-10-29", fine:"2026-11-03", faseTurno:"Giornata 12" },
-    { inizio:"2026-11-05", fine:"2026-11-10", faseTurno:"Giornata 13" },
-    { inizio:"2026-11-19", fine:"2026-11-24", faseTurno:"Giornata 14" },
-    { inizio:"2026-11-26", fine:"2026-12-01", faseTurno:"Giornata 15" },
-    { inizio:"2026-12-03", fine:"2026-12-08", faseTurno:"Giornata 16" },
-    { inizio:"2026-12-10", fine:"2026-12-15", faseTurno:"Giornata 17" },
-    { inizio:"2026-12-17", fine:"2026-12-22", faseTurno:"Giornata 18" },
-    { inizio:"2026-12-24", fine:"2026-12-29", faseTurno:"Giornata 19" },
-    { inizio:"2027-02-04", fine:"2027-02-09", faseTurno:"Giornata 20" },
-    { inizio:"2027-02-11", fine:"2027-02-16", faseTurno:"Giornata 21" },
-    { inizio:"2027-02-18", fine:"2027-02-23", faseTurno:"Giornata 22" },
-    { inizio:"2027-02-25", fine:"2027-03-02", faseTurno:"Giornata 23" },
-    { inizio:"2027-03-04", fine:"2027-03-09", faseTurno:"Giornata 24" },
-    { inizio:"2027-03-11", fine:"2027-03-16", faseTurno:"Giornata 25" },
-    { inizio:"2027-03-18", fine:"2027-03-23", faseTurno:"Giornata 26" },
-    { inizio:"2027-04-01", fine:"2027-04-06", faseTurno:"Giornata 27" },
-    { inizio:"2027-04-08", fine:"2027-04-13", faseTurno:"Giornata 28" },
-    { inizio:"2027-04-15", fine:"2027-04-20", faseTurno:"Giornata 29" },
-    { inizio:"2027-04-22", fine:"2027-04-27", faseTurno:"Giornata 30" },
-    { inizio:"2027-04-29", fine:"2027-05-04", faseTurno:"Giornata 31" },
-    { inizio:"2027-05-06", fine:"2027-05-11", faseTurno:"Giornata 32" },
-    { inizio:"2027-05-13", fine:"2027-05-18", faseTurno:"Giornata 33" },
-    { inizio:"2027-05-27", fine:"2027-05-29", faseTurno:"Giornata 34" }
+    ["2026-08-13", "2026-08-18", "Giornata 1"],
+    ["2026-08-20", "2026-08-25", "Giornata 2"],
+    ["2026-08-27", "2026-09-01", "Giornata 3"],
+    ["2026-09-03", "2026-09-08", "Giornata 4"],
+    ["2026-09-10", "2026-09-15", "Giornata 5"],
+    ["2026-09-17", "2026-09-22", "Giornata 6"],
+    ["2026-09-24", "2026-09-29", "Giornata 7"],
+    ["2026-10-09", "2026-10-11", "Giornata 8"],
+    ["2026-10-15", "2026-10-17", "Giornata 9"],
+    ["2026-10-18", "2026-10-20", "Giornata 10"],
+    ["2026-10-23", "2026-10-27", "Giornata 11"],
+    ["2026-10-29", "2026-11-03", "Giornata 12"],
+    ["2026-11-05", "2026-11-10", "Giornata 13"],
+    ["2026-11-19", "2026-11-24", "Giornata 14"],
+    ["2026-11-26", "2026-12-01", "Giornata 15"],
+    ["2026-12-03", "2026-12-08", "Giornata 16"],
+    ["2026-12-10", "2026-12-15", "Giornata 17"],
+    ["2026-12-17", "2026-12-22", "Giornata 18"],
+    ["2026-12-24", "2026-12-29", "Giornata 19"],
+    ["2027-02-04", "2027-02-09", "Giornata 20"],
+    ["2027-02-11", "2027-02-16", "Giornata 21"],
+    ["2027-02-25", "2027-03-02", "Giornata 22"],
+    ["2027-03-04", "2027-03-09", "Giornata 23"],
+    ["2027-03-11", "2027-03-16", "Giornata 24"],
+    ["2027-03-18", "2027-03-23", "Giornata 25"],
+    ["2027-04-01", "2027-04-06", "Giornata 26"],
+    ["2027-04-08", "2027-04-13", "Giornata 27"],
+    ["2027-04-15", "2027-04-20", "Giornata 28"],
+    ["2027-04-22", "2027-04-27", "Giornata 29"],
+    ["2027-04-29", "2027-05-04", "Giornata 30"],
+    ["2027-05-06", "2027-05-11", "Giornata 31"],
+    ["2027-05-13", "2027-05-18", "Giornata 32"],
+    ["2027-05-20", "2027-05-25", "Giornata 33"],
+    ["2027-05-27", "2027-05-29", "Giornata 34"]
+  ],
+
+  // ==========================================================
+  // CHAMPIONS LEAGUE
+  // ==========================================================
+
+  "uefa.champions": [
+    ["2026-09-08", "2026-09-11", "Giornata 1"],
+    ["2026-10-13", "2026-10-16", "Giornata 2"],
+    ["2026-10-20", "2026-10-23", "Giornata 3"],
+    ["2026-11-03", "2026-11-06", "Giornata 4"],
+    ["2026-11-24", "2026-11-27", "Giornata 5"],
+    ["2026-12-08", "2026-12-11", "Giornata 6"],
+    ["2027-01-19", "2027-01-22", "Giornata 7"],
+    ["2027-01-27", "2027-01-30", "Giornata 8"]
+  ],
+
+  // ==========================================================
+  // EUROPA LEAGUE
+  // ==========================================================
+
+  "uefa.europa": [
+    ["2026-09-15", "2026-09-18", "Giornata 1"],
+    ["2026-10-13", "2026-10-16", "Giornata 2"],
+    ["2026-10-20", "2026-10-23", "Giornata 3"],
+    ["2026-11-03", "2026-11-06", "Giornata 4"],
+    ["2026-11-24", "2026-11-27", "Giornata 5"],
+    ["2026-12-08", "2026-12-11", "Giornata 6"],
+    ["2027-01-19", "2027-01-22", "Giornata 7"],
+    ["2027-01-27", "2027-01-30", "Giornata 8"]
+  ],
+
+  // ==========================================================
+  // CONFERENCE LEAGUE
+  // ==========================================================
+
+  "uefa.europa.conf": [
+    ["2026-10-13", "2026-10-16", "Giornata 1"],
+    ["2026-10-20", "2026-10-23", "Giornata 2"],
+    ["2026-11-03", "2026-11-06", "Giornata 3"],
+    ["2026-11-24", "2026-11-27", "Giornata 4"],
+    ["2026-12-08", "2026-12-11", "Giornata 5"],
+    ["2026-12-15", "2026-12-18", "Giornata 6"]
   ]
+
 };
 
-/* ============================================================
-   FINESTRE UEFA
-============================================================ */
+// ============================================================
+// NORMALIZZAZIONE TESTO
+// ============================================================
 
-FINESTRE_GIORNATE["uefa.champions"] = [
-  { inizio:"2026-09-08", fine:"2026-09-11", faseTurno:"Giornata 1" },
-  { inizio:"2026-10-13", fine:"2026-10-16", faseTurno:"Giornata 2" },
-  { inizio:"2026-10-20", fine:"2026-10-23", faseTurno:"Giornata 3" },
-  { inizio:"2026-11-03", fine:"2026-11-06", faseTurno:"Giornata 4" },
-  { inizio:"2026-11-24", fine:"2026-11-27", faseTurno:"Giornata 5" },
-  { inizio:"2026-12-08", fine:"2026-12-11", faseTurno:"Giornata 6" },
-  { inizio:"2027-01-19", fine:"2027-01-22", faseTurno:"Giornata 7" },
-  { inizio:"2027-01-27", fine:"2027-01-30", faseTurno:"Giornata 8" }
-];
-
-FINESTRE_GIORNATE["uefa.europa"] = [
-  { inizio:"2026-09-15", fine:"2026-09-18", faseTurno:"Giornata 1" },
-  { inizio:"2026-10-13", fine:"2026-10-16", faseTurno:"Giornata 2" },
-  { inizio:"2026-10-20", fine:"2026-10-23", faseTurno:"Giornata 3" },
-  { inizio:"2026-11-03", fine:"2026-11-06", faseTurno:"Giornata 4" },
-  { inizio:"2026-11-24", fine:"2026-11-27", faseTurno:"Giornata 5" },
-  { inizio:"2026-12-08", fine:"2026-12-11", faseTurno:"Giornata 6" },
-  { inizio:"2027-01-19", fine:"2027-01-22", faseTurno:"Giornata 7" },
-  { inizio:"2027-01-27", fine:"2027-01-30", faseTurno:"Giornata 8" }
-];
-
-FINESTRE_GIORNATE["uefa.europa.conf"] = [
-  { inizio:"2026-10-13", fine:"2026-10-16", faseTurno:"Giornata 1" },
-  { inizio:"2026-10-20", fine:"2026-10-23", faseTurno:"Giornata 2" },
-  { inizio:"2026-11-03", fine:"2026-11-06", faseTurno:"Giornata 3" },
-  { inizio:"2026-11-24", fine:"2026-11-27", faseTurno:"Giornata 4" },
-  { inizio:"2026-12-08", fine:"2026-12-11", faseTurno:"Giornata 5" },
-  { inizio:"2026-12-15", fine:"2026-12-18", faseTurno:"Giornata 6" }
-];
-
-/* ============================================================
-   UTILITÀ
-============================================================ */
-
-function testoValido(valore) {
-
-  if (
-    valore === null ||
-    valore === undefined
-  ) {
-    return null;
-  }
-
-  const testo =
-    String(valore).trim();
-
-  return testo || null;
+function testoValido(v) {
+  return typeof v === "string" && v.trim()!== "";
 }
 
-function normalizzaTesto(valore) {
+function normalizzaTesto(v) {
+  if (!testoValido(v)) return "";
 
-  return String(valore || "")
+  return v
    .normalize("NFD")
    .replace(/[\u0300-\u036f]/g, "")
    .toLowerCase()
-   .replace(/[^a-z0-9]+/g, " ")
    .trim();
 }
 
-function ultimoCognome(nome) {
+// ============================================================
+// NOMI SQUADRE
+// ============================================================
 
-  const testo =
-    testoValido(nome);
-
-  if (!testo) {
-    return null;
-  }
-
-  const parti =
-    testo
-     .replace(/\s+/g, " ")
-     .trim()
-     .split(" ");
-
-  return parti[parti.length - 1];
-}
-
-function nomeAtleta(atleta) {
-
-  if (!atleta) {
-    return null;
-  }
-
-  if (atleta.athlete) {
-    atleta = atleta.athlete;
-  }
-
-  if (atleta.player) {
-    atleta = atleta.player;
-  }
-
-  return (
-    atleta.displayName ||
-    atleta.fullName ||
-    atleta.shortName ||
-    atleta.name ||
-    null
-  );
-}
-
-function cognomeAtleta(atleta) {
-
-  if (!atleta) {
-    return null;
-  }
-
-  return ultimoCognome(
-    nomeAtleta(atleta)
-  );
-}
-
-/* ============================================================
-   NOMI SQUADRE
-============================================================ */
-
-const ALIAS_SQUADRE = {
-
+const MAPPATURA_SQUADRE = {
   "athletic club": "Atletico Bilbao",
   "athletic bilbao": "Atletico Bilbao",
 
   "internazionale": "Inter",
-  "internazionale milano": "Inter",
   "inter milan": "Inter",
-  "internazionale fc": "Inter",
-  "fc internazionale": "Inter",
+  "internazionale milano": "Inter",
 
   "al riyadh": "Riyadh",
-  "al riyaadh": "Riyadh",
-  "riyadh sc": "Riyadh",
-
-  "ac milan": "Milan",
-  "milan ac": "Milan",
-
-  "ssc napoli": "Napoli",
-
-  "as roma": "Roma",
-
-  "ss lazio": "Lazio",
-
-  "como 1907": "Como",
-
-  "acf fiorentina": "Fiorentina",
-
-  "genoa cfc": "Genoa",
-
-  "parma calcio": "Parma",
-
-  "us sassuolo": "Sassuolo",
-
-  "us lecce": "Lecce",
-
-  "cagliari calcio": "Cagliari",
-
-  "ac monza": "Monza",
-
-  "venezia fc": "Venezia",
-
-  "frosinone calcio": "Frosinone",
-
-  "juventus fc": "Juventus",
-
-  "juventus turin": "Juventus",
-
-  "real betis": "Betis",
-
-  "sevilla fc": "Siviglia",
-
-  "athletic": "Atletico Bilbao",
-
-  "rb leipzig": "Lipsia",
-  "rasenballsport leipzig": "Lipsia",
-
-  "bayern munich": "Bayern Monaco",
-  "bayern munchen": "Bayern Monaco",
-
-  "eintracht frankfurt": "Francoforte",
-
-  "sc freiburg": "Friburgo",
-
-  "vfb stuttgart": "Stoccarda",
-
-  "union berlin": "Union Berlino",
-
-  "werder bremen": "Werder Brema",
-
-  "tottenham hotspur": "Tottenham",
-
-  "newcastle united": "Newcastle",
-
-  "brighton and hove albion": "Brighton",
-
-  "manchester united fc": "Manchester United",
-
-  "manchester city fc": "Manchester City",
-
-  "paris saint germain": "PSG",
-  "paris saint germain fc": "PSG",
-
-  "olympique lyonnais": "Lione",
-
-  "olympique marseille": "Marsiglia",
-
-  "lille osc": "Lilla",
-
-  "ogc nice": "Nizza",
-
-  "psv eindhoven": "PSV Eindhoven",
-
-  "sl benfica": "Benfica",
-
-  "fc porto": "Porto",
-
-  "sporting cp": "Sporting",
-
-  "sporting lisbon": "Sporting",
-
-  "sc braga": "Braga",
-
-  "vitoria sc": "Vitoria Guimaraes",
-
-  "al ahli": "Al Ahli",
-
-  "al ahly": "Al Ahli",
-
-  "al nassr fc": "Al Nassr",
-
-  "al hilal saudi fc": "Al Hilal",
-
-  "al ittihad club": "Al Ittihad"
+  "al-riyadh": "Riyadh"
 };
 
-function normalizzaNomeSquadra(nome) {
+function normalizzaSquadra(nome) {
 
-  const originale =
-    testoValido(nome);
-
-  if (!originale) {
-    return null;
-  }
-
-  const chiave =
-    normalizzaTesto(
-      originale
-    );
-
-  if (
-    ALIAS_SQUADRE[chiave]
-  ) {
-    return ALIAS_SQUADRE[chiave];
-  }
-
-  return originale;
-}
-
-/* ============================================================
-   SQUADRA EVENTO
-============================================================ */
-
-function squadraEvento(play) {
-
-  if (!play) {
-    return null;
-  }
-
-  const nome =
-    play.team?.displayName ||
-    play.team?.fullName ||
-    play.team?.name ||
-    play.team?.shortDisplayName ||
-    play.team?.abbreviation ||
-    null;
-
-  return normalizzaNomeSquadra(
-    nome
-  );
-}
-
-/* ============================================================
-   MINUTO
-============================================================ */
-
-function minutoEvento(play) {
-
-  if (!play) {
-    return null;
-  }
-
-  return (
-    testoValido(
-      play.clock?.displayValue
-    ) ||
-    testoValido(
-      play.clock?.value
-    ) ||
-    testoValido(
-      play.time?.displayValue
-    ) ||
-    testoValido(
-      play.time?.value
-    ) ||
-    testoValido(
-      play.displayClock
-    ) ||
-    testoValido(
-      play.minute
-    ) ||
-    null
-  );
-}
-
-/* ============================================================
-   TIPO EVENTO
-============================================================ */
-
-function tipoEvento(play) {
-
-  if (!play) {
+  if (!testoValido(nome)) {
     return "";
   }
 
-  return String(
+  const n = normalizzaTesto(nome);
 
-    play.type?.text ||
-
-    play.type?.description ||
-
-    play.type?.name ||
-
-    play.type?.id ||
-
-    play.alternativeType?.text ||
-
-    ""
-  ).toLowerCase();
-}
-
-function testoEvento(play) {
-
-  return String(
-
-    play?.text ||
-
-    play?.description ||
-
-    play?.type?.text ||
-
-    ""
-
-  ).trim();
-}
-
-function atletaEvento(play) {
-
-  if (!play) {
-    return null;
+  if (MAPPATURA_SQUADRE[n]) {
+    return MAPPATURA_SQUADRE[n];
   }
 
-  return (
-
-    play.athlete ||
-
-    play.player ||
-
-    play.participants?.[0]?.athlete ||
-
-    play.participants?.[0]?.player ||
-
-    play.athletesInvolved?.[0] ||
-
-    null
-  );
+  return nome.trim();
 }
 
-/* ============================================================
-   ESPN CORE
-============================================================ */
+// ============================================================
+// FETCH ESPN
+// ============================================================
 
-async function espnCoreFetch(path) {
+async function espnFetch(url) {
 
-  try {
+  const risposta = await fetch(url, {
+    headers: {
+      "User-Agent": "Mozilla/5.0",
+      "Accept": "application/json"
+    }
+  });
 
-    const response =
-      await fetch(
+  if (!risposta.ok) {
+    throw new Error(
+      "ESPN HTTP " + risposta.status + " - " + url
+    );
+  }
 
-        "https://sports.core.api.espn.com/v2/sports/soccer" +
-        path,
+  return await risposta.json();
+}
 
-        {
-          method: "GET",
+// ============================================================
+// DATA PARTITA
+// ============================================================
 
-          headers: {
+function dataISOdaESPN(data) {
 
-            "User-Agent":
-              "Mozilla/5.0",
+  if (!testoValido(data)) {
+    return "";
+  }
 
-            "Accept":
-              "application/json",
+  const d = new Date(data);
 
-            "Accept-Language":
-              "it-IT,it;q=0.9"
-          }
-        }
-      );
+  if (isNaN(d.getTime())) {
+    return "";
+  }
 
-    if (!response.ok) {
+  return d.toISOString().slice(0, 10);
+}
 
-      console.error(
-        "ESPN CORE HTTP",
-        response.status,
-        path
-      );
+function dataItaliana(data) {
 
-      return null;
+  if (!data) return "";
+
+  const d = new Date(data);
+
+  if (isNaN(d.getTime())) {
+    return "";
+  }
+
+  return d.toLocaleDateString("it-IT", {
+    timeZone: "Europe/Rome",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric"
+  });
+}
+
+function oraItaliana(data) {
+
+  if (!data) return "";
+
+  const d = new Date(data);
+
+  if (isNaN(d.getTime())) {
+    return "";
+  }
+
+  return d.toLocaleTimeString("it-IT", {
+    timeZone: "Europe/Rome",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+}
+
+// ============================================================
+// IDENTIFICAZIONE COMPETIZIONE
+// ============================================================
+
+function trovaCodiceCompetizione(data) {
+
+  const valori = [];
+
+  if (data && data.league) {
+
+    if (testoValido(data.league.slug)) {
+      valori.push(data.league.slug);
     }
 
-    return await response.json();
-
-  } catch (errore) {
-
-    console.error(
-      "Errore ESPN CORE:",
-      errore?.message ||
-      errore
-    );
-
-    return null;
-  }
-}
-
-/* ============================================================
-   ESPN CDN
-============================================================ */
-
-async function espnCdnFetch(
-  competizione,
-  eventId
-) {
-
-  try {
-
-    const url =
-      "https://cdn.espn.com/core/soccer/game" +
-      "?xhr=1" +
-      "&gameId=" +
-      encodeURIComponent(
-        eventId
-      ) +
-      "&league=" +
-      encodeURIComponent(
-        competizione
-      );
-
-    const response =
-      await fetch(
-        url,
-        {
-          method: "GET",
-
-          headers: {
-
-            "User-Agent":
-              "Mozilla/5.0",
-
-            "Accept":
-              "application/json",
-
-            "Accept-Language":
-              "it-IT,it;q=0.9"
-          }
-        }
-      );
-
-    if (!response.ok) {
-      return null;
+    if (testoValido(data.league.abbreviation)) {
+      valori.push(data.league.abbreviation);
     }
 
-    const json =
-      await response.json();
-
-    return (
-      json?.gamepackageJSON ||
-      json ||
-      null
-    );
-
-  } catch (errore) {
-
-    console.error(
-      "Errore ESPN CDN:",
-      errore?.message ||
-      errore
-    );
-
-    return null;
+    if (testoValido(data.league.name)) {
+      valori.push(data.league.name);
+    }
   }
+
+  if (data && data.header && data.header.league) {
+
+    if (testoValido(data.header.league.slug)) {
+      valori.push(data.header.league.slug);
+    }
+
+    if (testoValido(data.header.league.name)) {
+      valori.push(data.header.league.name);
+    }
+  }
+
+  if (data && data.competitions && data.competitions[0]) {
+
+    const c = data.competitions[0];
+
+    if (c.league) {
+
+      if (testoValido(c.league.slug)) {
+        valori.push(c.league.slug);
+      }
+
+      if (testoValido(c.league.name)) {
+        valori.push(c.league.name);
+      }
+    }
+  }
+
+  const mappa = {
+
+    "ita.1": "ita.1",
+    "serie a": "ita.1",
+
+    "ita.2": "ita.2",
+    "serie b": "ita.2",
+
+    "ita.coppa_italia": "ita.coppa_italia",
+    "coppa italia": "ita.coppa_italia",
+
+    "ita.fifa": "ita.fifa",
+    "italy": "ita.fifa",
+    "italia": "ita.fifa",
+
+    "uefa.champions": "uefa.champions",
+    "uefa champions league": "uefa.champions",
+    "champions league": "uefa.champions",
+
+    "uefa.europa": "uefa.europa",
+    "uefa europa league": "uefa.europa",
+    "europa league": "uefa.europa",
+
+    "uefa.europa.conf": "uefa.europa.conf",
+    "uefa europa conference league": "uefa.europa.conf",
+    "conference league": "uefa.europa.conf",
+
+    "fra.1": "fra.1",
+    "ligue 1": "fra.1",
+
+    "esp.1": "esp.1",
+    "la liga": "esp.1",
+    "laliga": "esp.1",
+
+    "eng.1": "eng.1",
+    "premier league": "eng.1",
+
+    "ksa.1": "ksa.1",
+    "saudi pro league": "ksa.1",
+
+    "por.1": "por.1",
+    "liga portugal": "por.1",
+
+    "ned.1": "ned.1",
+    "eredivisie": "ned.1",
+
+    "ger.1": "ger.1",
+    "bundesliga": "ger.1"
+  };
+
+  for (const valore of valori) {
+
+    const n = normalizzaTesto(valore);
+
+    if (mappa[n]) {
+      return mappa[n];
+    }
+
+    if (COMPETIZIONI[valore]) {
+      return valore;
+    }
+  }
+
+  return "";
 }
 
-/* ============================================================
-   SQUADRE
-============================================================ */
+// ============================================================
+// FASE / TURNO DA FINESTRA
+//
+// QUESTA È LA FUNZIONE PIÙ IMPORTANTE.
+//
+// NON GUARDA PRIMA "OTTAVI", "QUARTI", ECC.
+// PRIMA GUARDA LA COMPETIZIONE.
+// POI LA DATA.
+// POI LA FINESTRA.
+// ============================================================
 
-function datiSquadra(
-  competitor
-) {
+function faseDaFinestra(codiceCompetizione, dataPartita) {
 
-  if (!competitor) {
-
-    return {
-
-      id: null,
-
-      nome: null,
-
-      abbreviazione: null,
-
-      logo: null,
-
-      gol: null
-    };
+  if (!codiceCompetizione) {
+    return "";
   }
 
-  let gol = null;
+  if (!dataPartita) {
+    return "";
+  }
 
-  if (
-    competitor.score!== null &&
-    competitor.score!== undefined
-  ) {
+  const finestre = FINESTRE_GIORNATE[codiceCompetizione];
+
+  if (!Array.isArray(finestre)) {
+    return "";
+  }
+
+  const data = dataISOdaESPN(dataPartita);
+
+  if (!data) {
+    return "";
+  }
+
+  for (const finestra of finestre) {
+
+    const dal = finestra[0];
+    const al = finestra[1];
+    const faseTurno = finestra[2];
 
     if (
-      typeof competitor.score ===
-      "object"
+      data >= dal &&
+      data <= al
+    ) {
+      return faseTurno;
+    }
+  }
+
+  return "";
+}
+
+// ============================================================
+// LETTURA MATCHDAY UFFICIALE ESPN
+// ============================================================
+
+function estraiNumeroGiornataESPN(data) {
+
+  const candidati = [];
+
+  function cerca(obj) {
+
+    if (!obj || typeof obj!== "object") {
+      return;
+    }
+
+    if (
+      typeof obj === "object" &&
+      obj!== null
     ) {
 
-      gol =
-        competitor.score.value??
-        competitor.score.displayValue??
-        null;
+      if (
+        typeof obj.number === "number" &&
+        obj.number > 0 &&
+        obj.number < 100
+      ) {
+        candidati.push(obj.number);
+      }
+
+      if (
+        typeof obj.number === "string" &&
+        /^\d+$/.test(obj.number)
+      ) {
+        const n = parseInt(obj.number, 10);
+
+        if (n > 0 && n < 100) {
+          candidati.push(n);
+        }
+      }
+
+      for (const key of Object.keys(obj)) {
+
+        const valore = obj[key];
+
+        if (
+          key === "matchday" ||
+          key === "matchDay" ||
+          key === "week" ||
+          key === "weekNumber"
+        ) {
+
+          if (typeof valore === "number") {
+            candidati.push(valore);
+          }
+
+          if (
+            typeof valore === "string" &&
+            /^\d+$/.test(valore)
+          ) {
+            candidati.push(
+              parseInt(valore, 10)
+            );
+          }
+        }
+
+        if (
+          valore &&
+          typeof valore === "object"
+        ) {
+          cerca(valore);
+        }
+      }
+    }
+  }
+
+  cerca(data);
+
+  if (candidati.length === 0) {
+    return "";
+  }
+
+  return "Giornata " + candidati[0];
+}
+
+// ============================================================
+// TRADUZIONE FASI ESPN
+// ============================================================
+
+function traduciFaseESPN(testo) {
+
+  if (!testoValido(testo)) {
+    return "";
+  }
+
+  const t = normalizzaTesto(testo);
+
+  const map = [
+
+    [/round of 64/, "Sedicesimi di finale"],
+    [/round of 32/, "Sedicesimi di finale"],
+    [/round of 16/, "Ottavi di finale"],
+    [/round of 8/, "Quarti di finale"],
+    [/quarterfinal/, "Quarti di finale"],
+    [/quarter final/, "Quarti di finale"],
+    [/semifinal/, "Semifinali"],
+    [/semi final/, "Semifinali"],
+    [/final/, "Finale"],
+
+    [/playoff/, "Playoff"],
+    [/play-in/, "Play-in"],
+    [/play in/, "Play-in"],
+
+    [/qualifying/, "Qualificazione"],
+    [/qualification/, "Qualificazione"],
+    [/preliminary/, "Turno preliminare"],
+
+    [/first round/, "Primo turno"],
+    [/second round/, "Secondo turno"],
+    [/third round/, "Terzo turno"],
+    [/fourth round/, "Quarto turno"],
+
+    [/group stage/, "Fase a gironi"],
+    [/league phase/, "Fase campionato"],
+    [/knockout/, "Fase a eliminazione"]
+  ];
+
+  for (const [regex, risultato] of map) {
+
+    if (regex.test(t)) {
+      return risultato;
+    }
+  }
+
+  return "";
+}
+
+// ============================================================
+// RICERCA FASE ESPN
+// ============================================================
+
+function trovaFaseESPN(data) {
+
+  const valori = [];
+
+  function aggiungi(v) {
+
+    if (testoValido(v)) {
+      valori.push(v);
+    }
+  }
+
+  function cerca(obj) {
+
+    if (!obj || typeof obj!== "object") {
+      return;
+    }
+
+    if (obj.phase) {
+
+      if (typeof obj.phase === "string") {
+        aggiungi(obj.phase);
+      }
+
+      if (typeof obj.phase.name === "string") {
+        aggiungi(obj.phase.name);
+      }
+
+      if (typeof obj.phase.text === "string") {
+        aggiungi(obj.phase.text);
+      }
+    }
+
+    if (obj.stage) {
+
+      if (typeof obj.stage === "string") {
+        aggiungi(obj.stage);
+      }
+
+      if (typeof obj.stage.name === "string") {
+        aggiungi(obj.stage.name);
+      }
+
+      if (typeof obj.stage.text === "string") {
+        aggiungi(obj.stage.text);
+      }
+    }
+
+    if (obj.type) {
+
+      if (typeof obj.type.name === "string") {
+        aggiungi(obj.type.name);
+      }
+
+      if (typeof obj.type.text === "string") {
+        aggiungi(obj.type.text);
+      }
+    }
+
+    for (const key of Object.keys(obj)) {
+
+      const valore = obj[key];
+
+      if (
+        valore &&
+        typeof valore === "object"
+      ) {
+        cerca(valore);
+      }
+    }
+  }
+
+  cerca(data);
+
+  for (const valore of valori) {
+
+    const fase = traduciFaseESPN(valore);
+
+    if (fase) {
+      return fase;
+    }
+  }
+
+  return "";
+}
+
+// ============================================================
+// FASE/TURNO DEFINITIVO
+//
+// PRIORITÀ ASSOLUTA:
+//
+// COMPETIZIONE
+// ↓
+// FINESTRE DELLA COMPETIZIONE
+// ↓
+// DATA REALE ESPN
+// ↓
+// GIORNATA DELLA FINESTRA
+//
+// SOLO SE NON ESISTE UNA FINESTRA:
+// ↓
+// FASE ESPN
+// ============================================================
+
+function getFaseTurno(data, codiceCompetizione) {
+
+  const competizione =
+    codiceCompetizione ||
+    trovaCodiceCompetizione(data);
+
+  const dataPartita =
+    data && (
+      data.date ||
+      (
+        data.header &&
+        data.header.competitions &&
+        data.header.competitions[0] &&
+        data.header.competitions[0].date
+      )
+    );
+
+  console.log(
+    "FASE/TURNO - competizione:",
+    competizione
+  );
+
+  console.log(
+    "FASE/TURNO - data ESPN:",
+    dataPartita
+  );
+
+  // ----------------------------------------------------------
+  // PRIMA COSA:
+  // CERCA LA COMPETIZIONE NELLE FINESTRE
+  // ----------------------------------------------------------
+
+  if (
+    competizione &&
+    FINESTRE_GIORNATE[competizione]
+  ) {
+
+    const faseFinestra =
+      faseDaFinestra(
+        competizione,
+        dataPartita
+      );
+
+    console.log(
+      "FASE/TURNO - risultato finestra:",
+      faseFinestra
+    );
+
+    if (faseFinestra) {
+
+      // ------------------------------------------------------
+      // QUESTO RETURN BLOCCA QUALSIASI "OTTAVI DI FINALE"
+      // PROVENIENTE DA ESPN.
+      // ------------------------------------------------------
+
+      return faseFinestra;
+    }
+
+    // --------------------------------------------------------
+    // CASO SPECIALE LA LIGA:
+    // se una partita viene spostata fuori dalla finestra,
+    // prevale il matchday ufficiale ESPN.
+    // --------------------------------------------------------
+
+    if (competizione === "esp.1") {
+
+      const giornataESPN =
+        estraiNumeroGiornataESPN(data);
+
+      if (giornataESPN) {
+        return giornataESPN;
+      }
+    }
+
+    // Per un campionato, se non è stata trovata la finestra,
+    // NON dobbiamo trasformarlo in Ottavi/Quarti/Finale.
+    if (
+      [
+        "ita.1",
+        "ita.2",
+        "fra.1",
+        "eng.1",
+        "esp.1",
+        "ksa.1",
+        "por.1",
+        "ned.1",
+        "ger.1"
+      ].includes(competizione)
+    ) {
+
+      return "";
+    }
+  }
+
+  // ----------------------------------------------------------
+  // SOLO PER COMPETIZIONI SENZA FINESTRE:
+  // USIAMO LA FASE DI ESPN.
+  // ----------------------------------------------------------
+
+  const faseESPN =
+    trovaFaseESPN(data);
+
+  if (faseESPN) {
+    return faseESPN;
+  }
+
+  return "";
+}
+
+// ============================================================
+// STATO PARTITA
+// ============================================================
+
+function traduciStato(data) {
+
+  const stato =
+    data &&
+    data.header &&
+    data.header.competitions &&
+    data.header.competitions[0] &&
+    data.header.competitions[0].status;
+
+  if (!stato) {
+    return "";
+  }
+
+  const type =
+    stato.type &&
+    stato.type.name
+     ? stato.type.name
+      : "";
+
+  const detail =
+    stato.type &&
+    stato.type.detail
+     ? stato.type.detail
+      : "";
+
+  const map = {
+    STATUS_SCHEDULED: "Programmato",
+    STATUS_IN_PROGRESS: "In corso",
+    STATUS_FINAL: "Terminata",
+    STATUS_POSTPONED: "Posticipata",
+    STATUS_CANCELED: "Annullata",
+    STATUS_CANCELLED: "Annullata",
+    STATUS_DELAYED: "Rinviata"
+  };
+
+  if (map[type]) {
+    return map[type];
+  }
+
+  if (testoValido(detail)) {
+    return detail;
+  }
+
+  return type;
+}
+
+// ============================================================
+// SQUADRE
+// ============================================================
+
+function estraiSquadre(data) {
+
+  const risultato = {
+    casa: "",
+    trasferta: "",
+    casaLogo: "",
+    trasfertaLogo: "",
+    casaScore: 0,
+    trasfertaScore: 0
+  };
+
+  const competizione =
+    data &&
+    data.header &&
+    data.header.competitions &&
+    data.header.competitions[0];
+
+  if (!competizione) {
+    return risultato;
+  }
+
+  const competitors =
+    competizione.competitors || [];
+
+  for (const squadra of competitors) {
+
+    const home =
+      squadra.homeAway === "home";
+
+    const nome =
+      squadra.team &&
+      (
+        squadra.team.displayName ||
+        squadra.team.shortDisplayName ||
+        squadra.team.name
+      );
+
+    const logo =
+      squadra.team &&
+      (
+        squadra.team.logo ||
+        (
+          squadra.team.logos &&
+          squadra.team.logos[0] &&
+          squadra.team.logos[0].href
+        )
+      );
+
+    const score =
+      Number(squadra.score || 0);
+
+    if (home) {
+
+      risultato.casa =
+        normalizzaSquadra(nome);
+
+      risultato.casaLogo =
+        logo || "";
+
+      risultato.casaScore =
+        score;
 
     } else {
 
-      gol =
-        competitor.score;
+      risultato.trasferta =
+        normalizzaSquadra(nome);
+
+      risultato.trasfertaLogo =
+        logo || "";
+
+      risultato.trasfertaScore =
+        score;
     }
   }
 
+  return risultato;
+}
+
+// ============================================================
+// MARCATORI
+// ============================================================
+
+function creaMarcatori(data) {
+
+  const lista = [];
+
+  const competizione =
+    data &&
+    data.header &&
+    data.header.competitions &&
+    data.header.competitions[0];
+
+  if (!competizione) {
+    return lista;
+  }
+
+  const competitors =
+    competizione.competitors || [];
+
+  for (const squadra of competitors) {
+
+    const nomeSquadra =
+      normalizzaSquadra(
+        squadra.team &&
+        squadra.team.displayName
+      );
+
+    const records =
+      squadra.records || [];
+
+    for (const record of records) {
+
+      if (!record) continue;
+
+      const athlete =
+        record.athlete ||
+        record.player ||
+        {};
+
+      const nome =
+        athlete.displayName ||
+        athlete.fullName ||
+        athlete.shortName ||
+        "";
+
+      const minuti =
+        record.minute ||
+        record.time ||
+        "";
+
+      if (!nome) continue;
+
+      lista.push({
+        squadra: nomeSquadra,
+        giocatore: ultimoCognome(nome),
+        minuto: String(minuti || "")
+      });
+    }
+  }
+
+  // fallback sui plays
   if (
-    gol!== null &&
-    gol!== undefined &&
-    gol!== ""
+    lista.length === 0 &&
+    Array.isArray(data.plays)
   ) {
 
-    const numero =
-      Number(gol);
+    for (const play of data.plays) {
 
-    if (
-      Number.isFinite(numero)
-    ) {
+      const text =
+        play.text ||
+        play.shortText ||
+        "";
 
-      gol =
-        numero;
+      const type =
+        play.type &&
+        (
+          play.type.text ||
+          play.type.name
+        );
+
+      if (
+        /goal|gol|scored/i.test(
+          String(type) + " " + text
+        )
+      ) {
+
+        const athlete =
+          play.athletes &&
+          play.athletes[0];
+
+        const nome =
+          athlete &&
+          (
+            athlete.displayName ||
+            athlete.fullName
+          );
+
+        if (nome) {
+
+          lista.push({
+            squadra:
+              play.team &&
+              normalizzaSquadra(
+                play.team.displayName
+              ),
+            giocatore:
+              ultimoCognome(nome),
+            minuto:
+              play.clock &&
+              play.clock.displayValue
+               ? play.clock.displayValue
+                : ""
+          });
+        }
+      }
     }
   }
 
-  const nomeOriginale =
-
-    competitor.team?.displayName ||
-
-    competitor.team?.fullName ||
-
-    competitor.team?.name ||
-
-    null;
-
-  return {
-
-    id:
-      competitor.team?.id ||
-      competitor.id ||
-      null,
-
-    nome:
-      normalizzaNomeSquadra(
-        nomeOriginale
-      ),
-
-    abbreviazione:
-      competitor.team?.abbreviation ||
-      competitor.team?.shortDisplayName ||
-      null,
-
-    logo:
-      competitor.team?.logo ||
-      competitor.team?.logos?.[0]?.href ||
-      null,
-
-    gol:
-      gol
-  };
+  return lista;
 }
 
-/* ============================================================
-   MARCATORI
-============================================================ */
+// ============================================================
+// COGNOME
+// ============================================================
 
-function creaMarcatori(
-  plays
-) {
+function ultimoCognome(nome) {
 
-  if (!Array.isArray(plays)) {
-    return [];
+  if (!testoValido(nome)) {
+    return "";
   }
 
-  const risultati = [];
+  const parti =
+    nome
+     .trim()
+     .split(/\s+/);
 
-  for (
-    const play
-    of plays
-  ) {
-
-    const tipo =
-      tipoEvento(play);
-
-    const testo =
-      testoEvento(play)
-       .toLowerCase();
-
-    const eGol =
-
-      play?.scoringPlay === true ||
-
-      play?.isScoringPlay === true ||
-
-      tipo.includes("goal") ||
-
-      tipo.includes("gol") ||
-
-      tipo.includes("score");
-
-    if (!eGol) {
-      continue;
-    }
-
-    const atleta =
-      atletaEvento(play);
-
-    const giocatore =
-      cognomeAtleta(
-        atleta
-      );
-
-    const assist =
-      cognomeAtleta(
-
-        play?.assistedBy ||
-
-        play?.assist ||
-
-        play?.participants?.[1]?.athlete ||
-
-        play?.participants?.[1]?.player ||
-
-        play?.athletesInvolved?.[1]
-      );
-
-    const rigore =
-
-      play?.penalty === true ||
-
-      play?.penaltyGoal === true ||
-
-      play?.isPenalty === true ||
-
-      testo.includes("penalty") ||
-
-      testo.includes("rigore");
-
-    const autogol =
-
-      play?.ownGoal === true ||
-
-      play?.ownGoal === "true" ||
-
-      testo.includes("own goal") ||
-
-      testo.includes("autogol");
-
-    let testoOutput =
-
-      (
-        minutoEvento(play) ||
-        "?"
-      ) +
-
-      " - " +
-
-      (
-        squadraEvento(play) ||
-        "Squadra"
-      ) +
-
-      " - " +
-
-      (
-        giocatore ||
-        "Giocatore"
-      );
-
-    if (rigore) {
-      testoOutput += " (R.)";
-    }
-
-    if (autogol) {
-      testoOutput += " (AG.)";
-    }
-
-    risultati.push({
-
-      minuto:
-        minutoEvento(play),
-
-      squadra:
-        squadraEvento(play),
-
-      giocatore:
-        giocatore,
-
-      assist:
-        assist,
-
-      rigore:
-        rigore,
-
-      autogol:
-        autogol,
-
-      testo:
-        testoOutput
-    });
-  }
-
-  return risultati;
+  return parti[parti.length - 1];
 }
 
-/* ============================================================
-   CARTELLINI
-============================================================ */
+// ============================================================
+// CARTELLINI
+// ============================================================
 
-function creaCartellini(
-  plays
-) {
+function creaCartellini(data) {
 
-  if (!Array.isArray(plays)) {
-    return [];
-  }
+  const lista = [];
 
-  const risultati = [];
+  const plays =
+    Array.isArray(data.plays)
+     ? data.plays
+      : [];
 
-  for (
-    const play
-    of plays
-  ) {
+  for (const play of plays) {
+
+    const text =
+      play.text ||
+      play.shortText ||
+      "";
 
     const tipo =
-      tipoEvento(play);
+      play.type &&
+      (
+        play.type.text ||
+        play.type.name ||
+        ""
+      );
 
-    const testo =
-      testoEvento(play)
-       .toLowerCase();
+    const combinato =
+      normalizzaTesto(
+        String(tipo) + " " + text
+      );
 
-    let cartellino = null;
+    let cartellino = "";
 
     if (
-
-      tipo.includes("yellow") ||
-
-      tipo.includes("giallo") ||
-
-      testo.includes("yellow card") ||
-
-      testo.includes("ammon")
+      combinato.includes("second yellow") ||
+      combinato.includes("seconda ammonizione")
     ) {
-
-      cartellino =
-        "Giallo";
+      cartellino = "Rosso per doppia ammonizione";
     }
-
-    if (
-
-      tipo.includes("red") ||
-
-      tipo.includes("rosso") ||
-
-      testo.includes("red card") ||
-
-      testo.includes("espuls")
+    else if (
+      combinato.includes("red card") ||
+      combinato.includes("red card")
     ) {
-
-      cartellino =
-        "Rosso";
+      cartellino = "Rosso";
+    }
+    else if (
+      combinato.includes("yellow card") ||
+      combinato.includes("yellow")
+    ) {
+      cartellino = "Giallo";
     }
 
     if (!cartellino) {
       continue;
     }
 
-    const minuto =
-      minutoEvento(play);
+    const athlete =
+      play.athletes &&
+      play.athletes[0];
 
-    const giocatore =
-      cognomeAtleta(
-        atletaEvento(play)
+    const nome =
+      athlete &&
+      (
+        athlete.displayName ||
+        athlete.fullName
       );
 
-    const squadra =
-      squadraEvento(play);
-
-    const simbolo =
-      cartellino === "Rosso"
-       ? "🟥"
-        : "🟨";
-
-    risultati.push({
-
-      minuto:
-        minuto,
-
+    lista.push({
       giocatore:
-        giocatore,
-
+        ultimoCognome(nome || ""),
+      cartellino,
+      minuto:
+        play.clock &&
+        play.clock.displayValue
+         ? play.clock.displayValue
+          : "",
       squadra:
-        squadra,
-
-      tipo:
-        cartellino,
-
-      simbolo:
-        simbolo,
-
-      testo:
-
-        (
-          minuto ||
-          "?"
-        ) +
-
-        " - " +
-
-        (
-          giocatore ||
-          "Giocatore"
-        ) +
-
-        " - " +
-
-        (
-          squadra ||
-          "Squadra"
-        ) +
-
-        " - " +
-
-        simbolo +
-        " " +
-        cartellino
+        play.team
+         ? normalizzaSquadra(
+              play.team.displayName
+            )
+          : ""
     });
   }
 
-  return risultati;
+  return lista;
 }
 
-/* ============================================================
-   CERCA GIOCATORI
-============================================================ */
+// ============================================================
+// SOSTITUZIONI
+// ============================================================
 
-function cercaGiocatori(
-  obj
-) {
+function creaSostituzioni(data) {
 
-  if (!obj) {
-    return [];
-  }
+  const lista = [];
 
-  const risultati = [];
+  const plays =
+    Array.isArray(data.plays)
+     ? data.plays
+      : [];
 
-  function visita(
-    valore,
-    profondita
-  ) {
+  for (const play of plays) {
+
+    const text =
+      play.text ||
+      play.shortText ||
+      "";
+
+    const tipo =
+      play.type &&
+      (
+        play.type.text ||
+        play.type.name ||
+        ""
+      );
+
+    const combinato =
+      normalizzaTesto(
+        String(tipo) + " " + text
+      );
 
     if (
-      valore === null ||
-      valore === undefined ||
-      profondita > 10
+     !(
+        combinato.includes("substitution") ||
+        combinato.includes("sostituzione") ||
+        combinato.includes("substitutes")
+      )
     ) {
-      return;
+      continue;
     }
 
-    if (
-      Array.isArray(valore)
-    ) {
+    let entrato = "";
+    let uscito = "";
 
-      for (
-        const elemento
-        of valore
-      ) {
+    if (play.substitution) {
 
-        visita(
-          elemento,
-          profondita + 1
-        );
+      const sub =
+        play.substitution;
+
+      const entra =
+        sub.in ||
+        sub.entered ||
+        sub.inPlayer;
+
+      const esce =
+        sub.out ||
+        sub.exited ||
+        sub.outPlayer;
+
+      if (entra) {
+
+        entrato =
+          ultimoCognome(
+            entra.displayName ||
+            entra.fullName ||
+            entra.shortName ||
+            ""
+          );
       }
 
-      return;
+      if (esce) {
+
+        uscito =
+          ultimoCognome(
+            esce.displayName ||
+            esce.fullName ||
+            esce.shortName ||
+            ""
+          );
+      }
     }
 
+    // Cerca i giocatori direttamente nel testo
     if (
-      typeof valore!== "object"
+      (!entrato ||!uscito) &&
+      testoValido(text)
     ) {
-      return;
+
+      const parti =
+        text
+         .replace(/\s+/g, " ")
+         .trim();
+
+      const match =
+        parti.match(
+          /(?:substitution|sostituzione).*?([A-Za-zÀ-ÿ' -]+)(?: for | al posto di | per )([A-Za-zÀ-ÿ' -]+)/i
+        );
+
+      if (match) {
+
+        if (!entrato) {
+          entrato =
+            ultimoCognome(
+              match[1].trim()
+            );
+        }
+
+        if (!uscito) {
+          uscito =
+            ultimoCognome(
+              match[2].trim()
+            );
+        }
+      }
     }
 
-    if (
-      valore.athlete ||
-      valore.player
-    ) {
+    lista.push({
+      entrato,
+      uscito,
+      minuto:
+        play.clock &&
+        play.clock.displayValue
+         ? play.clock.displayValue
+          : "",
+      squadra:
+        play.team
+         ? normalizzaSquadra(
+              play.team.displayName
+            )
+          : ""
+    });
+  }
 
-      const atleta =
-        valore.athlete ||
-        valore.player;
+  return lista;
+}
 
-      if (
-        nomeAtleta(atleta)
-      ) {
+// ============================================================
+// FORMAZIONI
+// ============================================================
 
-        risultati.push({
-          atleta:
-            atleta,
+function creaFormazioni(data) {
 
-          sorgente:
-            valore
+  const risultato = {
+    casa: [],
+    trasferta: []
+  };
+
+  const competizione =
+    data &&
+    data.header &&
+    data.header.competitions &&
+    data.header.competitions[0];
+
+  if (!competizione) {
+    return risultato;
+  }
+
+  const competitors =
+    competizione.competitors || [];
+
+  for (const squadra of competitors) {
+
+    const isHome =
+      squadra.homeAway === "home";
+
+    const roster =
+      squadra.roster ||
+      squadra.formation ||
+      [];
+
+    const formazione = [];
+
+    if (Array.isArray(roster)) {
+
+      for (const elemento of roster) {
+
+        const athlete =
+          elemento.athlete ||
+          elemento.player ||
+          elemento;
+
+        if (!athlete) continue;
+
+        const nome =
+          athlete.displayName ||
+          athlete.fullName ||
+          athlete.shortName ||
+          "";
+
+        if (!nome) continue;
+
+        let ruolo = "";
+
+        if (elemento.position) {
+
+          ruolo =
+            elemento.position.displayName ||
+            elemento.position.name ||
+            elemento.position.abbreviation ||
+            "";
+        }
+
+        formazione.push({
+          cognome: ultimoCognome(nome),
+          ruolo: ruolo || ""
         });
       }
     }
 
-    for (
-      const chiave
-      of Object.keys(valore)
-    ) {
-
-      const figlio =
-        valore[chiave];
-
-      if (
-        figlio &&
-        typeof figlio === "object"
-      ) {
-
-        visita(
-          figlio,
-          profondita + 1
-        );
-      }
+    if (isHome) {
+      risultato.casa = formazione;
+    } else {
+      risultato.trasferta = formazione;
     }
   }
 
-  visita(obj, 0);
+  return risultato;
+    }
 
-  return risultati;
-}
+// ============================================================
+// ALLENATORI
+// ============================================================
 
-/* ============================================================
-   SOSTITUZIONI
-============================================================ */
+function creaAllenatori(data) {
 
-function estraiSostituzioneDaTesto(
-  testo
-) {
-
-  const valore =
-    String(
-      testo || ""
-    ).trim();
-
-  if (!valore) {
-
-    return {
-      entra: null,
-      esce: null
-    };
-  }
-
-  let match =
-    valore.match(
-      /^(.+?)\s+(?:for|replaces|replaced by)\s+(.+)$/i
-    );
-
-  if (match) {
-
-    return {
-
-      entra:
-        ultimoCognome(
-          match[1]
-        ),
-
-      esce:
-        ultimoCognome(
-          match[2]
-        )
-    };
-  }
-
-  match =
-    valore.match(
-      /^(.+?)\s+(?:entra per|entra al posto di|al posto di)\s+(.+)$/i
-    );
-
-  if (match) {
-
-    return {
-
-      entra:
-        ultimoCognome(
-          match[1]
-        ),
-
-      esce:
-        ultimoCognome(
-          match[2]
-        )
-    };
-  }
-
-  return {
-    entra: null,
-    esce: null
+  const risultato = {
+    casa: "",
+    trasferta: ""
   };
-}
 
-function creaSostituzioni(
-  plays
-) {
+  const competizione =
+    data &&
+    data.header &&
+    data.header.competitions &&
+    data.header.competitions[0];
 
-  if (!Array.isArray(plays)) {
-    return [];
+  if (!competizione) {
+    return risultato;
   }
 
-  const risultati = [];
+  const competitors =
+    competizione.competitors || [];
 
-  for (
-    const play
-    of plays
-  ) {
+  for (const squadra of competitors) {
 
-    const tipo =
-      tipoEvento(play);
+    const coaches =
+      squadra.coaches ||
+      squadra.coach ||
+      [];
 
-    const testo =
-      testoEvento(play);
-
-    const lower =
-      testo.toLowerCase();
-
-    const eSostituzione =
-
-      tipo.includes("substitution") ||
-
-      tipo.includes("substitute") ||
-
-      tipo.includes("sostituzione") ||
-
-      lower.includes("substitution") ||
-
-      lower.includes("substituted") ||
-
-      lower.includes("replaces") ||
-
-      lower.includes("replaced") ||
-
-      lower.includes("entra") ||
-
-      lower.includes("esce");
-
-    if (!eSostituzione) {
+    if (!Array.isArray(coaches)) {
       continue;
     }
 
-    let entrato =
+    const coach =
+      coaches[0];
 
-      play?.substitution?.in ||
+    if (!coach) continue;
 
-      play?.substitution?.entered ||
-
-      play?.substitution?.playerIn ||
-
-      play?.substitution?.incoming ||
-
-      play?.playerIn ||
-
-      play?.athleteIn ||
-
-      null;
-
-    let uscito =
-
-      play?.substitution?.out ||
-
-      play?.substitution?.exited ||
-
-      play?.substitution?.playerOut ||
-
-      play?.substitution?.outgoing ||
-
-      play?.playerOut ||
-
-      play?.athleteOut ||
-
-      null;
-
-    /* participants */
+    const nome =
+      coach.displayName ||
+      coach.fullName ||
+      "";
 
     if (
-      (!entrato ||!uscito) &&
-      Array.isArray(
-        play?.participants
+      squadra.homeAway === "home"
+    ) {
+      risultato.casa = nome;
+    }
+    else {
+      risultato.trasferta = nome;
+    }
+  }
+
+  return risultato;
+}
+
+// ============================================================
+// ARBITRI
+// ============================================================
+
+function creaArbitri(data) {
+
+  const lista = [];
+
+  const competizione =
+    data &&
+    data.header &&
+    data.header.competitions &&
+    data.header.competitions[0];
+
+  if (!competizione) {
+    return lista;
+  }
+
+  const officials =
+    competizione.officials || [];
+
+  for (const ufficiale of officials) {
+
+    const nome =
+      ufficiale.displayName ||
+      ufficiale.fullName ||
+      ufficiale.name ||
+      "";
+
+    if (!nome) continue;
+
+    const ruolo =
+      ufficiale.position &&
+      (
+        ufficiale.position.name ||
+        ufficiale.position.displayName
       )
-    ) {
-
-      for (
-        const partecipante
-        of play.participants
-      ) {
-
-        const ruolo =
-          String(
-
-            partecipante?.role ||
-
-            partecipante?.type ||
-
-            partecipante?.status ||
-
-            partecipante?.substitutionType ||
-
-            ""
-
-          ).toLowerCase();
-
-        if (
-
-          ruolo.includes("in") ||
-
-          ruolo.includes("enter") ||
-
-          ruolo.includes("on")
-        ) {
-
-          entrato =
-            entrato ||
-            partecipante;
-        }
-
-        if (
-
-          ruolo.includes("out") ||
-
-          ruolo.includes("exit") ||
-
-          ruolo.includes("off")
-        ) {
-
-          uscito =
-            uscito ||
-            partecipante;
-        }
-      }
-
-      if (
-        (!entrato ||!uscito) &&
-        play.participants.length >= 2
-      ) {
-
-        if (!uscito) {
-          uscito =
-            play.participants[0];
-        }
-
-        if (!entrato) {
-          entrato =
-            play.participants[1];
-        }
-      }
-    }
-
-    /* athletesInvolved */
-
-    if (
-      (!entrato ||!uscito) &&
-      Array.isArray(
-        play?.athletesInvolved
-      )
-    ) {
-
-      for (
-        const atleta
-        of play.athletesInvolved
-      ) {
-
-        const ruolo =
-          String(
-
-            atleta?.role ||
-
-            atleta?.type ||
-
-            atleta?.status ||
-
-            atleta?.substitutionType ||
-
-            ""
-
-          ).toLowerCase();
-
-        if (
-
-          ruolo.includes("in") ||
-
-          ruolo.includes("enter") ||
-
-          ruolo.includes("on")
-        ) {
-
-          entrato =
-            entrato ||
-            atleta;
-        }
-
-        if (
-
-          ruolo.includes("out") ||
-
-          ruolo.includes("exit") ||
-
-          ruolo.includes("off")
-        ) {
-
-          uscito =
-            uscito ||
-            atleta;
-        }
-      }
-
-      if (
-        (!entrato ||!uscito) &&
-        play.athletesInvolved.length >= 2
-      ) {
-
-        if (!uscito) {
-          uscito =
-            play.athletesInvolved[0];
-        }
-
-        if (!entrato) {
-          entrato =
-            play.athletesInvolved[1];
-        }
-      }
-    }
-
-    /* testo */
-
-    if (
-     !entrato ||
-     !uscito
-    ) {
-
-      const estratto =
-        estraiSostituzioneDaTesto(
-          testo
-        );
-
-      if (
-       !entrato &&
-        estratto.entra
-      ) {
-
-        entrato = {
-          displayName:
-            estratto.entra
-        };
-      }
-
-      if (
-       !uscito &&
-        estratto.esce
-      ) {
-
-        uscito = {
-          displayName:
-            estratto.esce
-        };
-      }
-    }
-
-    /* ultimo tentativo */
-
-    if (
-     !entrato ||
-     !uscito
-    ) {
-
-      const giocatori =
-        cercaGiocatori(
-          play
-        );
-
-      if (
-        giocatori.length >= 2
-      ) {
-
-        if (!uscito) {
-
-          uscito =
-            giocatori[0].atleta;
-        }
-
-        if (!entrato) {
-
-          entrato =
-            giocatori[1].atleta;
-        }
-      }
-    }
-
-    const cognomeEntrato =
-      cognomeAtleta(
-        entrato
-      );
-
-    const cognomeUscito =
-      cognomeAtleta(
-        uscito
-      );
-
-    if (
-     !cognomeEntrato &&
-     !cognomeUscito
-    ) {
-      continue;
-    }
-
-    const minuto =
-      minutoEvento(play);
-
-    const squadra =
-      squadraEvento(play);
-
-    risultati.push({
-
-      minuto:
-        minuto,
-
-      squadra:
-        squadra,
-
-      entra:
-        cognomeEntrato,
-
-      esce:
-        cognomeUscito,
-
-      entrato:
-        cognomeEntrato,
-
-      uscito:
-        cognomeUscito,
-
-      testo:
-
-        (
-          minuto ||
-          "?"
-        ) +
-
-        " - " +
-
-        (
-          squadra ||
-          "Squadra"
-        ) +
-
-        " - ENTRA " +
-
-        (
-          cognomeEntrato ||
-          "?"
-        ) +
-
-        " - ESCE " +
-
-        (
-          cognomeUscito ||
-          "?"
+       ? (
+          ufficiale.position.name ||
+          ufficiale.position.displayName
         )
+        : (
+          ufficiale.role ||
+          ufficiale.type &&
+          (
+            ufficiale.type.text ||
+            ufficiale.type.name
+          ) ||
+          ""
+        );
+
+    lista.push({
+      nome,
+      ruolo
     });
   }
 
-  return risultati;
+  return lista;
 }
 
-/* ============================================================
-   DATA / ORA
-============================================================ */
-
-function convertiDataOraItaliana(
-  valore
-) {
-
-  if (!valore) {
-
-    return {
-      data: "",
-      ora: ""
-    };
-  }
-
-  try {
-
-    const data =
-      new Date(valore);
-
-    if (
-      isNaN(
-        data.getTime()
-      )
-    ) {
-
-      return {
-        data: "",
-        ora: ""
-      };
-    }
-
-    return {
-
-      data:
-
-        new Intl.DateTimeFormat(
-          "it-IT",
-          {
-            timeZone:
-              "Europe/Rome",
-
-            day:
-              "2-digit",
-
-            month:
-              "2-digit",
-
-            year:
-              "numeric"
-          }
-        ).format(data),
-
-      ora:
-
-        new Intl.DateTimeFormat(
-          "it-IT",
-          {
-            timeZone:
-              "Europe/Rome",
-
-            hour:
-              "2-digit",
-
-            minute:
-              "2-digit",
-
-            hour12:
-              false
-          }
-        ).format(data)
-    };
-
-  } catch (errore) {
-
-    return {
-      data: "",
-      ora: ""
-    };
-  }
-}
-
-/* ============================================================
-   STATISTICHE
-============================================================ */
-
-function normalizzaStatistica(
-  nome
-) {
-
-  if (!nome) {
-    return "";
-  }
-
-  return String(nome)
-   .toLowerCase()
-   .normalize("NFD")
-   .replace(
-      /[\u0300-\u036f]/g,
-      ""
-    )
-   .replace(
-      /[\s_\-\/.%]+/g,
-      ""
-    )
-   .replace(
-      /[^\w]/g,
-      ""
-    );
-}
-
-function valoreStatistica(
-  stat
-) {
-
-  if (!stat) {
-    return null;
-  }
-
-  const candidati = [
-
-    stat.displayValue,
-
-    stat.value,
-
-    stat.displayValueText,
-
-    stat.text,
-
-    stat.display
-  ];
-
-  for (
-    const valore
-    of candidati
-  ) {
-
-    if (
-      valore!== null &&
-      valore!== undefined &&
-      String(valore).trim()!== ""
-    ) {
-
-      return valore;
-    }
-  }
-
-  return null;
-}
-
-function trovaStatistica(
-  lista,
-  nomi
-) {
-
-  if (!Array.isArray(lista)) {
-    return null;
-  }
-
-  const cercati =
-    nomi.map(
-      normalizzaStatistica
-    );
-
-  for (
-    const stat
-    of lista
-  ) {
-
-    const campi = [
-
-      stat?.name,
-
-      stat?.label,
-
-      stat?.displayName,
-
-      stat?.shortDisplayName,
-
-      stat?.abbreviation
-    ]
-     .filter(Boolean)
-     .map(
-        normalizzaStatistica
-      );
-
-    if (
-      campi.some(
-        campo =>
-          cercati.includes(campo)
-      )
-    ) {
-
-      const valore =
-        valoreStatistica(
-          stat
-        );
-
-      if (
-        valore!== null
-      ) {
-
-        return valore;
-      }
-    }
-  }
-
-  return null;
-}
-
-function listaStatisticheTeam(
-  team
-) {
-
-  if (!team) {
-    return [];
-  }
-
-  const possibili = [
-
-    team.statistics,
-
-    team.stats,
-
-    team.statistic,
-
-    team.statistics?.items
-  ];
-
-  for (
-    const lista
-    of possibili
-  ) {
-
-    if (
-      Array.isArray(lista)
-    ) {
-
-      return lista;
-    }
-  }
-
-  return [];
-}
-
-function valoriStatistiche(
-  lista
-) {
-
-  return {
-
-    possesso:
-      trovaStatistica(
-        lista,
-        [
-          "possessionPct",
-          "possessionPercentage",
-          "possessionPercent",
-          "possession",
-          "ballPossession",
-          "possesso"
-        ]
-      ),
-
-    tiri:
-      trovaStatistica(
-        lista,
-        [
-          "totalShots",
-          "shots",
-          "shotsTotal",
-          "shotAttempts",
-          "totalShotAttempts",
-          "tiri"
-        ]
-      ),
-
-    tiriInPorta:
-      trovaStatistica(
-        lista,
-        [
-          "shotsOnTarget",
-          "shotsOnGoal",
-          "shotsOnTargetTotal",
-          "shotsOnGoalTotal",
-          "onTarget",
-          "tiriInPorta"
-        ]
-      ),
-
-    angoli:
-      trovaStatistica(
-        lista,
-        [
-          "corners",
-          "cornerKicks",
-          "totalCorners",
-          "wonCorners",
-          "calciDangolo"
-        ]
-      ),
-
-    passaggi:
-      trovaStatistica(
-        lista,
-        [
-          "passes",
-          "totalPasses",
-          "completedPasses",
-          "totalPass",
-          "passaggi"
-        ]
-      ),
-
-    fuorigioco:
-      trovaStatistica(
-        lista,
-        [
-          "offsides",
-          "offside",
-          "fuorigioco"
-        ]
-      )
-  };
-}
-
-function creaBloccoStatistiche(
-  lista
-) {
-
-  if (!Array.isArray(lista)) {
-    return [];
-  }
-
-  return lista
-
-   .map(function(stat) {
-
-      return {
-
-        nome:
-          stat?.name ||
-          stat?.label ||
-          stat?.displayName ||
-          null,
-
-        label:
-          stat?.label ||
-          stat?.displayName ||
-          stat?.name ||
-          null,
-
-        valore:
-          valoreStatistica(
-            stat
-          )
-      };
-    })
-
-   .filter(
-      stat =>
-        stat.valore!== null
-    );
-}
-
-function statisticheVuote() {
-
-  return {
-
-    casa: [],
-
-    trasferta: [],
-
-    valori: {
-
-      possessoCasa: null,
-      possessoTrasferta: null,
-
-      tiriCasa: null,
-      tiriTrasferta: null,
-
-      tiriInPortaCasa: null,
-      tiriInPortaTrasferta: null,
-
-      calciDangoloCasa: null,
-      calciDangoloTrasferta: null,
-
-      passaggiCasa: null,
-      passaggiTrasferta: null,
-
-      fuorigiocoCasa: null,
-      fuorigiocoTrasferta: null
-    }
-  };
-}
-
-/* ============================================================
-   SUMMARY STATISTICHE
-============================================================ */
-
-function statisticheDaSummary(
-  data
-) {
-
-  const risultato =
-    statisticheVuote();
-
-  const teams =
-
-    data?.boxscore?.teams ||
-
-    data?.boxscore?.statistics ||
-
-    data?.statistics?.teams ||
-
-    [];
-
-  if (
-   !Array.isArray(teams)
-  ) {
-
-    return risultato;
-  }
-
-  for (
-    const team
-    of teams
-  ) {
-
-    const lista =
-      listaStatisticheTeam(
-        team
-      );
-
-    if (!lista.length) {
-      continue;
-    }
-
-    const blocco =
-      creaBloccoStatistiche(
-        lista
-      );
-
-    const valori =
-      valoriStatistiche(
-        lista
-      );
-
-    if (
-      team?.homeAway ===
-      "home"
-    ) {
-
-      risultato.casa =
-        blocco;
-
-      risultato.valori.possessoCasa =
-        valori.possesso;
-
-      risultato.valori.tiriCasa =
-        valori.tiri;
-
-      risultato.valori.tiriInPortaCasa =
-        valori.tiriInPorta;
-
-      risultato.valori.calciDangoloCasa =
-        valori.angoli;
-
-      risultato.valori.passaggiCasa =
-        valori.passaggi;
-
-      risultato.valori.fuorigiocoCasa =
-        valori.fuorigioco;
-    }
-
-    if (
-      team?.homeAway ===
-      "away"
-    ) {
-
-      risultato.trasferta =
-        blocco;
-
-      risultato.valori.possessoTrasferta =
-        valori.possesso;
-
-      risultato.valori.tiriTrasferta =
-        valori.tiri;
-
-      risultato.valori.tiriInPortaTrasferta =
-        valori.tiriInPorta;
-
-      risultato.valori.calciDangoloTrasferta =
-        valori.angoli;
-
-      risultato.valori.passaggiTrasferta =
-        valori.passaggi;
-
-      risultato.valori.fuorigiocoTrasferta =
-        valori.fuorigioco;
-    }
-  }
-
-  return risultato;
-}
-
-/* ============================================================
-   CORE STATISTICHE
-============================================================ */
-
-async function statisticheDaCore(
-  competizione,
-  eventId,
-  competitionId,
-  homeId,
-  awayId
-) {
-
-  const risultato =
-    statisticheVuote();
-
-  if (
-   !competitionId ||
-   !homeId ||
-   !awayId
-  ) {
-
-    return risultato;
-  }
-
-  const base =
-
-    "/leagues/" +
-    encodeURIComponent(
-      competizione
-    ) +
-
-    "/events/" +
-    encodeURIComponent(
-      eventId
-    ) +
-
-    "/competitions/" +
-    encodeURIComponent(
-      competitionId
-    ) +
-
-    "/competitors/";
-
-  const [
-    homeData,
-    awayData
-  ] =
-    await Promise.all([
-
-      espnCoreFetch(
-        base +
-        encodeURIComponent(
-          homeId
-        ) +
-        "/statistics"
-      ),
-
-      espnCoreFetch(
-        base +
-        encodeURIComponent(
-          awayId
-        ) +
-        "/statistics"
-      )
-    ]);
-
-  function estraiLista(data) {
-
-    if (!data) {
-      return [];
-    }
-
-    if (
-      Array.isArray(
-        data.statistics
-      )
-    ) {
-      return data.statistics;
-    }
-
-    if (
-      Array.isArray(
-        data.stats
-      )
-    ) {
-      return data.stats;
-    }
-
-    if (
-      Array.isArray(
-        data.items
-      )
-    ) {
-      return data.items;
-    }
-
-    if (
-      Array.isArray(
-        data.splits
-      )
-    ) {
-      return data.splits;
-    }
-
-    return [];
-  }
-
-  const homeLista =
-    estraiLista(
-      homeData
-    );
-
-  const awayLista =
-    estraiLista(
-      awayData
-    );
-
-  risultato.casa =
-    creaBloccoStatistiche(
-      homeLista
-    );
-
-  risultato.trasferta =
-    creaBloccoStatistiche(
-      awayLista
-    );
-
-  const home =
-    valoriStatistiche(
-      homeLista
-    );
-
-  const away =
-    valoriStatistiche(
-      awayLista
-    );
-
-  risultato.valori = {
-
-    possessoCasa:
-      home.possesso,
-
-    possessoTrasferta:
-      away.possesso,
-
-    tiriCasa:
-      home.tiri,
-
-    tiriTrasferta:
-      away.tiri,
-
-    tiriInPortaCasa:
-      home.tiriInPorta,
-
-    tiriInPortaTrasferta:
-      away.tiriInPorta,
-
-    calciDangoloCasa:
-      home.angoli,
-
-    calciDangoloTrasferta:
-      away.angoli,
-
-    passaggiCasa:
-      home.passaggi,
-
-    passaggiTrasferta:
-      away.passaggi,
-
-    fuorigiocoCasa:
-      home.fuorigioco,
-
-    fuorigiocoTrasferta:
-      away.fuorigioco
-  };
-
-  return risultato;
-}
-
-/* ============================================================
-   CDN STATISTICHE
-============================================================ */
-
-function statisticheDaCdn(
-  pkg
-) {
-
-  const risultato =
-    statisticheVuote();
-
-  if (!pkg) {
-    return risultato;
-  }
-
-  const teams =
-    pkg?.boxscore?.teams ||
-    pkg?.teams ||
-    [];
-
-  if (
-   !Array.isArray(teams)
-  ) {
-
-    return risultato;
-  }
-
-  for (
-    const team
-    of teams
-  ) {
-
-    const lista =
-      listaStatisticheTeam(
-        team
-      );
-
-    if (!lista.length) {
-      continue;
-    }
-
-    const blocco =
-      creaBloccoStatistiche(
-        lista
-      );
-
-    const valori =
-      valoriStatistiche(
-        lista
-      );
-
-    const homeAway =
-      team?.homeAway ||
-      team?.homeaway;
-
-    if (
-      homeAway === "home"
-    ) {
-
-      risultato.casa =
-        blocco;
-
-      risultato.valori.possessoCasa =
-        valori.possesso;
-
-      risultato.valori.tiriCasa =
-        valori.tiri;
-
-      risultato.valori.tiriInPortaCasa =
-        valori.tiriInPorta;
-
-      risultato.valori.calciDangoloCasa =
-        valori.angoli;
-
-      risultato.valori.passaggiCasa =
-        valori.passaggi;
-
-      risultato.valori.fuorigiocoCasa =
-        valori.fuorigioco;
-    }
-
-    if (
-      homeAway === "away"
-    ) {
-
-      risultato.trasferta =
-        blocco;
-
-      risultato.valori.possessoTrasferta =
-        valori.possesso;
-
-      risultato.valori.tiriTrasferta =
-        valori.tiri;
-
-      risultato.valori.tiriInPortaTrasferta =
-        valori.tiriInPorta;
-
-      risultato.valori.calciDangoloTrasferta =
-        valori.angoli;
-
-      risultato.valori.passaggiTrasferta =
-        valori.passaggi;
-
-      risultato.valori.fuorigiocoTrasferta =
-        valori.fuorigioco;
-    }
-  }
-
-  return risultato;
-}
-
-/* ============================================================
-   UNIONE STATISTICHE
-============================================================ */
-
-function primoValore(
- ...valori
-) {
-
-  for (
-    const valore
-    of valori
-  ) {
-
-    if (
-      valore!== null &&
-      valore!== undefined &&
-      String(valore).trim()!== ""
-    ) {
-
-      return valore;
-    }
-  }
-
-  return null;
-}
-
-function unisciStatistiche(
-  summary,
-  core,
-  cdn
-) {
-
-  const risultato =
-    statisticheVuote();
-
-  risultato.casa =
-    summary.casa.length
-     ? summary.casa
-      : (
-          core.casa.length
-           ? core.casa
-            : cdn.casa
-        );
-
-  risultato.trasferta =
-    summary.trasferta.length
-     ? summary.trasferta
-      : (
-          core.trasferta.length
-           ? core.trasferta
-            : cdn.trasferta
-        );
-
-  const campi = [
-
-    "possessoCasa",
-    "possessoTrasferta",
-
-    "tiriCasa",
-    "tiriTrasferta",
-
-    "tiriInPortaCasa",
-    "tiriInPortaTrasferta",
-
-    "calciDangoloCasa",
-    "calciDangoloTrasferta",
-
-    "passaggiCasa",
-    "passaggiTrasferta",
-
-    "fuorigiocoCasa",
-    "fuorigiocoTrasferta"
-  ];
-
-  for (
-    const campo
-    of campi
-  ) {
-
-    risultato.valori[campo] =
-      primoValore(
-
-        summary.valori?.[campo],
-
-        core.valori?.[campo],
-
-        cdn.valori?.[campo]
-      );
-  }
-
-  return risultato;
-    }
-
-/* ============================================================
-   FORMAZIONI
-============================================================ */
-
-function ruoloItaliano(ruolo) {
-
-  if (!ruolo) {
-    return null;
-  }
-
-  const r =
-    String(ruolo)
-     .toUpperCase()
-     .trim();
-
-  const mappa = {
-
-    GK: "Portiere",
-    G: "Portiere",
-
-    CB: "Difensore",
-    CD: "Difensore",
-    LB: "Difensore",
-    RB: "Difensore",
-    LWB: "Difensore",
-    RWB: "Difensore",
-
-    DM: "Centrocampista",
-    CM: "Centrocampista",
-    LM: "Centrocampista",
-    RM: "Centrocampista",
-    AM: "Centrocampista",
-    CAM: "Centrocampista",
-    CDM: "Centrocampista",
-
-    LW: "Attaccante",
-    RW: "Attaccante",
-    CF: "Attaccante",
-    ST: "Attaccante",
-    FW: "Attaccante"
-  };
-
-  return (
-    mappa[r] ||
-    ruolo
-  );
-}
-
-function valoreFormazione(
-  giocatore
-) {
-
-  if (!giocatore) {
-    return {};
-  }
-
-  const atleta =
-    giocatore?.athlete ||
-    giocatore?.player ||
-    giocatore;
-
-  const nome =
-    nomeAtleta(
-      atleta
-    );
-
-  const ruolo =
-
-    giocatore?.position?.abbreviation ||
-
-    atleta?.position?.abbreviation ||
-
-    giocatore?.position?.displayName ||
-
-    atleta?.position?.displayName ||
-
-    null;
-
-  return {
-
-    cognome:
-      ultimoCognome(
-        nome
-      ),
-
-    numero:
-      giocatore?.jersey ||
-
-      atleta?.jersey ||
-
-      null,
-
-    ruolo:
-      ruoloItaliano(
-        ruolo
-      ),
-
-    ruoloESPN:
-      ruolo,
-
-    titolare:
-      giocatore?.starter === true ||
-
-      giocatore?.lineupStatus === "starter" ||
-
-      giocatore?.status === "starter"
-  };
-}
-
-function ordinaGiocatori(
-  giocatori
-) {
-
-  const ordine = {
-
-    "Portiere": 1,
-
-    "Difensore": 2,
-
-    "Centrocampista": 3,
-
-    "Attaccante": 4
-  };
-
-  return giocatori.sort(
-    function(a, b) {
-
-      const ruoloA =
-        ordine[a.ruolo] ||
-        99;
-
-      const ruoloB =
-        ordine[b.ruolo] ||
-        99;
-
-      if (
-        ruoloA!== ruoloB
-      ) {
-
-        return ruoloA -
-          ruoloB;
-      }
-
-      const numeroA =
-        Number(
-          a.numero
-        );
-
-      const numeroB =
-        Number(
-          b.numero
-        );
-
-      if (
-        Number.isFinite(numeroA) &&
-        Number.isFinite(numeroB)
-      ) {
-
-        return numeroA -
-          numeroB;
-      }
-
-      return String(
-        a.cognome ||
-        ""
-      ).localeCompare(
-        String(
-          b.cognome ||
-          ""
-        )
-      );
-    }
-  );
-}
-
-function testoFormazione(
-  formazione
-) {
-
-  if (!formazione) {
-    return null;
-  }
-
-  const parti = [];
-
-  if (
-    formazione.modulo
-  ) {
-
-    parti.push(
-      "Modulo: " +
-      formazione.modulo
-    );
-  }
-
-  const gruppi = [
-
-    {
-      nome: "Portieri",
-      lista:
-        formazione.titolari
-         .filter(
-            g =>
-              g.ruolo ===
-              "Portiere"
-          )
-    },
-
-    {
-      nome: "Difensori",
-      lista:
-        formazione.titolari
-         .filter(
-            g =>
-              g.ruolo ===
-              "Difensore"
-          )
-    },
-
-    {
-      nome: "Centrocampisti",
-      lista:
-        formazione.titolari
-         .filter(
-            g =>
-              g.ruolo ===
-              "Centrocampista"
-          )
-    },
-
-    {
-      nome: "Attaccanti",
-      lista:
-        formazione.titolari
-         .filter(
-            g =>
-              g.ruolo ===
-              "Attaccante"
-          )
-    }
-  ];
-
-  for (
-    const gruppo
-    of gruppi
-  ) {
-
-    if (
-      gruppo.lista.length
-    ) {
-
-      parti.push(
-
-        gruppo.nome +
-        ": " +
-
-        gruppo.lista
-         .map(
-            g =>
-              g.cognome
-          )
-         .filter(Boolean)
-         .join(", ")
-      );
-    }
-  }
-
-  if (
-    formazione.allenatore
-  ) {
-
-    parti.push(
-      "Allenatore: " +
-      formazione.allenatore
-    );
-  }
-
-  return parti.join(
-    " | "
-  );
-}
-
-function creaFormazioni(
-  data,
-  home,
-  away
-) {
+// ============================================================
+// STATISTICHE
+// ============================================================
+
+function estraiStatistiche(data) {
 
   const risultato = {
-
-    casa: null,
-
-    trasferta: null
+    possessoCasa: 0,
+    possessoTrasferta: 0,
+    tiriCasa: 0,
+    tiriTrasferta: 0,
+    tiriPortaCasa: 0,
+    tiriPortaTrasferta: 0,
+    angoliCasa: 0,
+    angoliTrasferta: 0,
+    passaggiCasa: 0,
+    passaggiTrasferta: 0,
+    fuorigiocoCasa: 0,
+    fuorigiocoTrasferta: 0
   };
 
-  const rosters =
+  const competizione =
+    data &&
+    data.header &&
+    data.header.competitions &&
+    data.header.competitions[0];
 
-    data?.rosters ||
-
-    data?.lineups ||
-
-    data?.boxscore?.players ||
-
-    [];
-
-  if (
-   !Array.isArray(rosters)
-  ) {
-
+  if (!competizione) {
     return risultato;
   }
 
-  for (
-    const roster
-    of rosters
-  ) {
+  const competitors =
+    competizione.competitors || [];
 
-    const idSquadra =
+  function leggiStatistiche(stats) {
 
-      roster?.team?.id ||
+    const output = {};
 
-      roster?.teamId ||
-
-      null;
-
-    const giocatori =
-
-      roster?.roster ||
-
-      roster?.athletes ||
-
-      roster?.players ||
-
-      [];
-
-    if (
-     !Array.isArray(
-        giocatori
-      )
-    ) {
-
-      continue;
+    if (!Array.isArray(stats)) {
+      return output;
     }
 
-    const formazione = {
+    for (const stat of stats) {
 
-      modulo:
-
-        roster?.formation?.displayName ||
-
-        roster?.formation?.name ||
-
-        roster?.formation ||
-
-        roster?.formationUsed ||
-
-        null,
-
-      allenatore:
-
-        roster?.coach?.displayName ||
-
-        roster?.coach?.fullName ||
-
-        roster?.coaches?.[0]?.displayName ||
-
-        roster?.coaches?.[0]?.fullName ||
-
-        null,
-
-      titolari: [],
-
-      riserve: []
-    };
-
-    for (
-      const giocatore
-      of giocatori
-    ) {
-
-      const elemento =
-        valoreFormazione(
-          giocatore
+      const nome =
+        normalizzaTesto(
+          stat.name ||
+          stat.displayName ||
+          stat.label ||
+          ""
         );
 
-      if (
-       !elemento.cognome
-      ) {
+      const valore =
+        stat.displayValue ||
+        stat.value ||
+        "";
 
-        continue;
-      }
-
-      if (
-        elemento.titolare
-      ) {
-
-        formazione
-         .titolari
-         .push(
-            elemento
-          );
-
-      } else {
-
-        formazione
-         .riserve
-         .push(
-            elemento
-          );
-      }
+      output[nome] = valore;
     }
 
-    ordinaGiocatori(
-      formazione.titolari
-    );
+    return output;
+  }
 
-    ordinaGiocatori(
-      formazione.riserve
-    );
+  for (const squadra of competitors) {
 
-    formazione.testo =
-      testoFormazione(
-        formazione
+    const stats =
+      leggiStatistiche(
+        squadra.statistics || []
       );
 
+    const possesso =
+      parseFloat(
+        String(
+          stats.possession ||
+          stats["possession pct"] ||
+          "0"
+        ).replace("%", "")
+      ) || 0;
+
+    const tiri =
+      parseFloat(
+        stats.total_shots ||
+        stats.shots ||
+        stats["total shots"] ||
+        "0"
+      ) || 0;
+
+    const tiriPorta =
+      parseFloat(
+        stats.shots_on_target ||
+        stats["shots on target"] ||
+        stats["shots on goal"] ||
+        "0"
+      ) || 0;
+
+    const angoli =
+      parseFloat(
+        stats.corner_kicks ||
+        stats.corners ||
+        stats["corner kicks"] ||
+        "0"
+      ) || 0;
+
+    const passaggi =
+      parseFloat(
+        stats.total_passes ||
+        stats.passes ||
+        stats["total passes"] ||
+        "0"
+      ) || 0;
+
+    const fuorigioco =
+      parseFloat(
+        stats.offsides ||
+        "0"
+      ) || 0;
+
     if (
-      idSquadra &&
-      String(idSquadra) ===
-      String(home?.team?.id || home?.id)
+      squadra.homeAway === "home"
     ) {
 
-      risultato.casa =
-        formazione;
-    }
+      risultato.possessoCasa = possesso;
+      risultato.tiriCasa = tiri;
+      risultato.tiriPortaCasa = tiriPorta;
+      risultato.angoliCasa = angoli;
+      risultato.passaggiCasa = passaggi;
+      risultato.fuorigiocoCasa = fuorigioco;
 
-    if (
-      idSquadra &&
-      String(idSquadra) ===
-      String(away?.team?.id || away?.id)
-    ) {
+    } else {
 
-      risultato.trasferta =
-        formazione;
+      risultato.possessoTrasferta = possesso;
+      risultato.tiriTrasferta = tiri;
+      risultato.tiriPortaTrasferta = tiriPorta;
+      risultato.angoliTrasferta = angoli;
+      risultato.passaggiTrasferta = passaggi;
+      risultato.fuorigiocoTrasferta = fuorigioco;
     }
   }
 
   return risultato;
-      }
+}
 
-/* ============================================================
-   ARBITRI / ASSISTENTI / VAR
-============================================================ */
+// ============================================================
+// STADIO
+// ============================================================
 
-function creaArbitri(
-  data,
-  competition
-) {
+function estraiStadio(data) {
 
-  const ufficiali =
+  const competizione =
+    data &&
+    data.header &&
+    data.header.competitions &&
+    data.header.competitions[0];
 
-    competition?.officials ||
-
-    data?.officials ||
-
-    data?.gameInfo?.officials ||
-
-    data?.gameInfo?.officials?.items ||
-
-    [];
-
-  if (
-   !Array.isArray(
-      ufficiali
-    )
-  ) {
-
-    return "";
+  if (!competizione) {
+    return {
+      nome: "",
+      citta: ""
+    };
   }
 
-  const risultati = {
+  const venue =
+    competizione.venue ||
+    {};
 
-    arbitro: null,
+  return {
+    nome:
+      venue.fullName ||
+      venue.displayName ||
+      venue.name ||
+      "",
 
-    assistente1: null,
-
-    assistente2: null,
-
-    quartoUfficiale: null,
-
-    var: null,
-
-    avar: null
+    citta:
+      venue.address &&
+      (
+        venue.address.city ||
+        ""
+      )
+       ? venue.address.city
+        : ""
   };
+}
 
-  for (
-    const ufficiale
-    of ufficiali
-  ) {
+// ============================================================
+// TESTO CRONACA
+// ============================================================
 
-    const nome =
+function creaCronaca(data) {
 
-      ufficiale?.displayName ||
+  const lista = [];
 
-      ufficiale?.fullName ||
+  const plays =
+    Array.isArray(data.plays)
+     ? data.plays
+      : [];
 
-      ufficiale?.name ||
+  for (const play of plays) {
 
-      ufficiale?.person?.displayName ||
+    const text =
+      play.text ||
+      play.shortText ||
+      "";
 
-      null;
-
-    if (!nome) {
+    if (!text) {
       continue;
     }
 
-    const ruolo =
+    lista.push({
+      minuto:
+        play.clock &&
+        play.clock.displayValue
+         ? play.clock.displayValue
+          : "",
 
-      String(
-
-        ufficiale?.role ||
-
-        ufficiale?.type?.text ||
-
-        ufficiale?.type?.name ||
-
-        ufficiale?.position ||
-
-        ufficiale?.title ||
-
-        ""
-
-      ).toLowerCase();
-
-    /* AVAR PRIMA DEL VAR */
-
-    if (
-      ruolo.includes("avar")
-    ) {
-
-      if (
-       !risultati.avar
-      ) {
-
-        risultati.avar =
-          nome;
-      }
-
-      continue;
-    }
-
-    if (
-      ruolo === "var" ||
-
-      ruolo.includes(
-        "video assistant referee"
-      ) ||
-
-      ruolo.includes(
-        "video referee"
-      ) ||
-
-      ruolo.includes("video")
-    ) {
-
-      if (
-       !risultati.var
-      ) {
-
-        risultati.var =
-          nome;
-      }
-
-      continue;
-    }
-
-    if (
-      ruolo.includes("fourth") ||
-
-      ruolo.includes("4th") ||
-
-      ruolo.includes("quarto")
-    ) {
-
-      if (
-       !risultati.quartoUfficiale
-      ) {
-
-        risultati.quartoUfficiale =
-          nome;
-      }
-
-      continue;
-    }
-
-    if (
-      ruolo.includes("assistant") ||
-
-      ruolo.includes("assistente") ||
-
-      ruolo.includes("linesman")
-    ) {
-
-      if (
-       !risultati.assistente1
-      ) {
-
-        risultati.assistente1 =
-          nome;
-
-      } else if (
-       !risultati.assistente2
-      ) {
-
-        risultati.assistente2 =
-          nome;
-      }
-
-      continue;
-    }
-
-    if (
-      ruolo.includes("referee") ||
-
-      ruolo.includes("arbitro")
-    ) {
-
-      if (
-       !risultati.arbitro
-      ) {
-
-        risultati.arbitro =
-          nome;
-      }
-    }
+      testo: text
+    });
   }
 
-  /* FALLBACK: primo ufficiale */
-
-  if (
-   !risultati.arbitro &&
-    ufficiali.length
-  ) {
-
-    risultati.arbitro =
-
-      ufficiali[0]?.displayName ||
-
-      ufficiali[0]?.fullName ||
-
-      ufficiali[0]?.name ||
-
-      null;
-  }
-
-  const parti = [];
-
-  if (
-    risultati.arbitro
-  ) {
-
-    parti.push(
-      "Arbitro: " +
-      risultati.arbitro
-    );
-  }
-
-  if (
-    risultati.assistente1
-  ) {
-
-    parti.push(
-      "Assistente 1: " +
-      risultati.assistente1
-    );
-  }
-
-  if (
-    risultati.assistente2
-  ) {
-
-    parti.push(
-      "Assistente 2: " +
-      risultati.assistente2
-    );
-  }
-
-  if (
-    risultati.quartoUfficiale
-  ) {
-
-    parti.push(
-      "Quarto ufficiale: " +
-      risultati.quartoUfficiale
-    );
-  }
-
-  if (
-    risultati.var
-  ) {
-
-    parti.push(
-      "VAR: " +
-      risultati.var
-    );
-  }
-
-  if (
-    risultati.avar
-  ) {
-
-    parti.push(
-      "AVAR: " +
-      risultati.avar
-    );
-  }
-
-  return parti.join(
-    ", "
-  );
+  return lista;
 }
 
-/* ============================================================
-   STATO
-============================================================ */
-
-function traduciStato(
-  stato
-) {
-
-  if (!stato) {
-    return "In programma";
-  }
-
-  if (
-    stato.completed === true ||
-    stato.completata === true
-  ) {
-
-    return "Finita";
-  }
-
-  const state =
-    String(
-      stato.state ||
-      ""
-    ).toLowerCase();
-
-  const name =
-    String(
-      stato.name ||
-      ""
-    ).toLowerCase();
-
-  const description =
-    String(
-      stato.description ||
-      ""
-    ).toLowerCase();
-
-  if (
-
-    state === "in" ||
-
-    state === "live" ||
-
-    state === "inprogress" ||
-
-    name.includes("live") ||
-
-    name.includes("progress") ||
-
-    description.includes("live") ||
-
-    description.includes("progress")
-  ) {
-
-    return "Live";
-  }
-
-  if (
-
-    state === "post" ||
-
-    name.includes("final") ||
-
-    name.includes("post") ||
-
-    description.includes("final")
-  ) {
-
-    return "Finita";
-  }
-
-  if (
-
-    name.includes("postponed") ||
-
-    name.includes("posticip") ||
-
-    description.includes("postponed") ||
-
-    description.includes("posticip")
-  ) {
-
-    return "Posticipata";
-  }
-
-  if (
-
-    name.includes("canceled") ||
-
-    name.includes("cancelled") ||
-
-    description.includes("canceled") ||
-
-    description.includes("cancelled")
-  ) {
-
-    return "Annullata";
-  }
-
-  return "In programma";
-}
-
-/* ============================================================
-   TRADUZIONE FASE / TURNO
-============================================================ */
-
-function traduciFase(
-  valore
-) {
-
-  if (!valore) {
-    return null;
-  }
-
-  let testo =
-    String(
-      valore
-    ).trim();
-
-  if (!testo) {
-    return null;
-  }
-
-  const basso =
-    testo
-     .toLowerCase()
-     .normalize("NFD")
-     .replace(
-        /[\u0300-\u036f]/g,
-        ""
-      );
-
-  /* OTTAVI */
-
-  if (
-    basso.includes(
-      "round of 16"
-    ) ||
-
-    basso.includes(
-      "round-of-16"
-    ) ||
-
-    basso.includes(
-      "round of sixteen"
-    ) ||
-
-    basso.includes(
-      "last 16"
-    ) ||
-
-    basso.includes(
-      "octavos"
-    ) ||
-
-    basso.includes(
-      "ottavi"
-    )
-  ) {
-
-    return "Ottavi di finale";
-  }
-
-  /* SEDICESIMI */
-
-  if (
-    basso.includes(
-      "round of 32"
-    ) ||
-
-    basso.includes(
-      "last 32"
-    ) ||
-
-    basso.includes(
-      "sedicesimi"
-    )
-  ) {
-
-    return "Sedicesimi di finale";
-  }
-
-  /* QUARTI */
-
-  if (
-    basso.includes(
-      "quarterfinal"
-    ) ||
-
-    basso.includes(
-      "quarter-final"
-    ) ||
-
-    basso.includes(
-      "quarter final"
-    ) ||
-
-    basso.includes(
-      "quarti"
-    )
-  ) {
-
-    return "Quarti di finale";
-  }
-
-  /* SEMIFINALE */
-
-  if (
-    basso.includes(
-      "semifinal"
-    ) ||
-
-    basso.includes(
-      "semi-final"
-    ) ||
-
-    basso.includes(
-      "semifinale"
-    )
-  ) {
-
-    return "Semifinale";
-  }
-
-  /* FINALE */
-
-  if (
-    basso === "final" ||
-
-    basso === "finale" ||
-
-    basso.includes(
-      "final match"
-    )
-  ) {
-
-    return "Finale";
-  }
-
-  /* PLAYOFF */
-
-  if (
-    basso.includes(
-      "playoff"
-    ) ||
-
-    basso.includes(
-      "play-off"
-    )
-  ) {
-
-    return "Playoff";
-  }
-
-  /* PLAY-IN */
-
-  if (
-    basso.includes(
-      "play-in"
-    ) ||
-
-    basso.includes(
-      "play in"
-    )
-  ) {
-
-    return "Play-in";
-  }
-
-  /* QUALIFICAZIONI */
-
-  if (
-    basso.includes(
-      "qualifying"
-    ) ||
-
-    basso.includes(
-      "qualification"
-    ) ||
-
-    basso.includes(
-      "qualificazioni"
-    )
-  ) {
-
-    return "Qualificazioni";
-  }
-
-  /* TURNO PRELIMINARE */
-
-  if (
-    basso.includes(
-      "preliminary round"
-    ) ||
-
-    basso.includes(
-      "preliminary"
-    ) ||
-
-    basso.includes(
-      "turno preliminare"
-    )
-  ) {
-
-    return "Turno preliminare";
-  }
-
-  /* FASE A GIRONI */
-
-  if (
-    basso.includes(
-      "group stage"
-    ) ||
-
-    basso.includes(
-      "group-stage"
-    ) ||
-
-    basso.includes(
-      "fase a gironi"
-    )
-  ) {
-
-    return "Fase a gironi";
-  }
-
-  /* FASE CAMPIONATO UEFA */
-
-  if (
-    basso.includes(
-      "league phase"
-    ) ||
-
-    basso.includes(
-      "league-phase"
-    ) ||
-
-    basso.includes(
-      "fase campionato"
-    )
-  ) {
-
-    return "Fase campionato";
-  }
-
-  /* FASE ELIMINATORIA */
-
-  if (
-    basso.includes(
-      "knockout phase"
-    ) ||
-
-    basso.includes(
-      "knockout"
-    ) ||
-
-    basso.includes(
-      "elimination phase"
-    )
-  ) {
-
-    return "Fase a eliminazione diretta";
-  }
-
-  /* TURNI */
-
-  if (
-    basso.includes(
-      "first round"
-    ) ||
-    basso.includes(
-      "first-round"
-    )
-  ) {
-
-    return "Primo turno";
-  }
-
-  if (
-    basso.includes(
-      "second round"
-    ) ||
-    basso.includes(
-      "second-round"
-    )
-  ) {
-
-    return "Secondo turno";
-  }
-
-  if (
-    basso.includes(
-      "third round"
-    ) ||
-    basso.includes(
-      "third-round"
-    )
-  ) {
-
-    return "Terzo turno";
-  }
-
-  if (
-    basso.includes(
-      "fourth round"
-    ) ||
-    basso.includes(
-      "fourth-round"
-    )
-  ) {
-
-    return "Quarto turno";
-  }
-
-  return testo;
-    }
-
-/* ============================================================
-   RICERCA FASE / TURNO NEL JSON ESPN
-============================================================ */
-
-function trovaFaseESPN(
-  obj
-) {
-
-  if (!obj) {
-    return null;
-  }
-
-  const trovate = [];
-
-  function aggiungi(
-    valore
-  ) {
-
-    const testo =
-      testoValido(
-        valore
-      );
-
-    if (
-      testo &&
-     !trovate.includes(
-        testo
-      )
-    ) {
-
-      trovate.push(
-        testo
-      );
-    }
-  }
-
-  function visita(
-    valore,
-    profondita
-  ) {
-
-    if (
-      valore === null ||
-      valore === undefined ||
-      profondita > 15
-    ) {
-
-      return;
-    }
-
-    if (
-      Array.isArray(valore)
-    ) {
-
-      for (
-        const elemento
-        of valore
-      ) {
-
-        visita(
-          elemento,
-          profondita + 1
-        );
-      }
-
-      return;
-    }
-
-    if (
-      typeof valore!== "object"
-    ) {
-
-      return;
-    }
-
-    const campi = [
-
-      "round",
-
-      "phase",
-
-      "stage",
-
-      "roundName",
-
-      "phaseName",
-
-      "stageName",
-
-      "roundDisplayName",
-
-      "phaseDisplayName",
-
-      "stageDisplayName"
-    ];
-
-    for (
-      const campo
-      of campi
-    ) {
-
-      const dato =
-        valore[campo];
-
-      if (
-        dato === null ||
-        dato === undefined
-      ) {
-
-        continue;
-      }
-
-      if (
-        typeof dato ===
-        "object"
-      ) {
-
-        aggiungi(
-          dato.displayName
-        );
-
-        aggiungi(
-          dato.name
-        );
-
-        aggiungi(
-          dato.label
-        );
-
-        aggiungi(
-          dato.description
-        );
-
-        aggiungi(
-          dato.text
-        );
-
-      } else {
-
-        aggiungi(
-          dato
-        );
-      }
-    }
-
-    for (
-      const chiave
-      of Object.keys(valore)
-    ) {
-
-      const dato =
-        valore[chiave];
-
-      if (
-        typeof dato ===
-        "string"
-      ) {
-
-        const basso =
-          dato
-           .toLowerCase()
-           .trim();
-
-        const sembraFase =
-
-          basso.includes(
-            "round of"
-          ) ||
-
-          basso.includes(
-            "quarterfinal"
-          ) ||
-
-          basso.includes(
-            "quarter-final"
-          ) ||
-
-          basso.includes(
-            "semifinal"
-          ) ||
-
-          basso.includes(
-            "semi-final"
-          ) ||
-
-          basso === "final" ||
-
-          basso.includes(
-            "qualifying"
-          ) ||
-
-          basso.includes(
-            "playoff"
-          ) ||
-
-          basso.includes(
-            "play-off"
-          ) ||
-
-          basso.includes(
-            "play-in"
-          ) ||
-
-          basso.includes(
-            "knockout"
-          ) ||
-
-          basso.includes(
-            "group stage"
-          ) ||
-
-          basso.includes(
-            "league phase"
-          ) ||
-
-          basso.includes(
-            "preliminary round"
-          ) ||
-
-          basso.includes(
-            "ottavi"
-          ) ||
-
-          basso.includes(
-            "quarti"
-          ) ||
-
-          basso.includes(
-            "semifinale"
-          ) ||
-
-          basso.includes(
-            "finale"
-          ) ||
-
-          basso.includes(
-            "qualificazioni"
-          );
-
-        if (
-          sembraFase
-        ) {
-
-          aggiungi(
-            dato
-          );
-        }
-      }
-    }
-
-    for (
-      const chiave
-      of Object.keys(valore)
-    ) {
-
-      const dato =
-        valore[chiave];
-
-      if (
-        dato &&
-        typeof dato ===
-        "object"
-      ) {
-
-        visita(
-          dato,
-          profondita + 1
-        );
-      }
-    }
-  }
-
-  visita(
-    obj,
-    0
-  );
-
-  /* PRIORITÀ */
-
-  const priorita = [
-
-    "Round of 16",
-    "Last 16",
-
-    "Round of 32",
-    "Last 32",
-
-    "Quarterfinal",
-    "Quarter-final",
-
-    "Semifinal",
-    "Semi-final",
-
-    "Final",
-
-    "Playoff",
-    "Play-in",
-
-    "Qualifying",
-
-    "Preliminary Round",
-
-    "Knockout Phase",
-
-    "Group Stage",
-
-    "League Phase"
-  ];
-
-  for (
-    const preferita
-    of priorita
-  ) {
-
-    const trovata =
-      trovate.find(
-        valore =>
-          normalizzaTesto(
-            valore
-          ).includes(
-            normalizzaTesto(
-              preferita
-            )
-          )
-      );
-
-    if (
-      trovata
-    ) {
-
-      return traduciFase(
-        trovata
-      );
-    }
-  }
-
-  for (
-    const valore
-    of trovate
-  ) {
-
-    const tradotta =
-      traduciFase(
-        valore
-      );
-
-    if (
-      tradotta &&
-      tradotta!== valore
-    ) {
-
-      return tradotta;
-    }
-  }
-
-  return null;
-}
-
-/* ============================================================
-   NUMERO GIORNATA ESPN
-============================================================ */
-
-function trovaNumeroGiornataESPN(
- ...oggetti
-) {
-
-  for (
-    const obj
-    of oggetti
-  ) {
-
-    if (!obj) {
-      continue;
-    }
-
-    const candidati = [
-
-      obj?.week?.number,
-
-      obj?.week?.value,
-
-      obj?.week?.displayValue,
-
-      obj?.matchday?.number,
-
-      obj?.matchday?.value,
-
-      obj?.matchDay?.number,
-
-      obj?.matchDay?.value,
-
-      obj?.round?.number,
-
-      obj?.stage?.week?.number
-    ];
-
-    for (
-      const valore
-      of candidati
-    ) {
-
-      if (
-        valore!== null &&
-        valore!== undefined &&
-        String(valore).trim()!== ""
-      ) {
-
-        const numero =
-          Number(
-            valore
-          );
-
-        if (
-          Number.isFinite(
-            numero
-          )
-        ) {
-
-          return numero;
-        }
-      }
-    }
-  }
-
-  return null;
-}
-
-/* ============================================================
-   SEGUE REF ESPN CORE
-============================================================ */
-
-async function seguiRefEspn(
-  obj,
-  profondita = 0
-) {
-
-  if (
-   !obj ||
-    profondita > 5
-  ) {
-
-    return null;
-  }
-
-  if (
-    typeof obj!== "string"
-  ) {
-
-    return null;
-  }
-
-  if (
-   !obj.includes(
-      "sports.core.api.espn.com"
-    )
-  ) {
-
-    return null;
-  }
-
-  try {
-
-    const response =
-      await fetch(
-        obj,
-        {
-          headers: {
-
-            "User-Agent":
-              "Mozilla/5.0",
-
-            "Accept":
-              "application/json"
-          }
-        }
-      );
-
-    if (
-     !response.ok
-    ) {
-
-      return null;
-    }
-
-    return await response.json();
-
-  } catch (errore) {
-
-    return null;
-  }
-}
-
-/* ============================================================
-   FASE / TURNO DEFINITIVO
-============================================================ */
-
-function faseDaFinestra(
-  competizione,
-  valoreData
-) {
-
-  const finestre =
-    FINESTRE_GIORNATE[
-      competizione
-    ];
-
-  if (
-   !Array.isArray(
-      finestre
-    ) ||
-   !valoreData
-  ) {
-
-    return null;
-  }
-
-  const data =
-    new Date(
-      valoreData
-    );
-
-  if (
-    isNaN(
-      data.getTime()
-    )
-  ) {
-
-    return null;
-  }
-
-  const giorno =
-    data.toISOString()
-     .slice(
-        0,
-        10
-      );
-
-  for (
-    const finestra
-    of finestre
-  ) {
-
-    if (
-      giorno >=
-      finestra.inizio &&
-      giorno <=
-      finestra.fine
-    ) {
-
-      return finestra.faseTurno;
-    }
-  }
-
-  return null;
-}
-
-async function getFaseTurnoESPN(
-  data,
-  competition,
-  competizione,
-  eventId
-) {
-
-  const datiCompetizione =
-    COMPETIZIONI[
-      competizione
-    ] || {
-
-        nome:
-          competizione,
-
-        paese:
-          null,
-
-        tipo:
-          "altro"
-      };
-
-  /*
-
-    1. CERCHIAMO PRIMA UNA FASE ELIMINATORIA ESPN
-
-  */
-
-  let fase =
-    trovaFaseESPN(
-      competition
-    );
-
-  if (!fase) {
-
-    fase =
-      trovaFaseESPN(
-        data?.header
-      );
-  }
-
-  if (!fase) {
-
-    fase =
-      trovaFaseESPN(
-        data
-      );
-  }
-
-  /*
-  Se ESPN dice Ottavi / Quarti /
-  Semifinale / Finale / Playoff ecc.,
-  questa informazione ha sempre priorità.
-  */
-
-  if (
-    fase
-  ) {
-
-    return fase;
-  }
-
-  /*
-
-    2. NUMERO GIORNATA UFFICIALE ESPN
-
-  */
-
-  let numeroGiornata =
-    trovaNumeroGiornataESPN(
-      competition,
-      data?.header,
-      data
-    );
-
-  /*
-
-    3. RECUPERIAMO IL COMPETITION OBJECT DAL CORE ESPN
-
-  */
-
-  const competitionId =
-
-    competition?.id ||
-
-    data?.header?.competitions?.[0]?.id ||
-
-    eventId;
-
-  let coreCompetition =
-    null;
-
-  if (
-    competitionId
-  ) {
-
-    coreCompetition =
-      await espnCoreFetch(
-
-        "/leagues/" +
-
-        encodeURIComponent(
-          competizione
-        ) +
-
-        "/events/" +
-
-        encodeURIComponent(
-          eventId
-        ) +
-
-        "/competitions/" +
-
-        encodeURIComponent(
-          competitionId
-        )
-      );
-  }
-
-  if (
-    coreCompetition
-  ) {
-
-    fase =
-      trovaFaseESPN(
-        coreCompetition
-      );
-
-    if (
-      fase
-    ) {
-
-      return fase;
-    }
-
-    if (
-      numeroGiornata ===
-      null
-    ) {
-
-      numeroGiornata =
-        trovaNumeroGiornataESPN(
-          coreCompetition
-        );
-    }
-  }
-
-  /*
-
-    4. EVENT CORE
-
-  */
-
-  let coreEvent =
-    null;
-
-  coreEvent =
-    await espnCoreFetch(
-
-      "/leagues/" +
-
-      encodeURIComponent(
-        competizione
-      ) +
-
-      "/events/" +
-
-      encodeURIComponent(
-        eventId
-      )
-    );
-
-  if (
-    coreEvent
-  ) {
-
-    fase =
-      trovaFaseESPN(
-        coreEvent
-      );
-
-    if (
-      fase
-    ) {
-
-      return fase;
-    }
-
-    if (
-      numeroGiornata ===
-      null
-    ) {
-
-      numeroGiornata =
-        trovaNumeroGiornataESPN(
-          coreEvent
-        );
-    }
-  }
-
-  /*
-
-    5. PRIORITÀ SPECIALE LA LIGA
-
-
-  Se ESPN ha la giornata ufficiale,
-  la giornata ufficiale prevale sulla
-  semplice data della partita.
-  */
-
-  if (
-    competizione ===
-    "esp.1" &&
-    numeroGiornata!== null
-  ) {
-
-    return (
-      "Giornata " +
-      numeroGiornata
-    );
-  }
-
-  /*
-
-    6. PER GLI ALTRI CAMPIONATI
-
-  */
-
-  if (
-    numeroGiornata!== null
-  ) {
-
-    return (
-      "Giornata " +
-      numeroGiornata
-    );
-  }
-
-  /*
-
-    7. FALLBACK: FINESTRA ESPLICITA
-
-  */
-
-  const dataPartita =
-    competition?.date ||
-
-    data?.header?.date ||
-
-    null;
-
-  const faseFinestra =
-    faseDaFinestra(
-      competizione,
-      dataPartita
-    );
-
-  if (
-    faseFinestra
-  ) {
-
-    return faseFinestra;
-  }
-
-  /*
-
-    8. SE NON TROVIAMO NULLA
-
-  */
-
-  if (
-    datiCompetizione.tipo ===
-    "coppa" ||
-    datiCompetizione.tipo ===
-    "nazionale"
-  ) {
-
+// ============================================================
+// WINNER / QUALIFICAZIONE
+// ============================================================
+
+function estraiVincitore(data) {
+
+  const competizione =
+    data &&
+    data.header &&
+    data.header.competitions &&
+    data.header.competitions[0];
+
+  if (!competizione) {
     return "";
+  }
+
+  if (
+    competizione.status &&
+    competizione.status.type &&
+    competizione.status.type.completed
+  ) {
+
+    const competitors =
+      competizione.competitors || [];
+
+    for (const squadra of competitors) {
+
+      if (
+        squadra.winner === true
+      ) {
+
+        return normalizzaSquadra(
+          squadra.team &&
+          squadra.team.displayName
+        );
+      }
+    }
   }
 
   return "";
 }
 
-/* ============================================================
-   PLAY ESPN CORE
-============================================================ */
+// ============================================================
+// PENALTY
+// ============================================================
 
-async function getPlaysCore(
-  competizione,
-  eventId,
-  competitionId
-) {
+function estraiRigori(data) {
 
-  if (
-   !competitionId
-  ) {
+  const risultato = {
+    casa: 0,
+    trasferta: 0
+  };
 
-    return [];
+  const competizione =
+    data &&
+    data.header &&
+    data.header.competitions &&
+    data.header.competitions[0];
+
+  if (!competizione) {
+    return risultato;
   }
 
-  const data =
-    await espnCoreFetch(
+  const competitors =
+    competizione.competitors || [];
 
-      "/leagues/" +
+  for (const squadra of competitors) {
 
-      encodeURIComponent(
-        competizione
-      ) +
+    const score =
+      squadra.score;
 
-      "/events/" +
+    const shootout =
+      squadra.shootout ||
+      squadra.penaltyScore ||
+      squadra.penaltyShots;
 
-      encodeURIComponent(
-        eventId
-      ) +
+    let valore = 0;
 
-      "/competitions/" +
+    if (
+      typeof shootout === "number"
+    ) {
+      valore = shootout;
+    }
+    else if (
+      typeof squadra.score === "object"
+    ) {
+      valore =
+        Number(
+          squadra.score.penalty ||
+          squadra.score.shootout ||
+          0
+        );
+    }
 
-      encodeURIComponent(
-        competitionId
-      ) +
-
-      "/plays?limit=500&showsubplays=true"
-    );
-
-  if (!data) {
-    return [];
+    if (
+      squadra.homeAway === "home"
+    ) {
+      risultato.casa = valore;
+    }
+    else {
+      risultato.trasferta = valore;
+    }
   }
 
-  if (
-    Array.isArray(
-      data.items
-    )
-  ) {
-
-    return data.items;
-  }
-
-  if (
-    Array.isArray(
-      data.plays
-    )
-  ) {
-
-    return data.plays;
-  }
-
-  return [];
+  return risultato;
 }
 
-/* ============================================================
-   TRADUZIONE EVENTI
-============================================================ */
+// ============================================================
+// ULTIMO COGNOME
+// ============================================================
 
-function traduciEvento(
-  tipo
-) {
+function nomeAtleta(obj) {
 
-  const t =
-    String(
-      tipo || ""
-    ).toLowerCase();
-
-  if (
-
-    t.includes("goal") ||
-
-    t.includes("gol") ||
-
-    t.includes("score")
-  ) {
-
-    return "Gol";
-  }
-
-  if (
-
-    t.includes("yellow") ||
-
-    t.includes("giallo")
-  ) {
-
-    return "Ammonizione";
-  }
-
-  if (
-
-    t.includes("red") ||
-
-    t.includes("rosso")
-  ) {
-
-    return "Espulsione";
-  }
-
-  if (
-
-    t.includes("substitution") ||
-
-    t.includes("substitute") ||
-
-    t.includes("sostituzione") ||
-
-    t.includes("sub")
-  ) {
-
-    return "Sostituzione";
-  }
-
-  if (
-
-    t.includes("penalty") ||
-
-    t.includes("rigore")
-  ) {
-
-    return "Rigore";
-  }
-
-  if (
-    t.includes("var")
-  ) {
-
-    return "VAR";
-  }
-
-  if (
-    t.includes("injury") ||
-    t.includes("infortun")
-  ) {
-
-    return "Infortunio";
-  }
-
-  if (
-    t.includes("kickoff") ||
-    t.includes("kick-off") ||
-    t.includes("start")
-  ) {
-
-    return "Inizio partita";
-  }
-
-  if (
-    t.includes("halftime") ||
-    t.includes("half time")
-  ) {
-
-    return "Fine primo tempo";
-  }
-
-  if (
-    t.includes("fulltime") ||
-    t.includes("full time") ||
-    t.includes("end")
-  ) {
-
-    return "Fine partita";
-  }
-
-  return tipo || "";
-}
-
-/* ============================================================
-   EVENTO IMPORTANTE?
-============================================================ */
-
-function eventoImportante(
-  play
-) {
-
-  const tipo =
-    tipoEvento(play);
-
-  const testo =
-    testoEvento(play)
-     .toLowerCase();
+  if (!obj) return "";
 
   return (
-
-    play?.scoringPlay === true ||
-
-    play?.isScoringPlay === true ||
-
-    tipo.includes("goal") ||
-
-    tipo.includes("gol") ||
-
-    tipo.includes("score") ||
-
-    tipo.includes("yellow") ||
-
-    tipo.includes("red") ||
-
-    tipo.includes("substitution") ||
-
-    tipo.includes("substitute") ||
-
-    tipo.includes("penalty") ||
-
-    tipo.includes("rigore") ||
-
-    tipo.includes("var") ||
-
-    tipo.includes("injury") ||
-
-    tipo.includes("infortun") ||
-
-    tipo.includes("kickoff") ||
-
-    tipo.includes("kick-off") ||
-
-    tipo.includes("halftime") ||
-
-    tipo.includes("fulltime") ||
-
-    tipo.includes("full time") ||
-
-    testo.includes("goal") ||
-
-    testo.includes("gol") ||
-
-    testo.includes("yellow card") ||
-
-    testo.includes("red card") ||
-
-    testo.includes("substitution") ||
-
-    testo.includes("injury") ||
-
-    testo.includes("infortun") ||
-
-    testo.includes("rigore") ||
-
-    testo.includes("penalty") ||
-
-    testo.includes("fine primo tempo") ||
-
-    testo.includes("fine partita")
+    obj.displayName ||
+    obj.fullName ||
+    obj.shortName ||
+    obj.name ||
+    ""
   );
 }
 
-/* ============================================================
-   CRONACA
-============================================================ */
+// ============================================================
+// CREA EVENTI
+// ============================================================
 
-function creaCronaca(
-  plays,
-  stato
-) {
+function creaEventi(data) {
 
-  if (
-   !Array.isArray(
-      plays
-    )
-  ) {
-
-    return [];
-  }
-
-  const cronaca = [];
-
-  for (
-    const play
-    of plays
-  ) {
-
-    if (
-     !eventoImportante(
-        play
-      )
-    ) {
-
-      continue;
-    }
-
-    const tipo =
-      tipoEvento(play);
-
-    const atleta =
-      atletaEvento(play);
-
-    const assist =
-      play?.assistedBy ||
-
-      play?.assist ||
-
-      play?.participants?.[1]?.athlete ||
-
-      play?.participants?.[1]?.player ||
-
-      play?.athletesInvolved?.[1] ||
-
-      null;
-
-    const minuto =
-      minutoEvento(play);
-
-    const squadra =
-      squadraEvento(play);
-
-    let tipoItaliano =
-      traduciEvento(
-        tipo
-      );
-
-    const testo =
-      testoEvento(
-        play
-      );
-
-    /*
-    Se il testo ESPN indica esplicitamente
-    la fine del primo tempo.
-    */
-
-    const lower =
-      testo.toLowerCase();
-
-    if (
-      lower.includes(
-        "half time"
-      ) ||
-      lower.includes(
-        "halftime"
-      ) ||
-      lower.includes(
-        "fine primo tempo"
-      )
-    ) {
-
-      tipoItaliano =
-        "Fine primo tempo";
-    }
-
-    if (
-      lower.includes(
-        "full time"
-      ) ||
-      lower.includes(
-        "fulltime"
-      ) ||
-      lower.includes(
-        "fine partita"
-      )
-    ) {
-
-      tipoItaliano =
-        "Fine partita";
-    }
-
-    cronaca.push({
-
-      minuto:
-        minuto,
-
-      tipo:
-        tipoItaliano,
-
-      giocatore:
-        cognomeAtleta(
-          atleta
-        ),
-
-      assist:
-        cognomeAtleta(
-          assist
-        ),
-
-      squadra:
-        squadra,
-
-      testo:
-        testo ||
-        null
-    });
-  }
-
-  /*
-  Deduplica
-  */
-
-  const vista =
-    new Set();
-
-  return cronaca.filter(
-    function(evento) {
-
-      const chiave =
-
-        String(
-          evento.minuto ||
-          ""
-        ) +
-
-        "|" +
-
-        String(
-          evento.tipo ||
-          ""
-        ) +
-
-        "|" +
-
-        String(
-          evento.giocatore ||
-          ""
-        ) +
-
-        "|" +
-
-        String(
-          evento.squadra ||
-          ""
-        ) +
-
-        "|" +
-
-        String(
-          evento.testo ||
-          ""
-        );
-
-      if (
-        vista.has(
-          chiave
-        )
-      ) {
-
-        return false;
-      }
-
-      vista.add(
-        chiave
-      );
-
-      return true;
-    }
-  );
+  return {
+    marcatori: creaMarcatori(data),
+    cartellini: creaCartellini(data),
+    sostituzioni: creaSostituzioni(data)
+  };
 }
 
-/* ============================================================
-   EVENTI COMPLETI
-============================================================ */
+// ============================================================
+// ENDPOINT
+// ============================================================
 
-function creaEventi(
-  plays
-) {
-
-  if (
-   !Array.isArray(
-      plays
-    )
-  ) {
-
-    return [];
-  }
-
-  return plays.map(
-    function(play) {
-
-      return {
-
-        id:
-          play?.id ||
-          null,
-
-        minuto:
-          minutoEvento(
-            play
-          ),
-
-        tipo:
-          traduciEvento(
-            tipoEvento(
-              play
-            )
-          ),
-
-        giocatore:
-          cognomeAtleta(
-            atletaEvento(
-              play
-            )
-          ),
-
-        assist:
-          cognomeAtleta(
-
-            play?.assistedBy ||
-
-            play?.assist ||
-
-            play?.participants?.[1]?.athlete ||
-
-            play?.participants?.[1]?.player ||
-
-            null
-          ),
-
-        squadra:
-          squadraEvento(
-            play
-          ),
-
-        testo:
-          testoEvento(
-            play
-          ) ||
-          null
-      };
-    }
-  );
-}
-
-/* ============================================================
-   ENDPOINT PRINCIPALE
-============================================================ */
-
-module.exports =
-async function handler(
-  req,
-  res
-) {
+export default async function handler(req, res) {
 
   try {
 
     const id =
-      req.query.id;
-
-    const competizione =
-      req.query.competizione ||
-      "ita.1";
+      req.query &&
+      (
+        req.query.id ||
+        req.query.event
+      );
 
     if (!id) {
 
-      return res
-       .status(400)
-       .json({
-
-          success: false,
-
-          errore:
-            "Parametro id obbligatorio"
-        });
+      return res.status(400).json({
+        errore:
+          "Parametro id obbligatorio"
+      });
     }
 
-    const datiCompetizione =
-      COMPETIZIONI[
-        competizione
-      ] || {
+    // ========================================================
+    // 1. PRENDIAMO LA PARTITA DIRETTAMENTE DA ESPN
+    // ========================================================
 
-        nome:
-          competizione,
-
-        paese:
-          null,
-
-        tipo:
-          "altro"
-      };
-
-    /*
-
-    SUMMARY ESPN
-
-    */
+    const url =
+      ESPN_BASE +
+      "/summary?event=" +
+      encodeURIComponent(id);
 
     const data =
-      await espnFetch(
-
-        "/" +
-
-        competizione +
-
-        "/summary?event=" +
-
-        encodeURIComponent(
-          id
-        )
-      );
-
-    const competition =
-      data?.header?.competitions?.[0];
-
-    if (!competition) {
-
-      return res
-       .status(404)
-       .json({
-
-          success: false,
-
-          errore:
-            "Partita non trovata"
-        });
-    }
-
-    /*
-
-    SQUADRE
-
-    */
-
-    const teams =
-      competition?.competitors ||
-      [];
-
-    const home =
-      teams.find(
-        team =>
-          team?.homeAway ===
-          "home"
-      );
-
-    const away =
-      teams.find(
-        team =>
-          team?.homeAway ===
-          "away"
-      );
-
-    const homeTeam =
-      datiSquadra(
-        home
-      );
-
-    const awayTeam =
-      datiSquadra(
-        away
-      );
-
-    /*
-
-    PLAY
-
-    */
-
-    let plays =
-
-      Array.isArray(
-        data?.plays
-      )
-       ? data.plays
-
-        : Array.isArray(
-            data?.keyEvents
-          )
-         ? data.keyEvents
-
-          : [];
-
-    const competitionId =
-
-      competition?.id ||
-
-      data?.header?.competitions?.[0]?.id ||
-
-      id;
-
-    const playsCore =
-      await getPlaysCore(
-
-        competizione,
-
-        id,
-
-        competitionId
-      );
-
-    if (
-      playsCore.length >
-      plays.length
-    ) {
-
-      plays =
-        playsCore;
-    }
-
-    /*
-
-    CDN ESPN
-
-    */
-
-    const cdn =
-      await espnCdnFetch(
-
-        competizione,
-
-        id
-      );
-
-    /*
-
-    STATISTICHE
-
-    */
-
-    const statisticheSummary =
-      statisticheDaSummary(
-        data
-      );
-
-    const statisticheCore =
-      await statisticheDaCore(
-
-        competizione,
-
-        id,
-
-        competitionId,
-
-        home?.id ||
-        home?.team?.id,
-
-        away?.id ||
-        away?.team?.id
-      );
-
-    const statisticheCdn =
-      statisticheDaCdn(
-        cdn
-      );
-
-    const statistiche =
-      unisciStatistiche(
-
-        statisticheSummary,
-
-        statisticheCore,
-
-        statisticheCdn
-      );
-
-    /*
-
-    FORMAZIONI
-
-    */
-
-    const formazioni =
-      creaFormazioni(
-
-        data,
-
-        home,
-
-        away
-      );
-
-    /*
-
-    STADIO
-
-    */
-
-    const venue =
-
-      data?.gameInfo?.venue ||
-
-      competition?.venue ||
-
-      null;
-
-    /*
-
-    DATA / ORA
-
-    */
-
-    const dataOra =
-      convertiDataOraItaliana(
-
-        competition?.date ||
-
-        data?.header?.date ||
-
-        null
-      );
-
-    /*
-
-    ARBITRI
-
-    */
-
-    const arbitri =
-      creaArbitri(
-
-        data,
-
-        competition
-      );
-
-    /*
-
-    STATO
-
-    */
-
-    const stato =
-      traduciStato(
-
-        competition?.status?.type
-      );
-
-    /*
-
-    FASE / TURNO
-
-    */
+      await espnFetch(url);
+
+    // ========================================================
+    // 2. IDENTIFICHIAMO LA COMPETIZIONE
+    // ========================================================
+
+    const codiceCompetizione =
+      trovaCodiceCompetizione(data);
+
+    const infoCompetizione =
+      COMPETIZIONI[codiceCompetizione] ||
+      {
+        nome:
+          data &&
+          data.header &&
+          data.header.league &&
+          data.header.league.name
+           ? data.header.league.name
+            : "",
+
+        slug:
+          codiceCompetizione || "",
+
+        paese: ""
+      };
+
+    // ========================================================
+    // 3. DATA REALE ESPN
+    // ========================================================
+
+    const dataPartita =
+      data.date ||
+      (
+        data.header &&
+        data.header.competitions &&
+        data.header.competitions[0] &&
+        data.header.competitions[0].date
+      ) ||
+      "";
+
+    // ========================================================
+    // 4. FASE/TURNO
+    //
+    // QUI VIENE USATA LA NUOVA LOGICA.
+    //
+    // NON:
+    // data -> Ottavi
+    //
+    // MA:
+    //
+    // competizione -> finestra -> data -> giornata
+    // ========================================================
 
     const faseTurno =
-      await getFaseTurnoESPN(
-
+      getFaseTurno(
         data,
-
-        competition,
-
-        competizione,
-
-        id
+        codiceCompetizione
       );
 
-    /*
+    // ========================================================
+    // 5. SQUADRE
+    // ========================================================
 
-    MARCATORI
+    const squadre =
+      estraiSquadre(data);
 
-    */
-
-    const marcatori =
-      creaMarcatori(
-        plays
-      );
-
-    /*
-
-    CARTELLINI
-
-    */
-
-    const cartellini =
-      creaCartellini(
-        plays
-      );
-
-    /*
-
-    SOSTITUZIONI
-
-    */
-
-    const sostituzioni =
-      creaSostituzioni(
-        plays
-      );
-
-    /*
-
-    CRONACA
-
-    */
-
-    const cronaca =
-      creaCronaca(
-
-        plays,
-
-        stato
-      );
-
-    /*
-
-    EVENTI
-
-    */
+    // ========================================================
+    // 6. EVENTI
+    // ========================================================
 
     const eventi =
-      creaEventi(
-        plays
-      );
+      creaEventi(data);
 
-    /*
+    // ========================================================
+    // 7. FORMAZIONI
+    // ========================================================
 
-    RISPOSTA
+    const formazioni =
+      creaFormazioni(data);
 
-    */
+    // ========================================================
+    // 8. ALLENATORI
+    // ========================================================
 
-    return res
-     .status(200)
-     .json({
+    const allenatori =
+      creaAllenatori(data);
 
-        success:
-          true,
+    // ========================================================
+    // 9. ARBITRI
+    // ========================================================
 
-        partita: {
+    const arbitri =
+      creaArbitri(data);
 
-          id:
-            data?.header?.id ||
-            id,
+    // ========================================================
+    // 10. STATISTICHE
+    // ========================================================
 
-          data:
-            dataOra.data,
+    const statistiche =
+      estraiStatistiche(data);
 
-          ora:
-            dataOra.ora,
+    // ========================================================
+    // 11. STADIO
+    // ========================================================
 
-          competizione: {
+    const stadio =
+      estraiStadio(data);
 
-            id:
-              competizione,
+    // ========================================================
+    // 12. CRONACA
+    // ========================================================
 
-            nome:
-              datiCompetizione.nome,
+    const cronaca =
+      creaCronaca(data);
 
-            paese:
-              datiCompetizione.paese
-          },
+    // ========================================================
+    // 13. VINCITORE
+    // ========================================================
 
-          /*
-          QUI ARRIVA SEMPRE:
-          Giornata X
-          oppure
-          Ottavi di finale
-          oppure
-          Quarti di finale
-          oppure
-          Semifinale
-          oppure
-          Finale
-          ecc.
-          */
+    const vincitore =
+      estraiVincitore(data);
 
-          faseTurno:
-            faseTurno,
+    // ========================================================
+    // 14. RIGORI
+    // ========================================================
 
-          stato: {
+    const rigori =
+      estraiRigori(data);
 
-            nome:
-              stato,
+    // ========================================================
+    // RISPOSTA API
+    // ========================================================
 
-            descrizione:
-              stato,
+    return res.status(200).json({
 
-            stato:
-              stato,
+      id: String(id),
 
-            completata:
-              stato ===
-              "Finita",
+      external_id:
+        String(id),
 
-            minuto:
+      competizione:
+        infoCompetizione.nome,
 
-              competition
-               ?.status
-               ?.displayClock ||
+      competition_id:
+        codiceCompetizione,
 
-              null
-          },
+      paese:
+        infoCompetizione.paese,
 
-          casa:
-            homeTeam,
+      // ======================================================
+      // FASE/TURNO
+      // ======================================================
 
-          trasferta:
-            awayTeam,
+      faseTurno:
 
-          stadio:
+        faseTurno || "",
 
-            venue?.fullName ||
+      // ======================================================
+      // DATA / ORA
+      // ======================================================
 
-            venue?.displayName ||
+      data:
+        dataItaliana(dataPartita),
 
-            null,
+      data_iso:
+        dataISOdaESPN(dataPartita),
 
-          nome:
+      ora:
+        oraItaliana(dataPartita),
 
-            (
-              home?.team
-               ?.displayName ||
-              ""
-            ) +
+      // ======================================================
+      // STATO
+      // ======================================================
 
-            " - " +
+      stato:
+        traduciStato(data),
 
-            (
-              away?.team
-               ?.displayName ||
-              ""
-            ),
+      // ======================================================
+      // SQUADRE
+      // ======================================================
 
-          link: {
+      casa:
+        squadre.casa,
 
-            partita:
+      trasferta:
+        squadre.trasferta,
 
-              "https://www.espn.com/soccer/match/_/gameId/" +
+      casaLogo:
+        squadre.casaLogo,
 
-              encodeURIComponent(
-                id
-              ),
+      trasfertaLogo:
+        squadre.trasfertaLogo,
 
-            statistiche:
+      // ======================================================
+      // RISULTATO
+      // ======================================================
 
-              "https://www.espn.com/soccer/matchstats/_/gameId/" +
+      golCasa:
+        squadre.casaScore,
 
-              encodeURIComponent(
-                id
-              )
-          }
-        },
+      golTrasferta:
+        squadre.trasfertaScore,
 
-        /*
+      rigoriCasa:
+        rigori.casa,
 
-        INFO
+      rigoriTrasferta:
+        rigori.trasferta,
 
-        */
+      vincitore:
+        vincitore,
 
-        info: {
+      // ======================================================
+      // STADIO
+      // ======================================================
 
-          arbitro:
-            arbitri,
+      stadio:
+        stadio.nome,
 
-          arbitri:
-            arbitri,
+      citta:
+        stadio.citta,
 
-          stadio:
+      // ======================================================
+      // ARBITRI
+      // ======================================================
 
-            venue?.fullName ||
+      arbitri:
+        arbitri,
 
-            venue?.displayName ||
+      // ======================================================
+      // ALLENATORI
+      // ======================================================
 
-            null,
+      allenatoreCasa:
+        allenatori.casa,
 
-          citta:
+      allenatoreTrasferta:
+        allenatori.trasferta,
 
-            venue?.address
-             ?.city ||
+      // ======================================================
+      // MARCATORI
+      // ======================================================
 
-            null,
+      marcatori:
+        eventi.marcatori,
 
-          paese:
+      // ======================================================
+      // CARTELLINI
+      // ======================================================
 
-            venue?.address
-             ?.country ||
+      cartellini:
+        eventi.cartellini,
 
-            null
-        },
+      // ======================================================
+      // SOSTITUZIONI
+      // ======================================================
 
-        /*
+      sostituzioni:
+        eventi.sostituzioni,
 
-        MARCATORI
+      // ======================================================
+      // FORMAZIONI
+      //
+      // SOLO COGNOMI
+      // ======================================================
 
-        */
+      formazioneCasa:
+        formazioni.casa,
 
-        marcatori:
-          marcatori,
+      formazioneTrasferta:
+        formazioni.trasferta,
 
-        /*
+      // ======================================================
+      // STATISTICHE
+      // ======================================================
 
-        CARTELLINI
+      possessoCasa:
+        statistiche.possessoCasa,
 
-        */
+      possessoTrasferta:
+        statistiche.possessoTrasferta,
 
-        cartellini:
-          cartellini,
+      tiriCasa:
+        statistiche.tiriCasa,
 
-        /*
+      tiriTrasferta:
+        statistiche.tiriTrasferta,
 
-        SOSTITUZIONI
+      tiriPortaCasa:
+        statistiche.tiriPortaCasa,
 
-        */
+      tiriPortaTrasferta:
+        statistiche.tiriPortaTrasferta,
 
-        sostituzioni:
-          sostituzioni,
+      angoliCasa:
+        statistiche.angoliCasa,
 
-        /*
+      angoliTrasferta:
+        statistiche.angoliTrasferta,
 
-        STATISTICHE COMPLETE
+      passaggiCasa:
+        statistiche.passaggiCasa,
 
-        */
+      passaggiTrasferta:
+        statistiche.passaggiTrasferta,
 
-        statistiche:
-          statistiche,
+      fuorigiocoCasa:
+        statistiche.fuorigiocoCasa,
 
-        /*
+      fuorigiocoTrasferta:
+        statistiche.fuorigiocoTrasferta,
 
-        STATISTICHE RAPIDE
+      // ======================================================
+      // CRONACA
+      // ======================================================
 
-        */
+      cronaca:
+        cronaca,
 
-        statistichePartita: {
+      // ======================================================
+      // LINK ESPN
+      // ======================================================
 
-          possessoCasa:
+      linkPartita:
+        "https://www.espn.com/soccer/match/_/gameId/" +
+        encodeURIComponent(id),
 
-            statistiche
-             .valori
-             .possessoCasa,
+      linkStatistiche:
+        "https://www.espn.com/soccer/match/_/gameId/" +
+        encodeURIComponent(id)
+    });
 
-          possessoTrasferta:
-
-            statistiche
-             .valori
-             .possessoTrasferta,
-
-          tiriCasa:
-
-            statistiche
-             .valori
-             .tiriCasa,
-
-          tiriTrasferta:
-
-            statistiche
-             .valori
-             .tiriTrasferta,
-
-          tiriInPortaCasa:
-
-            statistiche
-             .valori
-             .tiriInPortaCasa,
-
-          tiriInPortaTrasferta:
-
-            statistiche
-             .valori
-             .tiriInPortaTrasferta,
-
-          calciDangoloCasa:
-
-            statistiche
-             .valori
-             .calciDangoloCasa,
-
-          calciDangoloTrasferta:
-
-            statistiche
-             .valori
-             .calciDangoloTrasferta,
-
-          passaggiCasa:
-
-            statistiche
-             .valori
-             .passaggiCasa,
-
-          passaggiTrasferta:
-
-            statistiche
-             .valori
-             .passaggiTrasferta,
-
-          fuorigiocoCasa:
-
-            statistiche
-             .valori
-             .fuorigiocoCasa,
-
-          fuorigiocoTrasferta:
-
-            statistiche
-             .valori
-             .fuorigiocoTrasferta
-        },
-
-        /*
-
-        FORMAZIONI
-
-        */
-
-        formazioni:
-          formazioni,
-
-        /*
-
-        CRONACA
-
-        */
-
-        cronaca:
-          cronaca,
-
-        /*
-
-        EVENTI
-
-        */
-
-        eventi:
-          eventi
-      });
-
-  } catch (
-    errore
-  ) {
+  }
+  catch (errore) {
 
     console.error(
-      "Errore /api/partita:",
+      "ERRORE API PARTITA:",
       errore
     );
 
-    return res
-     .status(500)
-     .json({
+    return res.status(500).json({
 
-        success:
-          false,
+      errore:
+        "Errore nel recupero della partita da ESPN",
 
-        errore:
-          errore?.message ||
-          "Errore interno del server"
-      });
+      dettaglio:
+        errore &&
+        errore.message
+         ? errore.message
+          : String(errore)
+    });
   }
-};
+}
