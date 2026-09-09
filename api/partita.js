@@ -2673,25 +2673,22 @@ function trovaFinestraGiornata(
     return null;
   }
 
-  corrispondenti.sort(
-    function (a, b) {
+corrispondenti.sort(function (a, b) {
 
-      const durataA =
-        new Date(a.fine) -
-        new Date(a.inizio);
+  const start =
+    String(b.inizio).localeCompare(
+      String(a.inizio)
+    );
 
-      const durataB =
-        new Date(b.fine) -
-        new Date(b.inizio);
+  if (start !== 0) {
+    return start;
+  }
 
-      return durataA - durataB;
-
-    }
+  return String(a.fine).localeCompare(
+    String(b.fine)
   );
 
-  return corrispondenti[0];
-
-}
+});
 
 
 /* ============================================================
