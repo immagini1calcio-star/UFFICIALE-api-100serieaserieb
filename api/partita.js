@@ -2978,29 +2978,28 @@ function getFaseTurno(
   finestre personalizzate
   */
 
-  const finestra =
-    trovaFinestraGiornata(
-      competizione,
-      dataPartita
-    );
+const finestra =
+  trovaFinestraGiornata(
+    competizione,
+    dataPartita
+  );
 
+if (
+  finestra &&
+  finestra.faseTurno
+) {
 
-  if (
-    finestra &&
-    finestra.faseTurno
-  ) {
+  return {
 
-    return {
+    valore:
+      finestra.faseTurno,
 
-      valore:
-        finestra.faseTurno,
+    fonte:
+      "FINESTRE_GIORNATE"
 
-      fonte:
-        "FINESTRE_GIORNATE"
+  };
 
-    };
-
-  }
+}
 
 
   /*
