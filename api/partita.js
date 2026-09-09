@@ -3385,6 +3385,8 @@ function ruoloItaliano(ruolo) {
     CM: "Centrocampista",
     "CM-L": "Centrocampista",
     "CM-R": "Centrocampista",
+    "AM-L": "Centrocampista",
+    "AM-R": "Centrocampista",
 
     LM: "Centrocampista",
     RM: "Centrocampista",
@@ -3401,6 +3403,7 @@ function ruoloItaliano(ruolo) {
 
     ST: "Attaccante",
     FW: "Attaccante",
+    F: "Attaccante",
 
     SUB: "Riserva"
 
