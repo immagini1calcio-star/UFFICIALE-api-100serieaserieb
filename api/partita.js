@@ -3631,6 +3631,14 @@ function creaRigori(
   };
 
 
+  /* ==========================================================
+     CERCA SOLO INDICATORI ESPLICITI DI UNA SERIE DI RIGORI
+
+     NON bisogna cercare semplicemente "penalty" o "rigori",
+     perché ESPN può utilizzare questi termini anche nelle
+     normali statistiche della partita.
+  ========================================================== */
+
   const testo =
     JSON.stringify({
       data,
@@ -3638,53 +3646,120 @@ function creaRigori(
     }).toLowerCase();
 
 
-  if (
+  const shootoutEsplicito =
     testo.includes("penalty shootout") ||
+    testo.includes("penalty shoot-out") ||
     testo.includes("shootout") ||
-    testo.includes("rigori")
-  ) {
+    testo.includes("shoot-out") ||
+    testo.includes("decided on penalties") ||
+    testo.includes("decided by penalties") ||
+    testo.includes("won on penalties") ||
+    testo.includes("wins on penalties") ||
+    testo.includes("ended in penalties") ||
+    testo.includes("match decided by penalties") ||
+    testo.includes("game decided by penalties") ||
+    testo.includes("penalty kicks to decide") ||
+    testo.includes("penalty kicks decided") ||
+    testo.includes("rigori decisivi") ||
+    testo.includes("serie di rigori") ||
+    testo.includes("terminata ai rigori") ||
+    testo.includes("finita ai rigori");
 
-    risultato.partitaTerminataAiRigori =
-      true;
 
-  }
+  /* ==========================================================
+     PUNTEGGIO RIGORI ESPLICITO
 
+     shootoutScore è il campo principale da utilizzare.
+
+     NON utilizziamo più:
+       penaltyScore
+       penalties
+
+     perché possono rappresentare statistiche sui rigori
+     durante i 90/120 minuti e NON necessariamente una
+     serie finale di rigori.
+  ========================================================== */
 
   const rigoriHome =
     home?.shootoutScore ??
-    home?.penaltyScore ??
-    home?.penalties ??
     null;
 
 
   const rigoriAway =
     away?.shootoutScore ??
-    away?.penaltyScore ??
-    away?.penalties ??
     null;
 
 
-  if (
+  /* ==========================================================
+     CONTROLLO PUNTEGGI SHOOTOUT
+
+     Se ESPN fornisce entrambi gli shootoutScore,
+     abbiamo una conferma molto forte della serie di rigori.
+  ========================================================== */
+
+  const punteggioShootoutPresente =
     rigoriHome !== null &&
-    rigoriHome !== undefined
-  ) {
+    rigoriHome !== undefined &&
+    rigoriAway !== null &&
+    rigoriAway !== undefined;
 
-    risultato.casa =
-      rigoriHome;
 
-  }
+  /* ==========================================================
+     DETERMINAZIONE FINALE
 
+     La partita è terminata ai rigori SOLO se:
+
+     1. ESPN dichiara esplicitamente una serie di rigori
+
+     OPPURE
+
+     2. ESPN fornisce entrambi i punteggi shootoutScore.
+  ========================================================== */
 
   if (
-    rigoriAway !== null &&
-    rigoriAway !== undefined
+    shootoutEsplicito ||
+    punteggioShootoutPresente
   ) {
 
-    risultato.trasferta =
-      rigoriAway;
+    risultato.partitaTerminataAiRigori =
+      true;
+
+
+    /* ========================================================
+       PUNTEGGIO RIGORI CASA
+    ======================================================== */
+
+    if (
+      rigoriHome !== null &&
+      rigoriHome !== undefined
+    ) {
+
+      risultato.casa =
+        rigoriHome;
+
+    }
+
+
+    /* ========================================================
+       PUNTEGGIO RIGORI TRASFERTA
+    ======================================================== */
+
+    if (
+      rigoriAway !== null &&
+      rigoriAway !== undefined
+    ) {
+
+      risultato.trasferta =
+        rigoriAway;
+
+    }
 
   }
 
+
+  /* ==========================================================
+     RISULTATO
+  ========================================================== */
 
   return risultato;
 
@@ -3699,55 +3774,61 @@ function trovaMVP(data) {
 
   const candidates = [
 
-    data?.leaders,
-    data?.boxscore?.players,
     data?.gameInfo?.mvp,
-    data?.header?.competitions?.[0]?.mvp
+
+    data?.header?.competitions?.[0]?.mvp,
+
+    data?.leaders?.mvp,
+
+    data?.leaders?.MVP,
+
+    data?.boxscore?.mvp,
+
+    data?.boxscore?.gameInfo?.mvp
 
   ];
 
-
-  for (
-    const valore of candidates
-  ) {
+  function estraiMVP(valore) {
 
     if (!valore) {
-      continue;
+      return null;
     }
 
-
-    if (
-      typeof valore === "string"
-    ) {
-
-      return ultimoCognome(
-        valore
-      );
-
+    if (typeof valore === "string") {
+      return ultimoCognome(valore);
     }
-
 
     if (
       valore?.displayName
     ) {
-
       return ultimoCognome(
         valore.displayName
       );
-
     }
 
+    if (
+      valore?.fullName
+    ) {
+      return ultimoCognome(
+        valore.fullName
+      );
+    }
 
     if (
       valore?.athlete?.displayName
     ) {
-
       return ultimoCognome(
         valore.athlete.displayName
       );
-
     }
 
+    if (
+      valore?.player?.displayName
+    ) {
+      return ultimoCognome(
+        valore.player.displayName
+      );
+    }
 
     if (Array.isArray(valore)) {
 
@@ -3757,8 +3838,11 @@ function trovaMVP(data) {
 
         const nome =
           elemento?.athlete?.displayName ||
-          elemento?.displayName ||
+          elemento?.athlete?.fullName ||
           elemento?.player?.displayName ||
+          elemento?.player?.fullName ||
+          elemento?.displayName ||
+          elemento?.fullName ||
           null;
 
         if (nome) {
@@ -3773,10 +3857,23 @@ function trovaMVP(data) {
 
     }
 
+    return null;
+  }
+
+  for (
+    const valore of candidates
+  ) {
+
+    const mvp =
+      estraiMVP(valore);
+
+    if (mvp) {
+      return mvp;
+    }
+
   }
 
   return null;
-
 }
 
 
