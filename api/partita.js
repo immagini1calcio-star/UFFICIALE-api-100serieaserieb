@@ -3459,10 +3459,14 @@ function creaFormazioni(
         r?.formationUsed ||
         null,
 
-      allenatore:
-        r?.coach?.displayName ||
-        r?.coaches?.[0]?.displayName ||
-        null,
+     allenatore:
+  r?.coach?.displayName ||
+  r?.coach?.fullName ||
+  r?.coaches?.[0]?.displayName ||
+  r?.coaches?.[0]?.fullName ||
+  r?.team?.coach?.displayName ||
+  r?.team?.coach?.fullName ||
+  null,
 
       titolari: [],
 
