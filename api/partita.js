@@ -3463,7 +3463,7 @@ function trovaMVP(data) {
     if (Array.isArray(valore)) {
 
       for (
-        const elemento of valor
+        const elemento of valore
       ) {
 
         const nome =
