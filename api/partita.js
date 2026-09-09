@@ -4487,4 +4487,3 @@ async function handler(
   }
 
 };
-}
