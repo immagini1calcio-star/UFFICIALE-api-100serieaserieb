@@ -1037,7 +1037,7 @@ function tipoEvento(play) {
     return "";
   }
 
-  return String(
+  const testo = String(
     play.type?.text ||
     play.type?.description ||
     play.type?.name ||
@@ -1047,8 +1047,31 @@ function tipoEvento(play) {
     ""
   ).toLowerCase();
 
-}
+  /*
+  PRIORITÀ ASSOLUTA:
+  interruzioni e riprese.
+  Devono essere riconosciute prima
+  di kickoff/start/end.
+  */
 
+  if (
+    /delay in match|delay in the match|drinks break|injury/i.test(
+      testo
+    )
+  ) {
+    return "Interruzione";
+  }
+
+  if (
+    /delay over|ready to continue|match resumes|resume/i.test(
+      testo
+    )
+  ) {
+    return "Ripresa";
+  }
+
+  return testo;
+}
 
 /* ============================================================
    TRADUZIONE EVENTI
@@ -1056,74 +1079,337 @@ function tipoEvento(play) {
 
 function traduciEvento(tipo) {
 
-  const t = String(tipo || "").toLowerCase();
+  const t = String(tipo || "")
+    .toLowerCase()
+    .trim();
+
+  if (!t) {
+    return "";
+  }
+
+
+  /* ==========================================================
+     INTERRUZIONE / RIPRESA
+
+     DEVONO ESSERE CONTROLLATE PRIMA DI
+     "INIZIO PARTITA" E "FINE PARTITA",
+     perché ESPN può contenere parole come
+     "start", "end" o descrizioni simili
+     all'interno di eventi di interruzione.
+  ========================================================== */
+
+  if (
+    t.includes("delay in match") ||
+    t.includes("delay in the match") ||
+    t.includes("drinks break") ||
+    t.includes("injury delay") ||
+    t.includes("match delayed") ||
+    t.includes("game delayed") ||
+    t.includes("match interrupted") ||
+    t.includes("game interrupted") ||
+    t.includes("interruption") ||
+    t.includes("interrupted") ||
+    t.includes("interruzione")
+  ) {
+    return "Interruzione";
+  }
+
+
+  if (
+    t.includes("delay over") ||
+    t.includes("ready to continue") ||
+    t.includes("ready to resume") ||
+    t.includes("match resumes") ||
+    t.includes("game resumes") ||
+    t.includes("match resumed") ||
+    t.includes("game resumed") ||
+    t.includes("resume") ||
+    t.includes("resumed") ||
+    t.includes("ripresa")
+  ) {
+    return "Ripresa";
+  }
+
+
+  /* ==========================================================
+     GOL
+  ========================================================== */
 
   if (
     t.includes("goal") ||
     t.includes("gol") ||
-    t.includes("score")
+    t.includes("score") ||
+    t.includes("scored")
   ) {
     return "Gol";
   }
 
-  if (
-    t.includes("yellow") ||
-    t.includes("giallo")
-  ) {
-    return "Ammonizione";
-  }
+
+  /* ==========================================================
+     AUTOGOL
+  ========================================================== */
 
   if (
-    t.includes("red") ||
-    t.includes("rosso")
+    t.includes("own goal") ||
+    t.includes("autogol") ||
+    t.includes("autogoal")
   ) {
-    return "Espulsione";
+    return "Autogol";
   }
 
-  if (
-    t.includes("substitution") ||
-    t.includes("sostituzione") ||
-    t.includes("sub")
-  ) {
-    return "Sostituzione";
-  }
+
+  /* ==========================================================
+     RIGORE
+  ========================================================== */
 
   if (
     t.includes("penalty") ||
-    t.includes("rigore")
+    t.includes("penalties") ||
+    t.includes("penalty kick") ||
+    t.includes("penalty-kick") ||
+    t.includes("rigore") ||
+    t.includes("rigori")
   ) {
     return "Rigore";
   }
 
-  if (t.includes("var")) {
+
+  /* ==========================================================
+     CARTELLINO GIALLO
+  ========================================================== */
+
+  if (
+    t.includes("yellow card") ||
+    t.includes("yellow-card") ||
+    t.includes("yellow") ||
+    t.includes("booking") ||
+    t.includes("booked") ||
+    t.includes("giallo") ||
+    t.includes("ammonizione") ||
+    t.includes("ammonito")
+  ) {
+    return "Ammonizione";
+  }
+
+
+  /* ==========================================================
+     CARTELLINO ROSSO
+  ========================================================== */
+
+  if (
+    t.includes("red card") ||
+    t.includes("red-card") ||
+    t.includes("straight red") ||
+    t.includes("sent off") ||
+    t.includes("sent-off") ||
+    t.includes("dismissed") ||
+    t.includes("red") ||
+    t.includes("rosso") ||
+    t.includes("espulsione") ||
+    t.includes("espulso")
+  ) {
+    return "Espulsione";
+  }
+
+
+  /* ==========================================================
+     SOSTITUZIONE
+  ========================================================== */
+
+  if (
+    t.includes("substitution") ||
+    t.includes("substitute") ||
+    t.includes("substituted") ||
+    t.includes("sostituzione") ||
+    t.includes("sostituito") ||
+    t === "sub" ||
+    t.startsWith("sub ")
+  ) {
+    return "Sostituzione";
+  }
+
+
+  /* ==========================================================
+     VAR
+  ========================================================== */
+
+  if (
+    t.includes("var") ||
+    t.includes("video assistant referee") ||
+    t.includes("video review") ||
+    t.includes("video review")
+  ) {
     return "VAR";
   }
 
+
+  /* ==========================================================
+     INTERVALLO
+  ========================================================== */
+
   if (
+    t.includes("half time") ||
+    t.includes("half-time") ||
+    t.includes("halftime") ||
     t.includes("half") ||
-    t.includes("intermission")
+    t.includes("intermission") ||
+    t.includes("intervallo")
   ) {
     return "Intervallo";
   }
 
+
+  /* ==========================================================
+     INIZIO PARTITA
+
+     ATTENZIONE:
+     questo controllo arriva DOPO interruzione/ripresa.
+  ========================================================== */
+
   if (
     t.includes("kickoff") ||
-    t.includes("start")
+    t.includes("kick-off") ||
+    t.includes("kick off") ||
+    t === "start" ||
+    t.includes("match start") ||
+    t.includes("match started") ||
+    t.includes("game start") ||
+    t.includes("game started") ||
+    t.includes("start of match") ||
+    t.includes("start of game") ||
+    t.includes("inizio partita")
   ) {
     return "Inizio partita";
   }
 
+
+  /* ==========================================================
+     FINE PARTITA
+
+     ATTENZIONE:
+     questo controllo arriva DOPO interruzione/ripresa.
+  ========================================================== */
+
   if (
     t.includes("full time") ||
-    t.includes("end")
+    t.includes("full-time") ||
+    t.includes("fulltime") ||
+    t === "end" ||
+    t.includes("match end") ||
+    t.includes("match ended") ||
+    t.includes("game end") ||
+    t.includes("game ended") ||
+    t.includes("end of match") ||
+    t.includes("end of game") ||
+    t.includes("fine partita")
   ) {
     return "Fine partita";
   }
 
+
+  /* ==========================================================
+     TEMPI SUPPLEMENTARI
+  ========================================================== */
+
+  if (
+    t.includes("extra time") ||
+    t.includes("extra-time") ||
+    t.includes("overtime") ||
+    t.includes("tempi supplementari") ||
+    t.includes("supplementari")
+  ) {
+    return "Tempi supplementari";
+  }
+
+
+  /* ==========================================================
+     FINE PRIMO TEMPO
+  ========================================================== */
+
+  if (
+    t.includes("end of first half") ||
+    t.includes("first half ends") ||
+    t.includes("fine primo tempo")
+  ) {
+    return "Fine primo tempo";
+  }
+
+
+  /* ==========================================================
+     INIZIO SECONDO TEMPO
+  ========================================================== */
+
+  if (
+    t.includes("second half starts") ||
+    t.includes("start of second half") ||
+    t.includes("second half begins") ||
+    t.includes("inizio secondo tempo")
+  ) {
+    return "Inizio secondo tempo";
+  }
+
+
+  /* ==========================================================
+     FINE TEMPI SUPPLEMENTARI
+  ========================================================== */
+
+  if (
+    t.includes("end of extra time") ||
+    t.includes("extra time ends") ||
+    t.includes("fine tempi supplementari")
+  ) {
+    return "Fine tempi supplementari";
+  }
+
+
+  /* ==========================================================
+     SERIE DI RIGORI
+  ========================================================== */
+
+  if (
+    t.includes("penalty shootout") ||
+    t.includes("penalty shoot-out") ||
+    t.includes("shootout") ||
+    t.includes("shoot-out") ||
+    t.includes("serie di rigori")
+  ) {
+    return "Serie di rigori";
+  }
+
+
+  /* ==========================================================
+     ALTRE SITUAZIONI DI PARTITA
+  ========================================================== */
+
+  if (
+    t.includes("postponed") ||
+    t.includes("posticipata") ||
+    t.includes("posticipato")
+  ) {
+    return "Partita posticipata";
+  }
+
+
+  if (
+    t.includes("cancelled") ||
+    t.includes("canceled") ||
+    t.includes("annullata") ||
+    t.includes("annullato")
+  ) {
+    return "Partita annullata";
+  }
+
+
+  /* ==========================================================
+     SE NON RICONOSCIUTO
+
+     Restituiamo il testo originale senza
+     inventare una classificazione.
+  ========================================================== */
+
   return tipo || "";
 
 }
-
 
 /* ============================================================
    DATI SQUADRA
