@@ -2690,6 +2690,9 @@ corrispondenti.sort(function (a, b) {
 
 });
 
+  return corrispondenti[0].faseTurno;
+}
+
 
 /* ============================================================
    FALLBACK ESPN
