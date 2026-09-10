@@ -5261,7 +5261,9 @@ return res.status(200).json({
 
 });
 
-} catch (errore) {
+} 
+
+catch (errore) {
 
   console.error(
     "Errore /api/partita:",
