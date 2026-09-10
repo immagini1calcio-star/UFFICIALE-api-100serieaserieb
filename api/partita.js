@@ -3532,7 +3532,12 @@ module.exports = async function handler(
 
 };
 
+/* ============================================================
+   FINESTRE GIORNATE
+============================================================ */
 
+FINESTRE_GIORNATE["ita.1"] = [
+   
     { inizio:"2026-08-27", fine:"2026-09-01", faseTurno:"Giornata 3" },
     { inizio:"2026-09-03", fine:"2026-09-08", faseTurno:"Giornata 4" },
     { inizio:"2026-09-11", fine:"2026-09-14", faseTurno:"Giornata 5" },
