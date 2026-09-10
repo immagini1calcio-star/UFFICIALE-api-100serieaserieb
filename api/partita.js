@@ -3575,7 +3575,7 @@ FINESTRE_GIORNATE["ita.1"] = [
     { inizio:"2027-05-20", fine:"2027-05-25", faseTurno:"Giornata 37" },
     { inizio:"2027-05-27", fine:"2027-05-31", faseTurno:"Giornata 38" }
 
-  ],
+  ];
 
 
   /* =========================
@@ -3623,7 +3623,7 @@ FINESTRE_GIORNATE["ita.1"] = [
     { inizio:"2027-05-20", fine:"2027-05-25", faseTurno:"Giornata 37" },
     { inizio:"2027-05-27", fine:"2027-05-30", faseTurno:"Giornata 38" }
 
-  ],
+  ];
 
 
   /* =========================
@@ -3667,7 +3667,7 @@ FINESTRE_GIORNATE["ita.1"] = [
     { inizio:"2027-05-20", fine:"2027-05-25", faseTurno:"Giornata 33" },
     { inizio:"2027-05-27", fine:"2027-05-31", faseTurno:"Giornata 34" }
 
-  ],
+  ];
 
 
   /* =========================
@@ -3711,7 +3711,7 @@ FINESTRE_GIORNATE["ita.1"] = [
     { inizio:"2027-05-06", fine:"2027-05-12", faseTurno:"Giornata 33" },
     { inizio:"2027-05-13", fine:"2027-05-19", faseTurno:"Giornata 34" }
 
-  ],
+  ];
 
 
   /* =========================
