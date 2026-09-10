@@ -3537,227 +3537,225 @@ module.exports = async function handler(
 ============================================================ */
 
 FINESTRE_GIORNATE["ita.1"] = [
-   
-    { inizio:"2026-08-27", fine:"2026-09-01", faseTurno:"Giornata 3" },
-    { inizio:"2026-09-03", fine:"2026-09-08", faseTurno:"Giornata 4" },
-    { inizio:"2026-09-11", fine:"2026-09-14", faseTurno:"Giornata 5" },
-    { inizio:"2026-09-15", fine:"2026-09-18", faseTurno:"Giornata 6" },
-    { inizio:"2026-09-19", fine:"2026-09-22", faseTurno:"Giornata 7" },
-    { inizio:"2026-10-09", fine:"2026-10-13", faseTurno:"Giornata 8" },
-    { inizio:"2026-10-16", fine:"2026-10-20", faseTurno:"Giornata 9" },
-    { inizio:"2026-10-23", fine:"2026-10-27", faseTurno:"Giornata 10" },
-    { inizio:"2026-10-30", fine:"2026-11-03", faseTurno:"Giornata 11" },
-    { inizio:"2026-11-06", fine:"2026-11-10", faseTurno:"Giornata 12" },
-    { inizio:"2026-11-19", fine:"2026-11-24", faseTurno:"Giornata 13" },
-    { inizio:"2026-11-26", fine:"2026-12-01", faseTurno:"Giornata 14" },
-    { inizio:"2026-12-03", fine:"2026-12-08", faseTurno:"Giornata 15" },
-    { inizio:"2026-12-10", fine:"2026-12-15", faseTurno:"Giornata 16" },
-    { inizio:"2026-12-17", fine:"2026-12-22", faseTurno:"Giornata 17" },
-    { inizio:"2026-12-31", fine:"2027-01-05", faseTurno:"Giornata 18" },
-    { inizio:"2027-01-07", fine:"2027-01-12", faseTurno:"Giornata 19" },
-    { inizio:"2027-01-14", fine:"2027-01-19", faseTurno:"Giornata 20" },
-    { inizio:"2027-01-21", fine:"2027-01-26", faseTurno:"Giornata 21" },
-    { inizio:"2027-01-28", fine:"2027-02-02", faseTurno:"Giornata 22" },
-    { inizio:"2027-02-04", fine:"2027-02-09", faseTurno:"Giornata 23" },
-    { inizio:"2027-02-11", fine:"2027-02-16", faseTurno:"Giornata 24" },
-    { inizio:"2027-02-18", fine:"2027-02-23", faseTurno:"Giornata 25" },
-    { inizio:"2027-02-25", fine:"2027-03-02", faseTurno:"Giornata 26" },
-    { inizio:"2027-03-04", fine:"2027-03-09", faseTurno:"Giornata 27" },
-    { inizio:"2027-03-11", fine:"2027-03-16", faseTurno:"Giornata 28" },
-    { inizio:"2027-03-18", fine:"2027-03-23", faseTurno:"Giornata 29" },
-    { inizio:"2027-04-01", fine:"2027-04-06", faseTurno:"Giornata 30" },
-    { inizio:"2027-04-08", fine:"2027-04-13", faseTurno:"Giornata 31" },
-    { inizio:"2027-04-15", fine:"2027-04-20", faseTurno:"Giornata 32" },
-    { inizio:"2027-04-22", fine:"2027-04-27", faseTurno:"Giornata 33" },
-    { inizio:"2027-04-29", fine:"2027-05-04", faseTurno:"Giornata 34" },
-    { inizio:"2027-05-06", fine:"2027-05-11", faseTurno:"Giornata 35" },
-    { inizio:"2027-05-13", fine:"2027-05-18", faseTurno:"Giornata 36" },
-    { inizio:"2027-05-20", fine:"2027-05-25", faseTurno:"Giornata 37" },
-    { inizio:"2027-05-27", fine:"2027-05-31", faseTurno:"Giornata 38" }
 
-  ];
+  { inizio:"2026-08-27", fine:"2026-09-01", faseTurno:"Giornata 3" },
+  { inizio:"2026-09-03", fine:"2026-09-08", faseTurno:"Giornata 4" },
+  { inizio:"2026-09-11", fine:"2026-09-14", faseTurno:"Giornata 5" },
+  { inizio:"2026-09-15", fine:"2026-09-18", faseTurno:"Giornata 6" },
+  { inizio:"2026-09-19", fine:"2026-09-22", faseTurno:"Giornata 7" },
+  { inizio:"2026-10-09", fine:"2026-10-13", faseTurno:"Giornata 8" },
+  { inizio:"2026-10-16", fine:"2026-10-20", faseTurno:"Giornata 9" },
+  { inizio:"2026-10-23", fine:"2026-10-27", faseTurno:"Giornata 10" },
+  { inizio:"2026-10-30", fine:"2026-11-03", faseTurno:"Giornata 11" },
+  { inizio:"2026-11-06", fine:"2026-11-10", faseTurno:"Giornata 12" },
+  { inizio:"2026-11-19", fine:"2026-11-24", faseTurno:"Giornata 13" },
+  { inizio:"2026-11-26", fine:"2026-12-01", faseTurno:"Giornata 14" },
+  { inizio:"2026-12-03", fine:"2026-12-08", faseTurno:"Giornata 15" },
+  { inizio:"2026-12-10", fine:"2026-12-15", faseTurno:"Giornata 16" },
+  { inizio:"2026-12-17", fine:"2026-12-22", faseTurno:"Giornata 17" },
+  { inizio:"2026-12-31", fine:"2027-01-05", faseTurno:"Giornata 18" },
+  { inizio:"2027-01-07", fine:"2027-01-12", faseTurno:"Giornata 19" },
+  { inizio:"2027-01-14", fine:"2027-01-19", faseTurno:"Giornata 20" },
+  { inizio:"2027-01-21", fine:"2027-01-26", faseTurno:"Giornata 21" },
+  { inizio:"2027-01-28", fine:"2027-02-02", faseTurno:"Giornata 22" },
+  { inizio:"2027-02-04", fine:"2027-02-09", faseTurno:"Giornata 23" },
+  { inizio:"2027-02-11", fine:"2027-02-16", faseTurno:"Giornata 24" },
+  { inizio:"2027-02-18", fine:"2027-02-23", faseTurno:"Giornata 25" },
+  { inizio:"2027-02-25", fine:"2027-03-02", faseTurno:"Giornata 26" },
+  { inizio:"2027-03-04", fine:"2027-03-09", faseTurno:"Giornata 27" },
+  { inizio:"2027-03-11", fine:"2027-03-16", faseTurno:"Giornata 28" },
+  { inizio:"2027-03-18", fine:"2027-03-23", faseTurno:"Giornata 29" },
+  { inizio:"2027-04-01", fine:"2027-04-06", faseTurno:"Giornata 30" },
+  { inizio:"2027-04-08", fine:"2027-04-13", faseTurno:"Giornata 31" },
+  { inizio:"2027-04-15", fine:"2027-04-20", faseTurno:"Giornata 32" },
+  { inizio:"2027-04-22", fine:"2027-04-27", faseTurno:"Giornata 33" },
+  { inizio:"2027-04-29", fine:"2027-05-04", faseTurno:"Giornata 34" },
+  { inizio:"2027-05-06", fine:"2027-05-11", faseTurno:"Giornata 35" },
+  { inizio:"2027-05-13", fine:"2027-05-18", faseTurno:"Giornata 36" },
+  { inizio:"2027-05-20", fine:"2027-05-25", faseTurno:"Giornata 37" },
+  { inizio:"2027-05-27", fine:"2027-05-31", faseTurno:"Giornata 38" }
 
-
-  /* =========================
-     PREMIER LEAGUE
-  ========================= */
-
-  "eng.1": [
-
-    { inizio:"2026-08-20", fine:"2026-08-25", faseTurno:"Giornata 1" },
-    { inizio:"2026-08-27", fine:"2026-09-01", faseTurno:"Giornata 2" },
-    { inizio:"2026-09-03", fine:"2026-09-08", faseTurno:"Giornata 3" },
-    { inizio:"2026-09-10", fine:"2026-09-15", faseTurno:"Giornata 4" },
-    { inizio:"2026-09-17", fine:"2026-09-22", faseTurno:"Giornata 5" },
-    { inizio:"2026-10-08", fine:"2026-10-13", faseTurno:"Giornata 6" },
-    { inizio:"2026-10-15", fine:"2026-10-20", faseTurno:"Giornata 7" },
-    { inizio:"2026-10-22", fine:"2026-10-27", faseTurno:"Giornata 8" },
-    { inizio:"2026-10-29", fine:"2026-11-03", faseTurno:"Giornata 9" },
-    { inizio:"2026-11-05", fine:"2026-11-10", faseTurno:"Giornata 10" },
-    { inizio:"2026-11-19", fine:"2026-11-24", faseTurno:"Giornata 11" },
-    { inizio:"2026-11-26", fine:"2026-12-01", faseTurno:"Giornata 12" },
-    { inizio:"2026-12-01", fine:"2026-12-04", faseTurno:"Giornata 13" },
-    { inizio:"2026-12-05", fine:"2026-12-08", faseTurno:"Giornata 14" },
-    { inizio:"2026-12-10", fine:"2026-12-15", faseTurno:"Giornata 15" },
-    { inizio:"2026-12-17", fine:"2026-12-22", faseTurno:"Giornata 16" },
-    { inizio:"2026-12-24", fine:"2026-12-28", faseTurno:"Giornata 17" },
-    { inizio:"2026-12-29", fine:"2027-01-01", faseTurno:"Giornata 18" },
-    { inizio:"2027-01-01", fine:"2027-01-04", faseTurno:"Giornata 19" },
-    { inizio:"2027-01-05", fine:"2027-01-08", faseTurno:"Giornata 20" },
-    { inizio:"2027-01-16", fine:"2027-01-19", faseTurno:"Giornata 21" },
-    { inizio:"2027-01-21", fine:"2027-01-26", faseTurno:"Giornata 22" },
-    { inizio:"2027-01-28", fine:"2027-02-02", faseTurno:"Giornata 23" },
-    { inizio:"2027-02-04", fine:"2027-02-09", faseTurno:"Giornata 24" },
-    { inizio:"2027-02-09", fine:"2027-02-12", faseTurno:"Giornata 25" },
-    { inizio:"2027-02-20", fine:"2027-02-23", faseTurno:"Giornata 26" },
-    { inizio:"2027-02-25", fine:"2027-03-02", faseTurno:"Giornata 27" },
-    { inizio:"2027-03-02", fine:"2027-03-05", faseTurno:"Giornata 28" },
-    { inizio:"2027-03-11", fine:"2027-03-16", faseTurno:"Giornata 29" },
-    { inizio:"2027-03-18", fine:"2027-03-23", faseTurno:"Giornata 30" },
-    { inizio:"2027-04-08", fine:"2027-04-13", faseTurno:"Giornata 31" },
-    { inizio:"2027-04-15", fine:"2027-04-20", faseTurno:"Giornata 32" },
-    { inizio:"2027-04-22", fine:"2027-04-27", faseTurno:"Giornata 33" },
-    { inizio:"2027-04-29", fine:"2027-05-04", faseTurno:"Giornata 34" },
-    { inizio:"2027-05-06", fine:"2027-05-11", faseTurno:"Giornata 35" },
-    { inizio:"2027-05-13", fine:"2027-05-18", faseTurno:"Giornata 36" },
-    { inizio:"2027-05-20", fine:"2027-05-25", faseTurno:"Giornata 37" },
-    { inizio:"2027-05-27", fine:"2027-05-30", faseTurno:"Giornata 38" }
-
-  ];
+];
 
 
-  /* =========================
-     LIGUE 1
-  ========================= */
+/* =========================
+   PREMIER LEAGUE
+========================= */
 
-  "fra.1": [
+FINESTRE_GIORNATE["eng.1"] = [
 
-    { inizio:"2026-08-20", fine:"2026-08-25", faseTurno:"Giornata 1" },
-    { inizio:"2026-08-27", fine:"2026-09-01", faseTurno:"Giornata 2" },
-    { inizio:"2026-09-03", fine:"2026-09-08", faseTurno:"Giornata 3" },
-    { inizio:"2026-09-10", fine:"2026-09-15", faseTurno:"Giornata 4" },
-    { inizio:"2026-09-17", fine:"2026-09-22", faseTurno:"Giornata 5" },
-    { inizio:"2026-10-08", fine:"2026-10-13", faseTurno:"Giornata 6" },
-    { inizio:"2026-10-15", fine:"2026-10-20", faseTurno:"Giornata 7" },
-    { inizio:"2026-10-22", fine:"2026-10-27", faseTurno:"Giornata 8" },
-    { inizio:"2026-10-29", fine:"2026-11-03", faseTurno:"Giornata 9" },
-    { inizio:"2026-11-05", fine:"2026-11-10", faseTurno:"Giornata 10" },
-    { inizio:"2026-11-19", fine:"2026-11-24", faseTurno:"Giornata 11" },
-    { inizio:"2026-11-26", fine:"2026-12-01", faseTurno:"Giornata 12" },
-    { inizio:"2026-12-03", fine:"2026-12-08", faseTurno:"Giornata 13" },
-    { inizio:"2026-12-10", fine:"2026-12-15", faseTurno:"Giornata 14" },
-    { inizio:"2026-12-31", fine:"2027-01-05", faseTurno:"Giornata 15" },
-    { inizio:"2027-01-14", fine:"2027-01-19", faseTurno:"Giornata 16" },
-    { inizio:"2027-01-21", fine:"2027-01-26", faseTurno:"Giornata 17" },
-    { inizio:"2027-01-28", fine:"2027-02-02", faseTurno:"Giornata 18" },
-    { inizio:"2027-02-04", fine:"2027-02-09", faseTurno:"Giornata 19" },
-    { inizio:"2027-02-11", fine:"2027-02-16", faseTurno:"Giornata 20" },
-    { inizio:"2027-02-18", fine:"2027-02-23", faseTurno:"Giornata 21" },
-    { inizio:"2027-02-25", fine:"2027-03-02", faseTurno:"Giornata 22" },
-    { inizio:"2027-03-04", fine:"2027-03-09", faseTurno:"Giornata 23" },
-    { inizio:"2027-03-11", fine:"2027-03-16", faseTurno:"Giornata 24" },
-    { inizio:"2027-03-18", fine:"2027-03-23", faseTurno:"Giornata 25" },
-    { inizio:"2027-04-01", fine:"2027-04-06", faseTurno:"Giornata 26" },
-    { inizio:"2027-04-08", fine:"2027-04-13", faseTurno:"Giornata 27" },
-    { inizio:"2027-04-15", fine:"2027-04-20", faseTurno:"Giornata 28" },
-    { inizio:"2027-04-22", fine:"2027-04-27", faseTurno:"Giornata 29" },
-    { inizio:"2027-04-29", fine:"2027-05-04", faseTurno:"Giornata 30" },
-    { inizio:"2027-05-06", fine:"2027-05-11", faseTurno:"Giornata 31" },
-    { inizio:"2027-05-13", fine:"2027-05-18", faseTurno:"Giornata 32" },
-    { inizio:"2027-05-20", fine:"2027-05-25", faseTurno:"Giornata 33" },
-    { inizio:"2027-05-27", fine:"2027-05-31", faseTurno:"Giornata 34" }
+  { inizio:"2026-08-20", fine:"2026-08-25", faseTurno:"Giornata 1" },
+  { inizio:"2026-08-27", fine:"2026-09-01", faseTurno:"Giornata 2" },
+  { inizio:"2026-09-03", fine:"2026-09-08", faseTurno:"Giornata 3" },
+  { inizio:"2026-09-10", fine:"2026-09-15", faseTurno:"Giornata 4" },
+  { inizio:"2026-09-17", fine:"2026-09-22", faseTurno:"Giornata 5" },
+  { inizio:"2026-10-08", fine:"2026-10-13", faseTurno:"Giornata 6" },
+  { inizio:"2026-10-15", fine:"2026-10-20", faseTurno:"Giornata 7" },
+  { inizio:"2026-10-22", fine:"2026-10-27", faseTurno:"Giornata 8" },
+  { inizio:"2026-10-29", fine:"2026-11-03", faseTurno:"Giornata 9" },
+  { inizio:"2026-11-05", fine:"2026-11-10", faseTurno:"Giornata 10" },
+  { inizio:"2026-11-19", fine:"2026-11-24", faseTurno:"Giornata 11" },
+  { inizio:"2026-11-26", fine:"2026-12-01", faseTurno:"Giornata 12" },
+  { inizio:"2026-12-01", fine:"2026-12-04", faseTurno:"Giornata 13" },
+  { inizio:"2026-12-05", fine:"2026-12-08", faseTurno:"Giornata 14" },
+  { inizio:"2026-12-10", fine:"2026-12-15", faseTurno:"Giornata 15" },
+  { inizio:"2026-12-17", fine:"2026-12-22", faseTurno:"Giornata 16" },
+  { inizio:"2026-12-24", fine:"2026-12-28", faseTurno:"Giornata 17" },
+  { inizio:"2026-12-29", fine:"2027-01-01", faseTurno:"Giornata 18" },
+  { inizio:"2027-01-01", fine:"2027-01-04", faseTurno:"Giornata 19" },
+  { inizio:"2027-01-05", fine:"2027-01-08", faseTurno:"Giornata 20" },
+  { inizio:"2027-01-16", fine:"2027-01-19", faseTurno:"Giornata 21" },
+  { inizio:"2027-01-21", fine:"2027-01-26", faseTurno:"Giornata 22" },
+  { inizio:"2027-01-28", fine:"2027-02-02", faseTurno:"Giornata 23" },
+  { inizio:"2027-02-04", fine:"2027-02-09", faseTurno:"Giornata 24" },
+  { inizio:"2027-02-09", fine:"2027-02-12", faseTurno:"Giornata 25" },
+  { inizio:"2027-02-20", fine:"2027-02-23", faseTurno:"Giornata 26" },
+  { inizio:"2027-02-25", fine:"2027-03-02", faseTurno:"Giornata 27" },
+  { inizio:"2027-03-02", fine:"2027-03-05", faseTurno:"Giornata 28" },
+  { inizio:"2027-03-11", fine:"2027-03-16", faseTurno:"Giornata 29" },
+  { inizio:"2027-03-18", fine:"2027-03-23", faseTurno:"Giornata 30" },
+  { inizio:"2027-04-08", fine:"2027-04-13", faseTurno:"Giornata 31" },
+  { inizio:"2027-04-15", fine:"2027-04-20", faseTurno:"Giornata 32" },
+  { inizio:"2027-04-22", fine:"2027-04-27", faseTurno:"Giornata 33" },
+  { inizio:"2027-04-29", fine:"2027-05-04", faseTurno:"Giornata 34" },
+  { inizio:"2027-05-06", fine:"2027-05-11", faseTurno:"Giornata 35" },
+  { inizio:"2027-05-13", fine:"2027-05-18", faseTurno:"Giornata 36" },
+  { inizio:"2027-05-20", fine:"2027-05-25", faseTurno:"Giornata 37" },
+  { inizio:"2027-05-27", fine:"2027-05-30", faseTurno:"Giornata 38" }
 
-  ];
-
-
-  /* =========================
-     BUNDESLIGA
-  ========================= */
-
-  "ger.1": [
-
-    { inizio:"2026-08-27", fine:"2026-09-01", faseTurno:"Giornata 1" },
-    { inizio:"2026-09-03", fine:"2026-09-08", faseTurno:"Giornata 2" },
-    { inizio:"2026-09-10", fine:"2026-09-15", faseTurno:"Giornata 3" },
-    { inizio:"2026-09-17", fine:"2026-09-22", faseTurno:"Giornata 4" },
-    { inizio:"2026-10-08", fine:"2026-10-13", faseTurno:"Giornata 5" },
-    { inizio:"2026-10-15", fine:"2026-10-20", faseTurno:"Giornata 6" },
-    { inizio:"2026-10-22", fine:"2026-10-27", faseTurno:"Giornata 7" },
-    { inizio:"2026-10-29", fine:"2026-11-03", faseTurno:"Giornata 8" },
-    { inizio:"2026-11-05", fine:"2026-11-10", faseTurno:"Giornata 9" },
-    { inizio:"2026-11-19", fine:"2026-11-24", faseTurno:"Giornata 10" },
-    { inizio:"2026-11-26", fine:"2026-12-01", faseTurno:"Giornata 11" },
-    { inizio:"2026-12-03", fine:"2026-12-08", faseTurno:"Giornata 12" },
-    { inizio:"2026-12-10", fine:"2026-12-15", faseTurno:"Giornata 13" },
-    { inizio:"2026-12-17", fine:"2026-12-22", faseTurno:"Giornata 14" },
-    { inizio:"2027-01-07", fine:"2027-01-11", faseTurno:"Giornata 15" },
-    { inizio:"2027-01-12", fine:"2027-01-15", faseTurno:"Giornata 16" },
-    { inizio:"2027-01-16", fine:"2027-01-19", faseTurno:"Giornata 17" },
-    { inizio:"2027-01-21", fine:"2027-01-26", faseTurno:"Giornata 18" },
-    { inizio:"2027-01-28", fine:"2027-02-02", faseTurno:"Giornata 19" },
-    { inizio:"2027-02-04", fine:"2027-02-09", faseTurno:"Giornata 20" },
-    { inizio:"2027-02-11", fine:"2027-02-16", faseTurno:"Giornata 21" },
-    { inizio:"2027-02-18", fine:"2027-02-23", faseTurno:"Giornata 22" },
-    { inizio:"2027-02-25", fine:"2027-03-02", faseTurno:"Giornata 23" },
-    { inizio:"2027-03-02", fine:"2027-03-05", faseTurno:"Giornata 24" },
-    { inizio:"2027-03-06", fine:"2027-03-09", faseTurno:"Giornata 25" },
-    { inizio:"2027-03-11", fine:"2027-03-16", faseTurno:"Giornata 26" },
-    { inizio:"2027-03-18", fine:"2027-03-23", faseTurno:"Giornata 27" },
-    { inizio:"2027-03-25", fine:"2027-03-30", faseTurno:"Giornata 28" },
-    { inizio:"2027-04-01", fine:"2027-04-06", faseTurno:"Giornata 29" },
-    { inizio:"2027-04-08", fine:"2027-04-15", faseTurno:"Giornata 30" },
-    { inizio:"2027-04-22", fine:"2027-04-28", faseTurno:"Giornata 31" },
-    { inizio:"2027-04-29", fine:"2027-05-05", faseTurno:"Giornata 32" },
-    { inizio:"2027-05-06", fine:"2027-05-12", faseTurno:"Giornata 33" },
-    { inizio:"2027-05-13", fine:"2027-05-19", faseTurno:"Giornata 34" }
-
-  ];
+];
 
 
-  /* =========================
-     SAUDI PRO LEAGUE
-  ========================= */
+/* =========================
+   LIGUE 1
+========================= */
 
-  "ksa.1": [
+FINESTRE_GIORNATE["fra.1"] = [
 
-    { inizio:"2026-08-13", fine:"2026-08-19", faseTurno:"Giornata 1" },
-    { inizio:"2026-08-20", fine:"2026-08-26", faseTurno:"Giornata 2" },
-    { inizio:"2026-08-27", fine:"2026-09-02", faseTurno:"Giornata 3" },
-    { inizio:"2026-09-03", fine:"2026-09-09", faseTurno:"Giornata 4" },
-    { inizio:"2026-09-10", fine:"2026-09-16", faseTurno:"Giornata 5" },
-    { inizio:"2026-09-17", fine:"2026-09-23", faseTurno:"Giornata 6" },
-    { inizio:"2026-09-24", fine:"2026-10-01", faseTurno:"Giornata 7" },
-    { inizio:"2026-10-09", fine:"2026-10-13", faseTurno:"Giornata 8" },
-    { inizio:"2026-10-15", fine:"2026-10-17", faseTurno:"Giornata 9" },
-    { inizio:"2026-10-18", fine:"2026-10-22", faseTurno:"Giornata 10" },
-    { inizio:"2026-10-23", fine:"2026-10-28", faseTurno:"Giornata 11" },
-    { inizio:"2026-10-29", fine:"2026-11-04", faseTurno:"Giornata 12" },
-    { inizio:"2026-11-05", fine:"2026-11-12", faseTurno:"Giornata 13" },
-    { inizio:"2026-11-19", fine:"2026-11-25", faseTurno:"Giornata 14" },
-    { inizio:"2026-11-26", fine:"2026-12-02", faseTurno:"Giornata 15" },
-    { inizio:"2026-12-03", fine:"2026-12-09", faseTurno:"Giornata 16" },
-    { inizio:"2026-12-10", fine:"2026-12-16", faseTurno:"Giornata 17" },
-    { inizio:"2026-12-17", fine:"2026-12-23", faseTurno:"Giornata 18" },
-    { inizio:"2026-12-24", fine:"2026-12-31", faseTurno:"Giornata 19" },
-    { inizio:"2027-02-04", fine:"2027-02-10", faseTurno:"Giornata 20" },
-    { inizio:"2027-02-11", fine:"2027-02-17", faseTurno:"Giornata 21" },
-    { inizio:"2027-02-18", fine:"2027-02-24", faseTurno:"Giornata 22" },
-    { inizio:"2027-02-25", fine:"2027-03-03", faseTurno:"Giornata 23" },
-    { inizio:"2027-03-04", fine:"2027-03-10", faseTurno:"Giornata 24" },
-    { inizio:"2027-03-11", fine:"2027-03-17", faseTurno:"Giornata 25" },
-    { inizio:"2027-03-18", fine:"2027-03-25", faseTurno:"Giornata 26" },
-    { inizio:"2027-04-01", fine:"2027-04-07", faseTurno:"Giornata 27" },
-    { inizio:"2027-04-08", fine:"2027-04-14", faseTurno:"Giornata 28" },
-    { inizio:"2027-04-15", fine:"2027-04-21", faseTurno:"Giornata 29" },
-    { inizio:"2027-04-22", fine:"2027-04-28", faseTurno:"Giornata 30" },
-    { inizio:"2027-04-29", fine:"2027-05-05", faseTurno:"Giornata 31" },
-    { inizio:"2027-05-06", fine:"2027-05-12", faseTurno:"Giornata 32" },
-    { inizio:"2027-05-13", fine:"2027-05-20", faseTurno:"Giornata 33" },
-    { inizio:"2027-05-25", fine:"2027-05-30", faseTurno:"Giornata 34" }
+  { inizio:"2026-08-20", fine:"2026-08-25", faseTurno:"Giornata 1" },
+  { inizio:"2026-08-27", fine:"2026-09-01", faseTurno:"Giornata 2" },
+  { inizio:"2026-09-03", fine:"2026-09-08", faseTurno:"Giornata 3" },
+  { inizio:"2026-09-10", fine:"2026-09-15", faseTurno:"Giornata 4" },
+  { inizio:"2026-09-17", fine:"2026-09-22", faseTurno:"Giornata 5" },
+  { inizio:"2026-10-08", fine:"2026-10-13", faseTurno:"Giornata 6" },
+  { inizio:"2026-10-15", fine:"2026-10-20", faseTurno:"Giornata 7" },
+  { inizio:"2026-10-22", fine:"2026-10-27", faseTurno:"Giornata 8" },
+  { inizio:"2026-10-29", fine:"2026-11-03", faseTurno:"Giornata 9" },
+  { inizio:"2026-11-05", fine:"2026-11-10", faseTurno:"Giornata 10" },
+  { inizio:"2026-11-19", fine:"2026-11-24", faseTurno:"Giornata 11" },
+  { inizio:"2026-11-26", fine:"2026-12-01", faseTurno:"Giornata 12" },
+  { inizio:"2026-12-03", fine:"2026-12-08", faseTurno:"Giornata 13" },
+  { inizio:"2026-12-10", fine:"2026-12-15", faseTurno:"Giornata 14" },
+  { inizio:"2026-12-31", fine:"2027-01-05", faseTurno:"Giornata 15" },
+  { inizio:"2027-01-14", fine:"2027-01-19", faseTurno:"Giornata 16" },
+  { inizio:"2027-01-21", fine:"2027-01-26", faseTurno:"Giornata 17" },
+  { inizio:"2027-01-28", fine:"2027-02-02", faseTurno:"Giornata 18" },
+  { inizio:"2027-02-04", fine:"2027-02-09", faseTurno:"Giornata 19" },
+  { inizio:"2027-02-11", fine:"2027-02-16", faseTurno:"Giornata 20" },
+  { inizio:"2027-02-18", fine:"2027-02-23", faseTurno:"Giornata 21" },
+  { inizio:"2027-02-25", fine:"2027-03-02", faseTurno:"Giornata 22" },
+  { inizio:"2027-03-04", fine:"2027-03-09", faseTurno:"Giornata 23" },
+  { inizio:"2027-03-11", fine:"2027-03-16", faseTurno:"Giornata 24" },
+  { inizio:"2027-03-18", fine:"2027-03-23", faseTurno:"Giornata 25" },
+  { inizio:"2027-04-01", fine:"2027-04-06", faseTurno:"Giornata 26" },
+  { inizio:"2027-04-08", fine:"2027-04-13", faseTurno:"Giornata 27" },
+  { inizio:"2027-04-15", fine:"2027-04-20", faseTurno:"Giornata 28" },
+  { inizio:"2027-04-22", fine:"2027-04-27", faseTurno:"Giornata 29" },
+  { inizio:"2027-04-29", fine:"2027-05-04", faseTurno:"Giornata 30" },
+  { inizio:"2027-05-06", fine:"2027-05-11", faseTurno:"Giornata 31" },
+  { inizio:"2027-05-13", fine:"2027-05-18", faseTurno:"Giornata 32" },
+  { inizio:"2027-05-20", fine:"2027-05-25", faseTurno:"Giornata 33" },
+  { inizio:"2027-05-27", fine:"2027-05-31", faseTurno:"Giornata 34" }
 
-  ]
+];
 
-};
+
+/* =========================
+   BUNDESLIGA
+========================= */
+
+FINESTRE_GIORNATE["ger.1"] = [
+
+  { inizio:"2026-08-27", fine:"2026-09-01", faseTurno:"Giornata 1" },
+  { inizio:"2026-09-03", fine:"2026-09-08", faseTurno:"Giornata 2" },
+  { inizio:"2026-09-10", fine:"2026-09-15", faseTurno:"Giornata 3" },
+  { inizio:"2026-09-17", fine:"2026-09-22", faseTurno:"Giornata 4" },
+  { inizio:"2026-10-08", fine:"2026-10-13", faseTurno:"Giornata 5" },
+  { inizio:"2026-10-15", fine:"2026-10-20", faseTurno:"Giornata 6" },
+  { inizio:"2026-10-22", fine:"2026-10-27", faseTurno:"Giornata 7" },
+  { inizio:"2026-10-29", fine:"2026-11-03", faseTurno:"Giornata 8" },
+  { inizio:"2026-11-05", fine:"2026-11-10", faseTurno:"Giornata 9" },
+  { inizio:"2026-11-19", fine:"2026-11-24", faseTurno:"Giornata 10" },
+  { inizio:"2026-11-26", fine:"2026-12-01", faseTurno:"Giornata 11" },
+  { inizio:"2026-12-03", fine:"2026-12-08", faseTurno:"Giornata 12" },
+  { inizio:"2026-12-10", fine:"2026-12-15", faseTurno:"Giornata 13" },
+  { inizio:"2026-12-17", fine:"2026-12-22", faseTurno:"Giornata 14" },
+  { inizio:"2027-01-07", fine:"2027-01-11", faseTurno:"Giornata 15" },
+  { inizio:"2027-01-12", fine:"2027-01-15", faseTurno:"Giornata 16" },
+  { inizio:"2027-01-16", fine:"2027-01-19", faseTurno:"Giornata 17" },
+  { inizio:"2027-01-21", fine:"2027-01-26", faseTurno:"Giornata 18" },
+  { inizio:"2027-01-28", fine:"2027-02-02", faseTurno:"Giornata 19" },
+  { inizio:"2027-02-04", fine:"2027-02-09", faseTurno:"Giornata 20" },
+  { inizio:"2027-02-11", fine:"2027-02-16", faseTurno:"Giornata 21" },
+  { inizio:"2027-02-18", fine:"2027-02-23", faseTurno:"Giornata 22" },
+  { inizio:"2027-02-25", fine:"2027-03-02", faseTurno:"Giornata 23" },
+  { inizio:"2027-03-02", fine:"2027-03-05", faseTurno:"Giornata 24" },
+  { inizio:"2027-03-06", fine:"2027-03-09", faseTurno:"Giornata 25" },
+  { inizio:"2027-03-11", fine:"2027-03-16", faseTurno:"Giornata 26" },
+  { inizio:"2027-03-18", fine:"2027-03-23", faseTurno:"Giornata 27" },
+  { inizio:"2027-03-25", fine:"2027-03-30", faseTurno:"Giornata 28" },
+  { inizio:"2027-04-01", fine:"2027-04-06", faseTurno:"Giornata 29" },
+  { inizio:"2027-04-08", fine:"2027-04-15", faseTurno:"Giornata 30" },
+  { inizio:"2027-04-22", fine:"2027-04-28", faseTurno:"Giornata 31" },
+  { inizio:"2027-04-29", fine:"2027-05-05", faseTurno:"Giornata 32" },
+  { inizio:"2027-05-06", fine:"2027-05-12", faseTurno:"Giornata 33" },
+  { inizio:"2027-05-13", fine:"2027-05-19", faseTurno:"Giornata 34" }
+
+];
+
+
+/* =========================
+   SAUDI PRO LEAGUE
+========================= */
+
+FINESTRE_GIORNATE["ksa.1"] = [
+
+  { inizio:"2026-08-13", fine:"2026-08-19", faseTurno:"Giornata 1" },
+  { inizio:"2026-08-20", fine:"2026-08-26", faseTurno:"Giornata 2" },
+  { inizio:"2026-08-27", fine:"2026-09-02", faseTurno:"Giornata 3" },
+  { inizio:"2026-09-03", fine:"2026-09-09", faseTurno:"Giornata 4" },
+  { inizio:"2026-09-10", fine:"2026-09-16", faseTurno:"Giornata 5" },
+  { inizio:"2026-09-17", fine:"2026-09-23", faseTurno:"Giornata 6" },
+  { inizio:"2026-09-24", fine:"2026-10-01", faseTurno:"Giornata 7" },
+  { inizio:"2026-10-09", fine:"2026-10-13", faseTurno:"Giornata 8" },
+  { inizio:"2026-10-15", fine:"2026-10-17", faseTurno:"Giornata 9" },
+  { inizio:"2026-10-18", fine:"2026-10-22", faseTurno:"Giornata 10" },
+  { inizio:"2026-10-23", fine:"2026-10-28", faseTurno:"Giornata 11" },
+  { inizio:"2026-10-29", fine:"2026-11-04", faseTurno:"Giornata 12" },
+  { inizio:"2026-11-05", fine:"2026-11-12", faseTurno:"Giornata 13" },
+  { inizio:"2026-11-19", fine:"2026-11-25", faseTurno:"Giornata 14" },
+  { inizio:"2026-11-26", fine:"2026-12-02", faseTurno:"Giornata 15" },
+  { inizio:"2026-12-03", fine:"2026-12-09", faseTurno:"Giornata 16" },
+  { inizio:"2026-12-10", fine:"2026-12-16", faseTurno:"Giornata 17" },
+  { inizio:"2026-12-17", fine:"2026-12-23", faseTurno:"Giornata 18" },
+  { inizio:"2026-12-24", fine:"2026-12-31", faseTurno:"Giornata 19" },
+  { inizio:"2027-02-04", fine:"2027-02-10", faseTurno:"Giornata 20" },
+  { inizio:"2027-02-11", fine:"2027-02-17", faseTurno:"Giornata 21" },
+  { inizio:"2027-02-18", fine:"2027-02-24", faseTurno:"Giornata 22" },
+  { inizio:"2027-02-25", fine:"2027-03-03", faseTurno:"Giornata 23" },
+  { inizio:"2027-03-04", fine:"2027-03-10", faseTurno:"Giornata 24" },
+  { inizio:"2027-03-11", fine:"2027-03-17", faseTurno:"Giornata 25" },
+  { inizio:"2027-03-18", fine:"2027-03-25", faseTurno:"Giornata 26" },
+  { inizio:"2027-04-01", fine:"2027-04-07", faseTurno:"Giornata 27" },
+  { inizio:"2027-04-08", fine:"2027-04-14", faseTurno:"Giornata 28" },
+  { inizio:"2027-04-15", fine:"2027-04-21", faseTurno:"Giornata 29" },
+  { inizio:"2027-04-22", fine:"2027-04-28", faseTurno:"Giornata 30" },
+  { inizio:"2027-04-29", fine:"2027-05-05", faseTurno:"Giornata 31" },
+  { inizio:"2027-05-06", fine:"2027-05-12", faseTurno:"Giornata 32" },
+  { inizio:"2027-05-13", fine:"2027-05-20", faseTurno:"Giornata 33" },
+  { inizio:"2027-05-25", fine:"2027-05-30", faseTurno:"Giornata 34" }
+
+];
 
 
 /* ============================================================
@@ -3802,7 +3800,6 @@ FINESTRE_GIORNATE["uefa.europa.conf"] = [
   { inizio:"2026-12-15", fine:"2026-12-18", faseTurno:"Giornata 6" }
 
 ];
-
 
 /* ============================================================
    CERCA GIORNATA NELLE TUE FINESTRE
