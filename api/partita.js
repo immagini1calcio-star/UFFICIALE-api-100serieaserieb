@@ -3477,3 +3477,1753 @@ module.exports = async function handler(
 };
 
 
+    { inizio:"2026-08-27", fine:"2026-09-01", faseTurno:"Giornata 3" },
+    { inizio:"2026-09-03", fine:"2026-09-08", faseTurno:"Giornata 4" },
+    { inizio:"2026-09-11", fine:"2026-09-14", faseTurno:"Giornata 5" },
+    { inizio:"2026-09-15", fine:"2026-09-18", faseTurno:"Giornata 6" },
+    { inizio:"2026-09-19", fine:"2026-09-22", faseTurno:"Giornata 7" },
+    { inizio:"2026-10-09", fine:"2026-10-13", faseTurno:"Giornata 8" },
+    { inizio:"2026-10-16", fine:"2026-10-20", faseTurno:"Giornata 9" },
+    { inizio:"2026-10-23", fine:"2026-10-27", faseTurno:"Giornata 10" },
+    { inizio:"2026-10-30", fine:"2026-11-03", faseTurno:"Giornata 11" },
+    { inizio:"2026-11-06", fine:"2026-11-10", faseTurno:"Giornata 12" },
+    { inizio:"2026-11-19", fine:"2026-11-24", faseTurno:"Giornata 13" },
+    { inizio:"2026-11-26", fine:"2026-12-01", faseTurno:"Giornata 14" },
+    { inizio:"2026-12-03", fine:"2026-12-08", faseTurno:"Giornata 15" },
+    { inizio:"2026-12-10", fine:"2026-12-15", faseTurno:"Giornata 16" },
+    { inizio:"2026-12-17", fine:"2026-12-22", faseTurno:"Giornata 17" },
+    { inizio:"2026-12-31", fine:"2027-01-05", faseTurno:"Giornata 18" },
+    { inizio:"2027-01-07", fine:"2027-01-12", faseTurno:"Giornata 19" },
+    { inizio:"2027-01-14", fine:"2027-01-19", faseTurno:"Giornata 20" },
+    { inizio:"2027-01-21", fine:"2027-01-26", faseTurno:"Giornata 21" },
+    { inizio:"2027-01-28", fine:"2027-02-02", faseTurno:"Giornata 22" },
+    { inizio:"2027-02-04", fine:"2027-02-09", faseTurno:"Giornata 23" },
+    { inizio:"2027-02-11", fine:"2027-02-16", faseTurno:"Giornata 24" },
+    { inizio:"2027-02-18", fine:"2027-02-23", faseTurno:"Giornata 25" },
+    { inizio:"2027-02-25", fine:"2027-03-02", faseTurno:"Giornata 26" },
+    { inizio:"2027-03-04", fine:"2027-03-09", faseTurno:"Giornata 27" },
+    { inizio:"2027-03-11", fine:"2027-03-16", faseTurno:"Giornata 28" },
+    { inizio:"2027-03-18", fine:"2027-03-23", faseTurno:"Giornata 29" },
+    { inizio:"2027-04-01", fine:"2027-04-06", faseTurno:"Giornata 30" },
+    { inizio:"2027-04-08", fine:"2027-04-13", faseTurno:"Giornata 31" },
+    { inizio:"2027-04-15", fine:"2027-04-20", faseTurno:"Giornata 32" },
+    { inizio:"2027-04-22", fine:"2027-04-27", faseTurno:"Giornata 33" },
+    { inizio:"2027-04-29", fine:"2027-05-04", faseTurno:"Giornata 34" },
+    { inizio:"2027-05-06", fine:"2027-05-11", faseTurno:"Giornata 35" },
+    { inizio:"2027-05-13", fine:"2027-05-18", faseTurno:"Giornata 36" },
+    { inizio:"2027-05-20", fine:"2027-05-25", faseTurno:"Giornata 37" },
+    { inizio:"2027-05-27", fine:"2027-05-31", faseTurno:"Giornata 38" }
+
+  ],
+
+
+  /* =========================
+     PREMIER LEAGUE
+  ========================= */
+
+  "eng.1": [
+
+    { inizio:"2026-08-20", fine:"2026-08-25", faseTurno:"Giornata 1" },
+    { inizio:"2026-08-27", fine:"2026-09-01", faseTurno:"Giornata 2" },
+    { inizio:"2026-09-03", fine:"2026-09-08", faseTurno:"Giornata 3" },
+    { inizio:"2026-09-10", fine:"2026-09-15", faseTurno:"Giornata 4" },
+    { inizio:"2026-09-17", fine:"2026-09-22", faseTurno:"Giornata 5" },
+    { inizio:"2026-10-08", fine:"2026-10-13", faseTurno:"Giornata 6" },
+    { inizio:"2026-10-15", fine:"2026-10-20", faseTurno:"Giornata 7" },
+    { inizio:"2026-10-22", fine:"2026-10-27", faseTurno:"Giornata 8" },
+    { inizio:"2026-10-29", fine:"2026-11-03", faseTurno:"Giornata 9" },
+    { inizio:"2026-11-05", fine:"2026-11-10", faseTurno:"Giornata 10" },
+    { inizio:"2026-11-19", fine:"2026-11-24", faseTurno:"Giornata 11" },
+    { inizio:"2026-11-26", fine:"2026-12-01", faseTurno:"Giornata 12" },
+    { inizio:"2026-12-01", fine:"2026-12-04", faseTurno:"Giornata 13" },
+    { inizio:"2026-12-05", fine:"2026-12-08", faseTurno:"Giornata 14" },
+    { inizio:"2026-12-10", fine:"2026-12-15", faseTurno:"Giornata 15" },
+    { inizio:"2026-12-17", fine:"2026-12-22", faseTurno:"Giornata 16" },
+    { inizio:"2026-12-24", fine:"2026-12-28", faseTurno:"Giornata 17" },
+    { inizio:"2026-12-29", fine:"2027-01-01", faseTurno:"Giornata 18" },
+    { inizio:"2027-01-01", fine:"2027-01-04", faseTurno:"Giornata 19" },
+    { inizio:"2027-01-05", fine:"2027-01-08", faseTurno:"Giornata 20" },
+    { inizio:"2027-01-16", fine:"2027-01-19", faseTurno:"Giornata 21" },
+    { inizio:"2027-01-21", fine:"2027-01-26", faseTurno:"Giornata 22" },
+    { inizio:"2027-01-28", fine:"2027-02-02", faseTurno:"Giornata 23" },
+    { inizio:"2027-02-04", fine:"2027-02-09", faseTurno:"Giornata 24" },
+    { inizio:"2027-02-09", fine:"2027-02-12", faseTurno:"Giornata 25" },
+    { inizio:"2027-02-20", fine:"2027-02-23", faseTurno:"Giornata 26" },
+    { inizio:"2027-02-25", fine:"2027-03-02", faseTurno:"Giornata 27" },
+    { inizio:"2027-03-02", fine:"2027-03-05", faseTurno:"Giornata 28" },
+    { inizio:"2027-03-11", fine:"2027-03-16", faseTurno:"Giornata 29" },
+    { inizio:"2027-03-18", fine:"2027-03-23", faseTurno:"Giornata 30" },
+    { inizio:"2027-04-08", fine:"2027-04-13", faseTurno:"Giornata 31" },
+    { inizio:"2027-04-15", fine:"2027-04-20", faseTurno:"Giornata 32" },
+    { inizio:"2027-04-22", fine:"2027-04-27", faseTurno:"Giornata 33" },
+    { inizio:"2027-04-29", fine:"2027-05-04", faseTurno:"Giornata 34" },
+    { inizio:"2027-05-06", fine:"2027-05-11", faseTurno:"Giornata 35" },
+    { inizio:"2027-05-13", fine:"2027-05-18", faseTurno:"Giornata 36" },
+    { inizio:"2027-05-20", fine:"2027-05-25", faseTurno:"Giornata 37" },
+    { inizio:"2027-05-27", fine:"2027-05-30", faseTurno:"Giornata 38" }
+
+  ],
+
+
+  /* =========================
+     LIGUE 1
+  ========================= */
+
+  "fra.1": [
+
+    { inizio:"2026-08-20", fine:"2026-08-25", faseTurno:"Giornata 1" },
+    { inizio:"2026-08-27", fine:"2026-09-01", faseTurno:"Giornata 2" },
+    { inizio:"2026-09-03", fine:"2026-09-08", faseTurno:"Giornata 3" },
+    { inizio:"2026-09-10", fine:"2026-09-15", faseTurno:"Giornata 4" },
+    { inizio:"2026-09-17", fine:"2026-09-22", faseTurno:"Giornata 5" },
+    { inizio:"2026-10-08", fine:"2026-10-13", faseTurno:"Giornata 6" },
+    { inizio:"2026-10-15", fine:"2026-10-20", faseTurno:"Giornata 7" },
+    { inizio:"2026-10-22", fine:"2026-10-27", faseTurno:"Giornata 8" },
+    { inizio:"2026-10-29", fine:"2026-11-03", faseTurno:"Giornata 9" },
+    { inizio:"2026-11-05", fine:"2026-11-10", faseTurno:"Giornata 10" },
+    { inizio:"2026-11-19", fine:"2026-11-24", faseTurno:"Giornata 11" },
+    { inizio:"2026-11-26", fine:"2026-12-01", faseTurno:"Giornata 12" },
+    { inizio:"2026-12-03", fine:"2026-12-08", faseTurno:"Giornata 13" },
+    { inizio:"2026-12-10", fine:"2026-12-15", faseTurno:"Giornata 14" },
+    { inizio:"2026-12-31", fine:"2027-01-05", faseTurno:"Giornata 15" },
+    { inizio:"2027-01-14", fine:"2027-01-19", faseTurno:"Giornata 16" },
+    { inizio:"2027-01-21", fine:"2027-01-26", faseTurno:"Giornata 17" },
+    { inizio:"2027-01-28", fine:"2027-02-02", faseTurno:"Giornata 18" },
+    { inizio:"2027-02-04", fine:"2027-02-09", faseTurno:"Giornata 19" },
+    { inizio:"2027-02-11", fine:"2027-02-16", faseTurno:"Giornata 20" },
+    { inizio:"2027-02-18", fine:"2027-02-23", faseTurno:"Giornata 21" },
+    { inizio:"2027-02-25", fine:"2027-03-02", faseTurno:"Giornata 22" },
+    { inizio:"2027-03-04", fine:"2027-03-09", faseTurno:"Giornata 23" },
+    { inizio:"2027-03-11", fine:"2027-03-16", faseTurno:"Giornata 24" },
+    { inizio:"2027-03-18", fine:"2027-03-23", faseTurno:"Giornata 25" },
+    { inizio:"2027-04-01", fine:"2027-04-06", faseTurno:"Giornata 26" },
+    { inizio:"2027-04-08", fine:"2027-04-13", faseTurno:"Giornata 27" },
+    { inizio:"2027-04-15", fine:"2027-04-20", faseTurno:"Giornata 28" },
+    { inizio:"2027-04-22", fine:"2027-04-27", faseTurno:"Giornata 29" },
+    { inizio:"2027-04-29", fine:"2027-05-04", faseTurno:"Giornata 30" },
+    { inizio:"2027-05-06", fine:"2027-05-11", faseTurno:"Giornata 31" },
+    { inizio:"2027-05-13", fine:"2027-05-18", faseTurno:"Giornata 32" },
+    { inizio:"2027-05-20", fine:"2027-05-25", faseTurno:"Giornata 33" },
+    { inizio:"2027-05-27", fine:"2027-05-31", faseTurno:"Giornata 34" }
+
+  ],
+
+
+  /* =========================
+     BUNDESLIGA
+  ========================= */
+
+  "ger.1": [
+
+    { inizio:"2026-08-27", fine:"2026-09-01", faseTurno:"Giornata 1" },
+    { inizio:"2026-09-03", fine:"2026-09-08", faseTurno:"Giornata 2" },
+    { inizio:"2026-09-10", fine:"2026-09-15", faseTurno:"Giornata 3" },
+    { inizio:"2026-09-17", fine:"2026-09-22", faseTurno:"Giornata 4" },
+    { inizio:"2026-10-08", fine:"2026-10-13", faseTurno:"Giornata 5" },
+    { inizio:"2026-10-15", fine:"2026-10-20", faseTurno:"Giornata 6" },
+    { inizio:"2026-10-22", fine:"2026-10-27", faseTurno:"Giornata 7" },
+    { inizio:"2026-10-29", fine:"2026-11-03", faseTurno:"Giornata 8" },
+    { inizio:"2026-11-05", fine:"2026-11-10", faseTurno:"Giornata 9" },
+    { inizio:"2026-11-19", fine:"2026-11-24", faseTurno:"Giornata 10" },
+    { inizio:"2026-11-26", fine:"2026-12-01", faseTurno:"Giornata 11" },
+    { inizio:"2026-12-03", fine:"2026-12-08", faseTurno:"Giornata 12" },
+    { inizio:"2026-12-10", fine:"2026-12-15", faseTurno:"Giornata 13" },
+    { inizio:"2026-12-17", fine:"2026-12-22", faseTurno:"Giornata 14" },
+    { inizio:"2027-01-07", fine:"2027-01-11", faseTurno:"Giornata 15" },
+    { inizio:"2027-01-12", fine:"2027-01-15", faseTurno:"Giornata 16" },
+    { inizio:"2027-01-16", fine:"2027-01-19", faseTurno:"Giornata 17" },
+    { inizio:"2027-01-21", fine:"2027-01-26", faseTurno:"Giornata 18" },
+    { inizio:"2027-01-28", fine:"2027-02-02", faseTurno:"Giornata 19" },
+    { inizio:"2027-02-04", fine:"2027-02-09", faseTurno:"Giornata 20" },
+    { inizio:"2027-02-11", fine:"2027-02-16", faseTurno:"Giornata 21" },
+    { inizio:"2027-02-18", fine:"2027-02-23", faseTurno:"Giornata 22" },
+    { inizio:"2027-02-25", fine:"2027-03-02", faseTurno:"Giornata 23" },
+    { inizio:"2027-03-02", fine:"2027-03-05", faseTurno:"Giornata 24" },
+    { inizio:"2027-03-06", fine:"2027-03-09", faseTurno:"Giornata 25" },
+    { inizio:"2027-03-11", fine:"2027-03-16", faseTurno:"Giornata 26" },
+    { inizio:"2027-03-18", fine:"2027-03-23", faseTurno:"Giornata 27" },
+    { inizio:"2027-03-25", fine:"2027-03-30", faseTurno:"Giornata 28" },
+    { inizio:"2027-04-01", fine:"2027-04-06", faseTurno:"Giornata 29" },
+    { inizio:"2027-04-08", fine:"2027-04-15", faseTurno:"Giornata 30" },
+    { inizio:"2027-04-22", fine:"2027-04-28", faseTurno:"Giornata 31" },
+    { inizio:"2027-04-29", fine:"2027-05-05", faseTurno:"Giornata 32" },
+    { inizio:"2027-05-06", fine:"2027-05-12", faseTurno:"Giornata 33" },
+    { inizio:"2027-05-13", fine:"2027-05-19", faseTurno:"Giornata 34" }
+
+  ],
+
+
+  /* =========================
+     SAUDI PRO LEAGUE
+  ========================= */
+
+  "ksa.1": [
+
+    { inizio:"2026-08-13", fine:"2026-08-19", faseTurno:"Giornata 1" },
+    { inizio:"2026-08-20", fine:"2026-08-26", faseTurno:"Giornata 2" },
+    { inizio:"2026-08-27", fine:"2026-09-02", faseTurno:"Giornata 3" },
+    { inizio:"2026-09-03", fine:"2026-09-09", faseTurno:"Giornata 4" },
+    { inizio:"2026-09-10", fine:"2026-09-16", faseTurno:"Giornata 5" },
+    { inizio:"2026-09-17", fine:"2026-09-23", faseTurno:"Giornata 6" },
+    { inizio:"2026-09-24", fine:"2026-10-01", faseTurno:"Giornata 7" },
+    { inizio:"2026-10-09", fine:"2026-10-13", faseTurno:"Giornata 8" },
+    { inizio:"2026-10-15", fine:"2026-10-17", faseTurno:"Giornata 9" },
+    { inizio:"2026-10-18", fine:"2026-10-22", faseTurno:"Giornata 10" },
+    { inizio:"2026-10-23", fine:"2026-10-28", faseTurno:"Giornata 11" },
+    { inizio:"2026-10-29", fine:"2026-11-04", faseTurno:"Giornata 12" },
+    { inizio:"2026-11-05", fine:"2026-11-12", faseTurno:"Giornata 13" },
+    { inizio:"2026-11-19", fine:"2026-11-25", faseTurno:"Giornata 14" },
+    { inizio:"2026-11-26", fine:"2026-12-02", faseTurno:"Giornata 15" },
+    { inizio:"2026-12-03", fine:"2026-12-09", faseTurno:"Giornata 16" },
+    { inizio:"2026-12-10", fine:"2026-12-16", faseTurno:"Giornata 17" },
+    { inizio:"2026-12-17", fine:"2026-12-23", faseTurno:"Giornata 18" },
+    { inizio:"2026-12-24", fine:"2026-12-31", faseTurno:"Giornata 19" },
+    { inizio:"2027-02-04", fine:"2027-02-10", faseTurno:"Giornata 20" },
+    { inizio:"2027-02-11", fine:"2027-02-17", faseTurno:"Giornata 21" },
+    { inizio:"2027-02-18", fine:"2027-02-24", faseTurno:"Giornata 22" },
+    { inizio:"2027-02-25", fine:"2027-03-03", faseTurno:"Giornata 23" },
+    { inizio:"2027-03-04", fine:"2027-03-10", faseTurno:"Giornata 24" },
+    { inizio:"2027-03-11", fine:"2027-03-17", faseTurno:"Giornata 25" },
+    { inizio:"2027-03-18", fine:"2027-03-25", faseTurno:"Giornata 26" },
+    { inizio:"2027-04-01", fine:"2027-04-07", faseTurno:"Giornata 27" },
+    { inizio:"2027-04-08", fine:"2027-04-14", faseTurno:"Giornata 28" },
+    { inizio:"2027-04-15", fine:"2027-04-21", faseTurno:"Giornata 29" },
+    { inizio:"2027-04-22", fine:"2027-04-28", faseTurno:"Giornata 30" },
+    { inizio:"2027-04-29", fine:"2027-05-05", faseTurno:"Giornata 31" },
+    { inizio:"2027-05-06", fine:"2027-05-12", faseTurno:"Giornata 32" },
+    { inizio:"2027-05-13", fine:"2027-05-20", faseTurno:"Giornata 33" },
+    { inizio:"2027-05-25", fine:"2027-05-30", faseTurno:"Giornata 34" }
+
+  ]
+
+};
+
+
+/* ============================================================
+   FINESTRE UEFA
+============================================================ */
+
+FINESTRE_GIORNATE["uefa.champions"] = [
+
+  { inizio:"2026-09-08", fine:"2026-09-11", faseTurno:"Giornata 1" },
+  { inizio:"2026-10-13", fine:"2026-10-16", faseTurno:"Giornata 2" },
+  { inizio:"2026-10-20", fine:"2026-10-23", faseTurno:"Giornata 3" },
+  { inizio:"2026-11-03", fine:"2026-11-06", faseTurno:"Giornata 4" },
+  { inizio:"2026-11-24", fine:"2026-11-27", faseTurno:"Giornata 5" },
+  { inizio:"2026-12-08", fine:"2026-12-11", faseTurno:"Giornata 6" },
+  { inizio:"2027-01-19", fine:"2027-01-22", faseTurno:"Giornata 7" },
+  { inizio:"2027-01-27", fine:"2027-01-30", faseTurno:"Giornata 8" }
+
+];
+
+
+FINESTRE_GIORNATE["uefa.europa"] = [
+
+  { inizio:"2026-09-15", fine:"2026-09-18", faseTurno:"Giornata 1" },
+  { inizio:"2026-10-13", fine:"2026-10-16", faseTurno:"Giornata 2" },
+  { inizio:"2026-10-20", fine:"2026-10-23", faseTurno:"Giornata 3" },
+  { inizio:"2026-11-03", fine:"2026-11-06", faseTurno:"Giornata 4" },
+  { inizio:"2026-11-24", fine:"2026-11-27", faseTurno:"Giornata 5" },
+  { inizio:"2026-12-08", fine:"2026-12-11", faseTurno:"Giornata 6" },
+  { inizio:"2027-01-19", fine:"2027-01-22", faseTurno:"Giornata 7" },
+  { inizio:"2027-01-27", fine:"2027-01-30", faseTurno:"Giornata 8" }
+
+];
+
+
+FINESTRE_GIORNATE["uefa.europa.conf"] = [
+
+  { inizio:"2026-10-13", fine:"2026-10-16", faseTurno:"Giornata 1" },
+  { inizio:"2026-10-20", fine:"2026-10-23", faseTurno:"Giornata 2" },
+  { inizio:"2026-11-03", fine:"2026-11-06", faseTurno:"Giornata 3" },
+  { inizio:"2026-11-24", fine:"2026-11-27", faseTurno:"Giornata 4" },
+  { inizio:"2026-12-08", fine:"2026-12-11", faseTurno:"Giornata 5" },
+  { inizio:"2026-12-15", fine:"2026-12-18", faseTurno:"Giornata 6" }
+
+];
+
+
+/* ============================================================
+   CERCA GIORNATA NELLE TUE FINESTRE
+
+   QUESTA FUNZIONE HA PRIORITÀ ASSOLUTA.
+
+   Se una partita rientra in una tua finestra,
+   NON viene utilizzata la giornata ESPN.
+============================================================ */
+
+function trovaFinestraGiornata(
+  competizione,
+  dataPartita
+) {
+
+  const finestre =
+    FINESTRE_GIORNATE[
+      competizione
+    ];
+
+  if (
+    !Array.isArray(finestre) ||
+    !dataPartita
+  ) {
+    return null;
+  }
+
+  const data =
+    dataISOItalia(dataPartita);
+
+  if (!data) {
+    return null;
+  }
+
+  /*
+  Nel caso improbabile di finestre sovrapposte,
+  controlliamo tutte le finestre e scegliamo
+  quella con l'intervallo più corto.
+  Questo evita che una finestra molto ampia
+  copra una finestra specifica.
+  */
+
+  const corrispondenti =
+    finestre.filter(function (finestra) {
+
+      return (
+        data >= finestra.inizio &&
+        data <= finestra.fine
+      );
+
+    });
+
+  if (corrispondenti.length === 0) {
+    return null;
+  }
+
+corrispondenti.sort(function (a, b) {
+
+  const start =
+    String(b.inizio).localeCompare(
+      String(a.inizio)
+    );
+
+  if (start !== 0) {
+    return start;
+  }
+
+  return String(a.fine).localeCompare(
+    String(b.fine)
+  );
+
+});
+
+
+
+  return corrispondenti[0];
+}
+
+
+/* ============================================================
+   FALLBACK ESPN
+
+   UTILIZZATO SOLO SE NON ESISTE UNA FINESTRA.
+============================================================ */
+
+function getFaseTurnoESPN(
+  data,
+  competition
+) {
+
+  const valori = [];
+
+  function aggiungi(valore) {
+
+    if (
+      valore === null ||
+      valore === undefined
+    ) {
+      return;
+    }
+
+    if (
+      typeof valore !== "string" &&
+      typeof valore !== "number"
+    ) {
+      return;
+    }
+
+    const testo =
+      String(valore).trim();
+
+    if (!testo) {
+      return;
+    }
+
+    if (!valori.includes(testo)) {
+      valori.push(testo);
+    }
+
+  }
+
+
+  function analizza(
+    obj,
+    profondita
+  ) {
+
+    if (
+      obj === null ||
+      obj === undefined ||
+      profondita > 12
+    ) {
+      return;
+    }
+
+    if (Array.isArray(obj)) {
+
+      obj.forEach(
+        function (elemento) {
+
+          analizza(
+            elemento,
+            profondita + 1
+          );
+
+        }
+      );
+
+      return;
+
+    }
+
+    if (
+      typeof obj !== "object"
+    ) {
+      return;
+    }
+
+
+    [
+      "round",
+      "phase",
+      "stage"
+    ].forEach(function (campo) {
+
+      const valore =
+        obj[campo];
+
+      if (
+        valore &&
+        typeof valore === "object"
+      ) {
+
+        aggiungi(valore.displayName);
+        aggiungi(valore.name);
+        aggiungi(valore.label);
+        aggiungi(valore.description);
+        aggiungi(valore.shortName);
+        aggiungi(valore.text);
+
+      }
+
+    });
+
+
+    const week =
+      obj.week;
+
+    if (
+      week &&
+      typeof week === "object"
+    ) {
+
+      aggiungi(week.text);
+      aggiungi(week.displayName);
+      aggiungi(week.label);
+      aggiungi(week.name);
+      aggiungi(week.description);
+      aggiungi(week.shortName);
+
+    }
+
+
+    Object.keys(obj)
+      .forEach(function (chiave) {
+
+        const valore =
+          obj[chiave];
+
+        if (
+          valore &&
+          typeof valore === "object"
+        ) {
+
+          analizza(
+            valore,
+            profondita + 1
+          );
+
+        }
+
+      });
+
+  }
+
+
+  analizza(
+    competition,
+    0
+  );
+
+
+  if (
+    valori.length === 0
+  ) {
+
+    analizza(
+      data,
+      0
+    );
+
+  }
+
+
+  const numeroGiornata =
+    competition?.week?.number ??
+    data?.header?.competitions?.[0]?.week?.number ??
+    null;
+
+
+  const esclusi = [
+
+    "regular season",
+    "regular-season",
+    "season",
+    "week",
+    "matchday",
+    "round",
+    "stage",
+    "phase"
+
+  ];
+
+
+  for (
+    const valore of valori
+  ) {
+
+    if (
+      !esclusi.includes(
+        String(valore)
+          .toLowerCase()
+          .trim()
+      )
+    ) {
+
+      /*
+      Se ESPN restituisce già
+      "Giornata 5", lo manteniamo.
+      */
+
+      if (
+        /^giornata\s+\d+$/i.test(
+          String(valore).trim()
+        )
+      ) {
+
+        return String(valore).trim();
+
+      }
+
+      /*
+      Se restituisce solamente un numero,
+      trasformiamolo in Giornata X.
+      */
+
+      if (
+        /^\d+$/.test(
+          String(valore).trim()
+        )
+      ) {
+
+        return (
+          "Giornata " +
+          String(valore).trim()
+        );
+
+      }
+
+      return valore;
+
+    }
+
+  }
+
+
+  if (
+    numeroGiornata !== null &&
+    numeroGiornata !== undefined &&
+    String(numeroGiornata).trim() !== ""
+  ) {
+
+    return (
+      "Giornata " +
+      numeroGiornata
+    );
+
+  }
+
+
+  return "";
+
+}
+
+
+/* ============================================================
+   FASE / TURNO DEFINITIVO
+
+   ORDINE:
+
+   1. DATA + TUE FINESTRE
+   2. ESPN
+   3. ""
+
+============================================================ */
+
+function getFaseTurno(
+  data,
+  competition,
+  competizione
+) {
+
+  const dataPartita =
+    competition?.date ||
+    data?.header?.date ||
+    null;
+
+
+  /*
+  PRIORITÀ 1:
+  finestre personalizzate
+  */
+
+const finestra =
+  trovaFinestraGiornata(
+    competizione,
+    dataPartita
+  );
+
+if (
+  finestra &&
+  finestra.faseTurno
+) {
+
+  return {
+
+    valore:
+      finestra.faseTurno,
+
+    fonte:
+      "FINESTRE_GIORNATE"
+
+  };
+
+}
+
+
+  /*
+  PRIORITÀ 2:
+  ESPN
+  */
+
+  const espn =
+    getFaseTurnoESPN(
+      data,
+      competition
+    );
+
+
+  if (espn) {
+
+    return {
+
+      valore:
+        espn,
+
+      fonte:
+        "ESPN"
+
+    };
+
+  }
+
+
+  /*
+  Nessuna informazione.
+  */
+
+  return {
+
+    valore: "",
+
+    fonte: "NESSUNA"
+
+  };
+
+}
+
+
+/* ============================================================
+   STATISTICHE
+============================================================ */
+
+function normalizzaNomeStatistica(nome) {
+
+  if (!nome) {
+    return "";
+  }
+
+  return String(nome)
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(
+      /[\u0300-\u036f]/g,
+      ""
+    )
+    .replace(
+      /[\s_\-\/.%]+/g,
+      ""
+    )
+    .replace(
+      /[^\w]/g,
+      ""
+    );
+
+}
+
+
+function trovaStatistica(
+  lista,
+  possibiliNomi
+) {
+
+  if (!Array.isArray(lista)) {
+    return null;
+  }
+
+  const nomi =
+    possibiliNomi.map(
+      normalizzaNomeStatistica
+    );
+
+
+  for (
+    const stat of lista
+  ) {
+
+    const nome =
+      normalizzaNomeStatistica(
+        stat?.name
+      );
+
+    const label =
+      normalizzaNomeStatistica(
+        stat?.label
+      );
+
+    const abbreviazione =
+      normalizzaNomeStatistica(
+        stat?.abbreviation
+      );
+
+
+    if (
+      nomi.includes(nome) ||
+      nomi.includes(label) ||
+      nomi.includes(abbreviazione)
+    ) {
+
+      return (
+        stat?.displayValue ??
+        stat?.value ??
+        null
+      );
+
+    }
+
+  }
+
+  return null;
+
+}
+
+
+/* ============================================================
+   STATISTICHE COMPLETE
+============================================================ */
+
+function creaStatistiche(data) {
+
+  const risultato = {
+
+    casa: [],
+    trasferta: [],
+
+    valori: {
+
+      possessoCasa: null,
+      possessoTrasferta: null,
+
+      tiriCasa: null,
+      tiriTrasferta: null,
+
+      tiriInPortaCasa: null,
+      tiriInPortaTrasferta: null,
+
+      calciDangoloCasa: null,
+      calciDangoloTrasferta: null,
+
+      passaggiCasa: null,
+      passaggiTrasferta: null,
+
+      fuorigiocoCasa: null,
+      fuorigiocoTrasferta: null
+
+    }
+
+  };
+
+
+  const teams =
+    data?.boxscore?.teams ||
+    [];
+
+
+  if (!Array.isArray(teams)) {
+    return risultato;
+  }
+
+
+  for (
+    const team of teams
+  ) {
+
+    const lista =
+      Array.isArray(
+        team?.statistics
+      )
+        ? team.statistics
+        : [];
+
+
+    const statistiche =
+      lista.map(function (x) {
+
+        return {
+
+          nome:
+            x?.name ||
+            null,
+
+          label:
+            x?.label ||
+            null,
+
+          valore:
+            x?.displayValue ??
+            x?.value ??
+            null
+
+        };
+
+      });
+
+
+    const valori = {
+
+      possesso:
+        trovaStatistica(
+          lista,
+          [
+            "possessionPct",
+            "possessionPercentage",
+            "possessionPercent",
+            "possession",
+            "ballPossession",
+            "possesso"
+          ]
+        ),
+
+      tiri:
+        trovaStatistica(
+          lista,
+          [
+            "totalShots",
+            "shots",
+            "shotsTotal",
+            "totalShotsTaken",
+            "shotAttempts",
+            "tiri"
+          ]
+        ),
+
+      tiriInPorta:
+        trovaStatistica(
+          lista,
+          [
+            "shotsOnTarget",
+            "shotsOnGoal",
+            "shotsOnTargetTotal",
+            "shotsOnGoalTotal",
+            "onTarget",
+            "tiriInPorta"
+          ]
+        ),
+
+      angoli:
+        trovaStatistica(
+          lista,
+          [
+            "corners",
+            "cornerKicks",
+            "totalCorners",
+            "wonCorners",
+            "calciDangolo"
+          ]
+        ),
+
+      passaggi:
+        trovaStatistica(
+          lista,
+          [
+            "passes",
+            "totalPasses",
+            "completedPasses",
+            "totalPass",
+            "passaggi"
+          ]
+        ),
+
+      fuorigioco:
+        trovaStatistica(
+          lista,
+          [
+            "offsides",
+            "offside",
+            "fuorigioco"
+          ]
+        )
+
+    };
+
+
+    if (
+      team?.homeAway === "home"
+    ) {
+
+      risultato.casa =
+        statistiche;
+
+      risultato.valori.possessoCasa =
+        valori.possesso;
+
+      risultato.valori.tiriCasa =
+        valori.tiri;
+
+      risultato.valori.tiriInPortaCasa =
+        valori.tiriInPorta;
+
+      risultato.valori.calciDangoloCasa =
+        valori.angoli;
+
+      risultato.valori.passaggiCasa =
+        valori.passaggi;
+
+      risultato.valori.fuorigiocoCasa =
+        valori.fuorigioco;
+
+    }
+
+
+    if (
+      team?.homeAway === "away"
+    ) {
+
+      risultato.trasferta =
+        statistiche;
+
+      risultato.valori.possessoTrasferta =
+        valori.possesso;
+
+      risultato.valori.tiriTrasferta =
+        valori.tiri;
+
+      risultato.valori.tiriInPortaTrasferta =
+        valori.tiriInPorta;
+
+      risultato.valori.calciDangoloTrasferta =
+        valori.angoli;
+
+      risultato.valori.passaggiTrasferta =
+        valori.passaggi;
+
+      risultato.valori.fuorigiocoTrasferta =
+        valori.fuorigioco;
+
+    }
+
+  }
+
+  return risultato;
+
+}
+
+
+/* ============================================================
+   FORMAZIONI
+============================================================ */
+
+function ruoloItaliano(ruolo) {
+
+  if (!ruolo) {
+    return null;
+  }
+
+  const r =
+    String(ruolo)
+      .toUpperCase();
+
+
+  const mappa = {
+
+    G: "Portiere",
+    GK: "Portiere",
+
+    CB: "Difensore",
+    CD: "Difensore",
+    "CD-L": "Difensore",
+    "CD-R": "Difensore",
+
+    LB: "Difensore",
+    RB: "Difensore",
+    LWB: "Difensore",
+    RWB: "Difensore",
+
+    DM: "Centrocampista",
+    CM: "Centrocampista",
+    "CM-L": "Centrocampista",
+    "CM-R": "Centrocampista",
+    "AM-L": "Centrocampista",
+    "AM-R": "Centrocampista",
+
+    LM: "Centrocampista",
+    RM: "Centrocampista",
+
+    AM: "Centrocampista",
+    CAM: "Centrocampista",
+
+    LW: "Attaccante",
+    RW: "Attaccante",
+
+    CF: "Attaccante",
+    "CF-L": "Attaccante",
+    "CF-R": "Attaccante",
+
+    ST: "Attaccante",
+    FW: "Attaccante",
+    F: "Attaccante",
+
+    SUB: "Riserva"
+
+  };
+
+
+  return (
+    mappa[r] ||
+    ruolo
+  );
+
+}
+
+
+/* ============================================================
+   FORMAZIONI
+============================================================ */
+
+function creaFormazioni(
+  data,
+  home,
+  away
+) {
+
+  const risultato = {
+
+    casa: null,
+    trasferta: null
+
+  };
+
+
+  const rosters =
+    data?.rosters ||
+    data?.lineups ||
+    [];
+
+
+  if (!Array.isArray(rosters)) {
+    return risultato;
+  }
+
+
+  for (
+    const r of rosters
+  ) {
+
+    const formazione = {
+
+      modulo:
+        r?.formation?.displayName ||
+        r?.formation ||
+        r?.formationUsed ||
+        null,
+
+     allenatore:
+  r?.coach?.displayName ||
+  r?.coach?.fullName ||
+  r?.coaches?.[0]?.displayName ||
+  r?.coaches?.[0]?.fullName ||
+  r?.team?.coach?.displayName ||
+  r?.team?.coach?.fullName ||
+  null,
+
+      titolari: [],
+
+      riserve: []
+
+    };
+
+
+    const giocatori =
+      r?.roster ||
+      r?.athletes ||
+      [];
+
+
+    if (
+      !Array.isArray(giocatori)
+    ) {
+      continue;
+    }
+
+
+    for (
+      const p of giocatori
+    ) {
+
+      const atleta =
+        p?.athlete ||
+        p;
+
+
+      const nomeCompleto =
+        atleta?.displayName ||
+        atleta?.fullName ||
+        atleta?.shortName ||
+        atleta?.name ||
+        "";
+
+
+      /*
+      IMPORTANTE:
+      nelle formazioni viene restituito
+      ESCLUSIVAMENTE IL COGNOME.
+      */
+
+      const cognome =
+        ultimoCognome(
+          nomeCompleto
+        );
+
+
+      if (!cognome) {
+        continue;
+      }
+
+
+      const numero =
+        p?.jersey ||
+        atleta?.jersey ||
+        null;
+
+
+      const ruoloOriginale =
+        p?.position?.abbreviation ||
+        atleta?.position?.abbreviation ||
+        p?.position?.displayName ||
+        atleta?.position?.displayName ||
+        null;
+
+
+      const titolare =
+        p?.starter === true ||
+        p?.lineupStatus === "starter" ||
+        p?.status === "starter";
+
+
+      const giocatore = {
+
+        cognome,
+
+        numero,
+
+        ruolo:
+          ruoloItaliano(
+            ruoloOriginale
+          ),
+
+        ruoloESPN:
+          ruoloOriginale,
+
+        titolare
+
+      };
+
+
+      if (titolare) {
+
+        formazione.titolari.push(
+          giocatore
+        );
+
+      } else {
+
+        formazione.riserve.push(
+          giocatore
+        );
+
+      }
+
+    }
+
+
+    const idSquadra =
+      r?.team?.id;
+
+
+    if (
+      idSquadra &&
+      idSquadra ===
+        home?.team?.id
+    ) {
+
+      risultato.casa =
+        formazione;
+
+    }
+
+
+    if (
+      idSquadra &&
+      idSquadra ===
+        away?.team?.id
+    ) {
+
+      risultato.trasferta =
+        formazione;
+
+    }
+
+  }
+
+
+  return risultato;
+
+}
+
+
+/* ============================================================
+   RIGORI
+============================================================ */
+
+function creaRigori(
+  data,
+  competition,
+  home,
+  away
+) {
+
+  const risultato = {
+
+    partitaTerminataAiRigori: false,
+
+    casa: null,
+
+    trasferta: null
+
+  };
+
+
+  /* ==========================================================
+     CERCA SOLO INDICATORI ESPLICITI DI UNA SERIE DI RIGORI
+
+     NON bisogna cercare semplicemente "penalty" o "rigori",
+     perché ESPN può utilizzare questi termini anche nelle
+     normali statistiche della partita.
+  ========================================================== */
+
+  const testo =
+    JSON.stringify({
+      data,
+      competition
+    }).toLowerCase();
+
+
+  const shootoutEsplicito =
+    testo.includes("penalty shootout") ||
+    testo.includes("penalty shoot-out") ||
+    testo.includes("shootout") ||
+    testo.includes("shoot-out") ||
+    testo.includes("decided on penalties") ||
+    testo.includes("decided by penalties") ||
+    testo.includes("won on penalties") ||
+    testo.includes("wins on penalties") ||
+    testo.includes("ended in penalties") ||
+    testo.includes("match decided by penalties") ||
+    testo.includes("game decided by penalties") ||
+    testo.includes("penalty kicks to decide") ||
+    testo.includes("penalty kicks decided") ||
+    testo.includes("rigori decisivi") ||
+    testo.includes("serie di rigori") ||
+    testo.includes("terminata ai rigori") ||
+    testo.includes("finita ai rigori");
+
+
+  /* ==========================================================
+     PUNTEGGIO RIGORI ESPLICITO
+
+     shootoutScore è il campo principale da utilizzare.
+
+     NON utilizziamo più:
+       penaltyScore
+       penalties
+
+     perché possono rappresentare statistiche sui rigori
+     durante i 90/120 minuti e NON necessariamente una
+     serie finale di rigori.
+  ========================================================== */
+
+  const rigoriHome =
+    home?.shootoutScore ??
+    null;
+
+
+  const rigoriAway =
+    away?.shootoutScore ??
+    null;
+
+
+  /* ==========================================================
+     CONTROLLO PUNTEGGI SHOOTOUT
+
+     Se ESPN fornisce entrambi gli shootoutScore,
+     abbiamo una conferma molto forte della serie di rigori.
+  ========================================================== */
+
+  const punteggioShootoutPresente =
+    rigoriHome !== null &&
+    rigoriHome !== undefined &&
+    rigoriAway !== null &&
+    rigoriAway !== undefined;
+
+
+  /* ==========================================================
+     DETERMINAZIONE FINALE
+
+     La partita è terminata ai rigori SOLO se:
+
+     1. ESPN dichiara esplicitamente una serie di rigori
+
+     OPPURE
+
+     2. ESPN fornisce entrambi i punteggi shootoutScore.
+  ========================================================== */
+
+  if (
+    shootoutEsplicito ||
+    punteggioShootoutPresente
+  ) {
+
+    risultato.partitaTerminataAiRigori =
+      true;
+
+
+    /* ========================================================
+       PUNTEGGIO RIGORI CASA
+    ======================================================== */
+
+    if (
+      rigoriHome !== null &&
+      rigoriHome !== undefined
+    ) {
+
+      risultato.casa =
+        rigoriHome;
+
+    }
+
+
+    /* ========================================================
+       PUNTEGGIO RIGORI TRASFERTA
+    ======================================================== */
+
+    if (
+      rigoriAway !== null &&
+      rigoriAway !== undefined
+    ) {
+
+      risultato.trasferta =
+        rigoriAway;
+
+    }
+
+  }
+
+
+  /* ==========================================================
+     RISULTATO
+  ========================================================== */
+
+  return risultato;
+
+}
+
+
+/* ============================================================
+   MVP
+============================================================ */
+
+const mvp =
+  trovaMVP(data);
+
+
+/* ============================================================
+   RISPOSTA
+============================================================ */
+
+return res.status(200).json({
+
+  success: true,
+
+  partita: {
+
+    id:
+      data?.header?.id ||
+      id,
+
+    data:
+      dataOra.data,
+
+    ora:
+      dataOra.ora,
+
+    competizione: {
+
+      id:
+        competizione,
+
+      nome:
+        datiCompetizione.nome,
+
+      paese:
+        datiCompetizione.paese
+
+    },
+
+
+    /*
+    IMPORTANTE:
+
+    faseTurno viene determinato con questo ordine:
+
+    1. FINESTRE_GIORNATE
+    2. ESPN
+    3. ""
+
+    Se esiste una finestra per la data della partita,
+    ESPN NON può sovrascriverla.
+    */
+
+    faseTurno:
+      faseTurno.valore,
+
+    faseTurnoFonte:
+      faseTurno.fonte,
+
+
+    stato: {
+
+      nome:
+        stato,
+
+      descrizione:
+        stato,
+
+      stato:
+        stato,
+
+      completata:
+        stato === "Finita",
+
+      minuto:
+        competition?.status?.displayClock ||
+        null
+
+    },
+
+
+    casa:
+      homeTeam,
+
+
+    trasferta:
+      awayTeam,
+
+
+    stadio:
+      venue?.fullName ||
+      venue?.displayName ||
+      null,
+
+
+    nome:
+      (
+        homeTeam?.nome ||
+        ""
+      ) +
+      " - " +
+      (
+        awayTeam?.nome ||
+        ""
+      ),
+
+
+    link: {
+
+      partita:
+        "https://www.espn.com/soccer/match/_/gameId/" +
+        encodeURIComponent(id),
+
+      statistiche:
+        "https://www.espn.com/soccer/matchstats/_/gameId/" +
+        encodeURIComponent(id)
+
+    }
+
+  },
+
+
+  /* ======================================================
+     INFORMAZIONI
+  ====================================================== */
+
+  info: {
+
+    /*
+    SOLO L'ARBITRO PRINCIPALE
+    */
+
+    arbitro:
+      arbitri.arbitro,
+
+    stadio:
+      venue?.fullName ||
+      venue?.displayName ||
+      null,
+
+    citta:
+      venue?.address?.city ||
+      null,
+
+    paese:
+      venue?.address?.country ||
+      null,
+
+    MVP:
+      mvp
+
+  },
+
+
+  /* ======================================================
+     MARCATORI
+  ====================================================== */
+
+  marcatori:
+    creaMarcatori(plays),
+
+
+  /* ======================================================
+     CARTELLINI
+  ====================================================== */
+
+  cartellini:
+    creaCartellini(plays),
+
+
+  /* ======================================================
+     SOSTITUZIONI
+
+     Formato:
+
+     entra: Cognome
+     esce: Cognome
+  ====================================================== */
+
+  sostituzioni:
+    creaSostituzioni(plays),
+
+
+  /* ======================================================
+     RIGORI
+  ====================================================== */
+
+  rigori:
+    rigori,
+
+
+  /* ======================================================
+     STATISTICHE COMPLETE
+  ====================================================== */
+
+  statistiche:
+    statistiche,
+
+
+  statistichePartita: {
+
+    possessoCasa:
+      statistiche.valori.possessoCasa,
+
+    possessoTrasferta:
+      statistiche.valori.possessoTrasferta,
+
+    tiriCasa:
+      statistiche.valori.tiriCasa,
+
+    tiriTrasferta:
+      statistiche.valori.tiriTrasferta,
+
+    tiriInPortaCasa:
+      statistiche.valori.tiriInPortaCasa,
+
+    tiriInPortaTrasferta:
+      statistiche.valori.tiriInPortaTrasferta,
+
+    calciDangoloCasa:
+      statistiche.valori.calciDangoloCasa,
+
+    calciDangoloTrasferta:
+      statistiche.valori.calciDangoloTrasferta,
+
+    passaggiCasa:
+      statistiche.valori.passaggiCasa,
+
+    passaggiTrasferta:
+      statistiche.valori.passaggiTrasferta,
+
+    fuorigiocoCasa:
+      statistiche.valori.fuorigiocoCasa,
+
+    fuorigiocoTrasferta:
+      statistiche.valori.fuorigiocoTrasferta
+
+  },
+
+
+  /* ======================================================
+     FORMAZIONI
+  ====================================================== */
+
+  formazioni:
+    formazioni,
+
+
+  /* ======================================================
+     CRONACA COMPLETA
+
+     Il testo viene passato attraverso
+     traduciTestoCronaca(), quindi la cronaca
+     viene restituita in italiano.
+  ====================================================== */
+
+  cronaca:
+    creaCronaca(plays),
+
+
+  /* ======================================================
+     EVENTI COMPLETI
+  ====================================================== */
+
+  eventi:
+    plays.map(
+      function (p) {
+
+        return {
+
+          id:
+            p?.id ||
+            null,
+
+          minuto:
+            minutoEvento(p),
+
+          tipo:
+            traduciEvento(
+              tipoEvento(p)
+            ),
+
+          giocatore:
+            nomeGiocatore(p),
+
+          assist:
+            assistGiocatore(p),
+
+          squadra:
+            squadraEvento(p),
+
+          testo:
+            traduciTestoCronaca(
+              p?.text ||
+              p?.description ||
+              null
+            )
+
+        };
+
+      }
+    )
+
+});
+
+
+}
+
+catch (errore) {
+
+  console.error(
+    "Errore /api/partita:",
+    errore
+  );
+
+
+  return res.status(500).json({
+
+    success: false,
+
+    errore:
+      errore?.message ||
+      "Errore interno del server"
+
+  });
+
+}
+
+};
