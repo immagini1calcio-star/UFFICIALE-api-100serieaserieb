@@ -3155,6 +3155,7 @@ module.exports = async function handler(
       req?.query?.competizione ||
       "ita.1";
 
+
     if (!id) {
 
       return erroreJSON(
@@ -3164,6 +3165,7 @@ module.exports = async function handler(
       );
 
     }
+
 
     if (
       !COMPETIZIONI[
@@ -3182,13 +3184,16 @@ module.exports = async function handler(
 
     }
 
+
     const endpoint =
       `/apis/site/v2/sports/soccer/${competizione}/summary?event=${id}`;
+
 
     const data =
       await espnFetch(
         endpoint
       );
+
 
     if (!data) {
 
@@ -3200,20 +3205,24 @@ module.exports = async function handler(
 
     }
 
+
     const event =
       data?.header ||
       data?.event ||
       data;
+
 
     const competitionData =
       event?.competitions?.[0] ||
       data?.competitions?.[0] ||
       {};
 
+
     const competitors =
       competitionData?.competitors ||
       event?.competitions?.[0]?.competitors ||
       [];
+
 
     const home =
       estraiCompetitor(
@@ -3221,17 +3230,21 @@ module.exports = async function handler(
         "home"
       );
 
+
     const away =
       estraiCompetitor(
         competitionData,
         "away"
       );
 
+
     const homeId =
       idCompetitor(home);
 
+
     const awayId =
       idCompetitor(away);
+
 
     const punteggio =
       estraiPunteggio(
@@ -3240,6 +3253,7 @@ module.exports = async function handler(
         awayId
       );
 
+
     const rigori =
       estraiRigori(
         competitionData,
@@ -3247,28 +3261,36 @@ module.exports = async function handler(
         awayId
       );
 
+
     const plays =
       estraiPlays(data);
+
 
     const eventi =
       creaEventi(plays);
 
+
     const gol =
       creaGol(plays);
+
 
     const cartellini =
       creaCartellini(plays);
 
+
     const espulsioni =
       creaEspulsioni(plays);
 
+
     const sostituzioni =
       creaSostituzioni(plays);
+
 
     const sostituzioniLineup =
       creaSostituzioniDaLineup(
         competitors
       );
+
 
     const tutteSostituzioni =
       [
@@ -3276,19 +3298,24 @@ module.exports = async function handler(
         ...sostituzioniLineup
       ];
 
+
     const formazioni =
       creaFormazioni(
         competitors
       );
 
+
     const arbitri =
       estraiOfficials(event);
+
 
     const venue =
       estraiVenue(event);
 
+
     const mvp =
       estraiMVP(data);
+
 
     const faseTurno =
       await getFaseTurno(
@@ -3297,15 +3324,18 @@ module.exports = async function handler(
         competizione
       );
 
+
     const qualificazione =
       estraiQualificazione(
         event,
         competizione
       );
 
+
     const boxscore =
       data?.boxscore ||
       null;
+
 
     const statistiche =
       creaStatistiche(
@@ -3313,21 +3343,26 @@ module.exports = async function handler(
         competitors
       );
 
+
     const meta =
       creaMetaPartita(
         event,
         competitionData
       );
 
+
     meta.faseTurno =
       faseTurno.valore;
+
 
     const risposta = {
 
       ok: true,
 
+
       id:
         String(id),
+
 
       competizione: {
 
@@ -3348,13 +3383,17 @@ module.exports = async function handler(
 
       },
 
+
       faseTurno: {
+
         valore:
           faseTurno.valore,
 
         fonte:
           faseTurno.fonte
+
       },
+
 
       partita: {
 
@@ -3383,6 +3422,7 @@ module.exports = async function handler(
 
         },
 
+
         rigori: {
 
           casa:
@@ -3393,28 +3433,38 @@ module.exports = async function handler(
 
         },
 
+
         finish_type:
           meta.finish_type
 
       },
 
+
       gol,
+
 
       cartellini,
 
+
       espulsioni,
+
 
       sostituzioni:
         tutteSostituzioni,
 
+
       formazioni,
+
 
       cronaca:
         creaCronaca(plays),
 
+
       eventi,
 
+
       statistiche,
+
 
       info: {
 
@@ -3439,20 +3489,25 @@ module.exports = async function handler(
 
       },
 
+
       qualification_status:
         qualificazione.qualification_status,
 
+
       winner_team:
         qualificazione.winner_team,
+
 
       last_update:
         new Date().toISOString()
 
     };
 
+
     return res.status(200).json(
       risposta
     );
+
 
   } catch (errore) {
 
@@ -3460,6 +3515,7 @@ module.exports = async function handler(
       "ERRORE API PARTITA:",
       errore
     );
+
 
     return erroreJSON(
       res,
