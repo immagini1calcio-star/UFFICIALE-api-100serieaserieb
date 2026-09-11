@@ -4102,146 +4102,456 @@ allenatore:
    RIGORI
 ============================================================ */
 
-function creaRigori(
-  data,
-  competition,
-  home,
-  away
-) {
+function creaRigori(data, competition) {
 
-  const risultato = {
+  /*
+   * ============================================================
+   * RIGORI / CALCI DI RIGORE
+   *
+   * La partita viene considerata terminata ai rigori SOLO quando
+   * ESPN fornisce un'indicazione esplicita dello shootout.
+   *
+   * NON usiamo:
+   *   - "penalties"
+   *   - "pens"
+   *
+   * da soli, perché possono comparire anche in altri contesti.
+   * ============================================================
+   */
 
+  const risultatoVuoto = {
     partitaTerminataAiRigori: false,
-
     casa: null,
-
     trasferta: null
-
   };
 
 
-  /* ==========================================================
-     INDICATORE ESPLICITO SOLO DALLO STATO PARTITA
-
-     NON cerchiamo più su tutto il JSON (data + competition),
-     perché testi di commento, statistiche o cronaca possono
-     citare "penalty"/"shootout" anche in una normalissima
-     partita di campionato finita 1-3, generando falsi positivi.
-
-     Guardiamo SOLO i campi di stato ESPN, che descrivono
-     davvero come è terminata la partita.
-  ========================================================== */
-
-  const statoTesto = String(
-    competition?.status?.type?.name ||
-    competition?.status?.type?.description ||
-    competition?.status?.type?.detail ||
-    competition?.status?.type?.shortDetail ||
-    ""
-  ).toLowerCase();
-
-  const shootoutEsplicito =
-    statoTesto.includes("shootout") ||
-    statoTesto.includes("shoot-out") ||
-    statoTesto.includes("penalties") ||
-    statoTesto.includes("pens") ||
-    statoTesto.includes("rigori");
+  if (!data) {
+    return risultatoVuoto;
+  }
 
 
-  /* ==========================================================
-     PUNTEGGIO RIGORI ESPLICITO
+  // ============================================================
+  // FUNZIONI INTERNE
+  // ============================================================
 
-     shootoutScore è il campo principale da utilizzare.
-  ========================================================== */
+  function testoCompleto(obj) {
 
-  const rigoriHome =
-    home?.shootoutScore ??
-    null;
+    if (!obj) {
+      return "";
+    }
 
+    const parti = [
 
-  const rigoriAway =
-    away?.shootoutScore ??
-    null;
+      obj?.status?.type?.text,
+      obj?.status?.type?.description,
+      obj?.status?.type?.name,
+      obj?.status?.type?.id,
 
+      obj?.status?.text,
+      obj?.status?.description,
 
-  const numRigoriHome =
-    Number(rigoriHome);
+      obj?.header?.competitions?.[0]?.status?.type?.text,
+      obj?.header?.competitions?.[0]?.status?.type?.description,
 
-  const numRigoriAway =
-    Number(rigoriAway);
+      obj?.header?.competitions?.[0]?.status?.type?.name,
 
+      obj?.header?.competitions?.[0]?.notes,
 
-  /* ==========================================================
-     PUNTEGGIO SHOOTOUT VALIDO
+      obj?.header?.notes,
 
-     ESPN a volte restituisce shootoutScore a 0 anche per
-     partite normali (mai andate ai rigori). Consideriamo
-     quindi il punteggio valido SOLO se:
+      obj?.notes,
 
-     - entrambi i valori sono numeri validi
-     - almeno uno dei due è maggiore di 0
-     - i due punteggi sono diversi tra loro
-       (una serie di rigori non può terminare in parità)
-  ========================================================== */
+      obj?.description,
+      obj?.text
 
-  const punteggioShootoutValido =
-    Number.isFinite(numRigoriHome) &&
-    Number.isFinite(numRigoriAway) &&
-    (
-      numRigoriHome > 0 ||
-      numRigoriAway > 0
-    ) &&
-    numRigoriHome !== numRigoriAway;
+    ];
 
-
-  /* ==========================================================
-     DETERMINAZIONE FINALE
-
-     La partita è terminata ai rigori SOLO se:
-
-     1. Lo stato ESPN lo dichiara esplicitamente
-
-     OPPURE
-
-     2. ESPN fornisce un punteggio shootout valido
-        (non 0-0 e non uguale).
-  ========================================================== */
-
-  if (
-    shootoutEsplicito ||
-    punteggioShootoutValido
-  ) {
-
-    risultato.partitaTerminataAiRigori =
-      true;
+    return parti
+      .filter(function (x) {
+        return x !== null &&
+               x !== undefined &&
+               String(x).trim() !== "";
+      })
+      .map(function (x) {
+        return String(x);
+      })
+      .join(" ")
+      .toLowerCase();
+  }
 
 
-    if (Number.isFinite(numRigoriHome)) {
+  function trovaTestoRicorsivo(obj, profondita) {
 
-      risultato.casa =
-        numRigoriHome;
+    if (!obj || profondita > 5) {
+      return "";
+    }
+
+    if (
+      typeof obj === "string" ||
+      typeof obj === "number"
+    ) {
+      return String(obj);
+    }
+
+    if (Array.isArray(obj)) {
+
+      return obj
+        .map(function (elemento) {
+          return trovaTestoRicorsivo(
+            elemento,
+            profondita + 1
+          );
+        })
+        .filter(Boolean)
+        .join(" ");
 
     }
 
+    if (typeof obj === "object") {
 
-    if (Number.isFinite(numRigoriAway)) {
+      const chiaviInteressanti = [
 
-      risultato.trasferta =
-        numRigoriAway;
+        "text",
+        "description",
+        "name",
+        "shortText",
+        "detail",
+        "shortDetail",
+        "type",
+        "notes",
+        "note"
+
+      ];
+
+      const parti = [];
+
+      for (const chiave of chiaviInteressanti) {
+
+        if (
+          obj[chiave] !== undefined &&
+          obj[chiave] !== null
+        ) {
+
+          parti.push(
+            trovaTestoRicorsivo(
+              obj[chiave],
+              profondita + 1
+            )
+          );
+
+        }
+
+      }
+
+      return parti
+        .filter(Boolean)
+        .join(" ");
+
+    }
+
+    return "";
+
+  }
+
+
+  function numeroValido(valore) {
+
+    if (
+      valore === null ||
+      valore === undefined ||
+      valore === ""
+    ) {
+      return null;
+    }
+
+    const numero =
+      Number(valore);
+
+    if (!Number.isFinite(numero)) {
+      return null;
+    }
+
+    return numero;
+  }
+
+
+  // ============================================================
+  // 1. CERCA INDICAZIONI ESPLICITE DI SHOOTOUT
+  // ============================================================
+
+  const testiDaControllare = [
+
+    testoCompleto(data),
+
+    trovaTestoRicorsivo(
+      data?.header,
+      0
+    ),
+
+    trovaTestoRicorsivo(
+      data?.header?.competitions,
+      0
+    ),
+
+    trovaTestoRicorsivo(
+      data?.competitions,
+      0
+    ),
+
+    trovaTestoRicorsivo(
+      data?.plays,
+      0
+    ),
+
+    trovaTestoRicorsivo(
+      data?.situation,
+      0
+    )
+
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
+
+  /*
+   * SOLO queste espressioni possono confermare
+   * che si tratta di uno shootout.
+   */
+
+  const shootoutEsplicito =
+    /penalty\s*shoot-?out/i.test(
+      testiDaControllare
+    ) ||
+    /shoot-?out/i.test(
+      testiDaControllare
+    ) ||
+    /series\s+of\s+penalties/i.test(
+      testiDaControllare
+    ) ||
+    /penalty\s+shootout/i.test(
+      testiDaControllare
+    ) ||
+    /calci\s+di\s+rigore/i.test(
+      testiDaControllare
+    ) ||
+    /serie\s+di\s+rigori/i.test(
+      testiDaControllare
+    );
+
+
+  // ============================================================
+  // 2. CERCA I RISULTATI DELLO SHOOTOUT
+  // ============================================================
+
+  let casa = null;
+  let trasferta = null;
+
+
+  /*
+   * ESPN può usare diversi campi.
+   * Li controlliamo senza considerarli da soli come prova
+   * che la partita sia terminata ai rigori.
+   */
+
+  const competizione =
+    data?.header?.competitions?.[0] ||
+    data?.competitions?.[0] ||
+    competition ||
+    null;
+
+
+  const competitors =
+    competizione?.competitors ||
+    data?.header?.competitions?.[0]?.competitors ||
+    data?.competitors ||
+    [];
+
+
+  if (Array.isArray(competitors)) {
+
+    for (const squadra of competitors) {
+
+      const homeAway =
+        String(
+          squadra?.homeAway ||
+          ""
+        ).toLowerCase();
+
+      const shootoutScore =
+        numeroValido(
+          squadra?.shootoutScore
+        );
+
+      const penaltyScore =
+        numeroValido(
+          squadra?.penaltyScore
+        );
+
+      const penalties =
+        numeroValido(
+          squadra?.penalties
+        );
+
+      const rigori =
+        shootoutScore !== null
+          ? shootoutScore
+          : (
+              penaltyScore !== null
+                ? penaltyScore
+                : penalties
+            );
+
+
+      if (rigori === null) {
+        continue;
+      }
+
+
+      if (homeAway === "home") {
+
+        casa = rigori;
+
+      } else if (
+        homeAway === "away"
+      ) {
+
+        trasferta = rigori;
+
+      }
 
     }
 
   }
 
 
-  /* ==========================================================
-     RISULTATO
-  ========================================================== */
+  // ============================================================
+  // 3. CERCA EVENTUALI SHOOTOUT NEI PLAY
+  // ============================================================
 
-  return risultato;
+  if (
+    casa === null ||
+    trasferta === null
+  ) {
+
+    const plays =
+      Array.isArray(data?.plays)
+        ? data.plays
+        : [];
+
+
+    for (const play of plays) {
+
+      const testoPlay =
+        trovaTestoRicorsivo(
+          play,
+          0
+        ).toLowerCase();
+
+
+      if (
+        !/shoot-?out|penalty\s*shoot|serie\s+di\s+rigori|calci\s+di\s+rigore/i.test(
+          testoPlay
+        )
+      ) {
+        continue;
+      }
+
+
+      const valore =
+        numeroValido(
+          play?.scoreValue
+        );
+
+
+      const team =
+        play?.team?.homeAway ||
+        play?.team?.homeAwayType ||
+        "";
+
+
+      if (
+        valore !== null &&
+        String(team).toLowerCase() === "home"
+      ) {
+
+        casa = valore;
+
+      }
+
+      if (
+        valore !== null &&
+        String(team).toLowerCase() === "away"
+      ) {
+
+        trasferta = valore;
+
+      }
+
+    }
+
+  }
+
+
+  // ============================================================
+  // 4. CONTROLLO FINALE
+  // ============================================================
+
+  /*
+   * Se ESPN dichiara esplicitamente lo shootout,
+   * lo consideriamo valido.
+   *
+   * Se invece abbiamo due punteggi di shootout validi
+   * e differenti, lo consideriamo valido anche se il testo
+   * non contiene chiaramente "shootout".
+   */
+
+  const punteggiShootoutValidi =
+    casa !== null &&
+    trasferta !== null &&
+    casa >= 0 &&
+    trasferta >= 0 &&
+    casa !== trasferta;
+
+
+  const partitaTerminataAiRigori =
+    shootoutEsplicito ||
+    punteggiShootoutValidi;
+
+
+  // ============================================================
+  // 5. PARTITA NON AI RIGORI
+  // ============================================================
+
+  if (!partitaTerminataAiRigori) {
+
+    return risultatoVuoto;
+
+  }
+
+
+  // ============================================================
+  // 6. PARTITA AI RIGORI
+  // ============================================================
+
+  return {
+
+    partitaTerminataAiRigori: true,
+
+    casa:
+      casa !== null
+        ? casa
+        : null,
+
+    trasferta:
+      trasferta !== null
+        ? trasferta
+        : null
+
+  };
 
 }
-
 
 /* ============================================================
    MVP
