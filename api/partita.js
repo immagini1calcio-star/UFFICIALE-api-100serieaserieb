@@ -5500,9 +5500,13 @@ async function handler(
                 squadraEvento(p),
 
               testo:
-                p?.text ||
-                p?.description ||
-                null
+  testoItalianoEvento({
+    minuto: minutoEvento(p),
+    tipo: traduciEvento(tipoEvento(p)),
+    giocatore: nomeGiocatore(p),
+    assist: assistGiocatore(p),
+    squadra: squadraEvento(p)
+  })
 
             };
 
