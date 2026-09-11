@@ -1055,7 +1055,7 @@ function tipoEvento(play) {
   */
 
   if (
-    /delay in match|delay in the match|drinks break|injury/i.test(
+    /start delay|delay in match|delay in the match|drinks break|injury/i.test(
       testo
     )
   ) {
@@ -1063,7 +1063,7 @@ function tipoEvento(play) {
   }
 
   if (
-    /delay over|ready to continue|match resumes|resume/i.test(
+    /end delay|delay over|ready to continue|match resumes|resume/i.test(
       testo
     )
   ) {
@@ -1147,6 +1147,25 @@ function traduciEvento(tipo) {
 
 
   /* ==========================================================
+     AUTOGOL
+
+     ATTENZIONE:
+     questo controllo DEVE precedere il controllo GOL,
+     perché "own goal" contiene la parola "goal" e
+     verrebbe sempre classificato come Gol se controllato
+     dopo.
+  ========================================================== */
+
+  if (
+    t.includes("own goal") ||
+    t.includes("autogol") ||
+    t.includes("autogoal")
+  ) {
+    return "Autogol";
+  }
+
+
+  /* ==========================================================
      GOL
   ========================================================== */
 
@@ -1157,19 +1176,6 @@ function traduciEvento(tipo) {
     t.includes("scored")
   ) {
     return "Gol";
-  }
-
-
-  /* ==========================================================
-     AUTOGOL
-  ========================================================== */
-
-  if (
-    t.includes("own goal") ||
-    t.includes("autogol") ||
-    t.includes("autogoal")
-  ) {
-    return "Autogol";
   }
 
 
@@ -1528,6 +1534,59 @@ function creaMarcatori(plays) {
 
     .map(function (p) {
 
+      const testoRaw = String(
+        p?.text ||
+        p?.description ||
+        p?.type?.text ||
+        ""
+      ).toLowerCase();
+
+      /*
+      AUTOGOL:
+      controllato per primo, dato che
+      un autogol non deve mai ricevere
+      il suffisso (R.).
+      */
+
+      const autorete =
+        testoRaw.includes("own goal") ||
+        p?.ownGoal === true ||
+        p?.ownGoal === "true" ||
+        tipoEvento(p).toLowerCase().includes("own goal");
+
+      /*
+      RIGORE:
+      solo se non è un autogol.
+      */
+
+      const rigore =
+        !autorete &&
+        (
+          testoRaw.includes("penalty") ||
+          p?.penaltyKick === true ||
+          p?.scoringType?.name === "penalty" ||
+          p?.scoringType?.abbreviation === "PK"
+        );
+
+      let giocatore =
+        nomeGiocatore(p);
+
+      if (giocatore) {
+
+        if (autorete) {
+
+          giocatore =
+            giocatore + " (AG.)";
+
+        } else if (rigore) {
+
+          giocatore =
+            giocatore + " (R.)";
+
+        }
+
+      }
+
       return {
 
         minuto:
@@ -1537,7 +1596,7 @@ function creaMarcatori(plays) {
           squadraEvento(p),
 
         giocatore:
-          nomeGiocatore(p)
+          giocatore
 
       };
 
@@ -2747,10 +2806,81 @@ corrispondenti.sort(function (a, b) {
    UTILIZZATO SOLO SE NON ESISTE UNA FINESTRA.
 ============================================================ */
 
+function estraiGiornataDaNote(
+  competition,
+  data
+) {
+
+  const liste = [
+
+    competition?.notes,
+
+    data?.header?.competitions?.[0]?.notes
+
+  ];
+
+  for (const lista of liste) {
+
+    if (!Array.isArray(lista)) {
+      continue;
+    }
+
+    for (const nota of lista) {
+
+      const testo =
+        nota?.headline ||
+        nota?.text ||
+        null;
+
+      if (!testo) {
+        continue;
+      }
+
+      const match =
+        String(testo).match(
+          /(matchday|giornata|round|week)\s*(\d+)/i
+        );
+
+      if (match) {
+
+        return (
+          "Giornata " +
+          match[2]
+        );
+
+      }
+
+    }
+
+  }
+
+  return null;
+
+}
+
+
 function getFaseTurnoESPN(
   data,
   competition
 ) {
+
+  /*
+  PRIORITÀ:
+  proviamo prima a leggere la giornata
+  dalle "notes" ESPN (es. "Matchday 5"),
+  che è la fonte più affidabile quando
+  presente.
+  */
+
+  const daNote =
+    estraiGiornataDaNote(
+      competition,
+      data
+    );
+
+  if (daNote) {
+    return daNote;
+  }
 
   const valori = [];
 
@@ -3031,15 +3161,20 @@ const finestra =
     dataPartita
   );
 
-if (
-  finestra &&
-  finestra.faseTurno
-) {
+/*
+IMPORTANTE:
+trovaFinestraGiornata restituisce già
+la stringa del faseTurno (es. "Giornata 5"),
+NON un oggetto. Controlliamo quindi
+direttamente la stringa.
+*/
+
+if (finestra) {
 
   return {
 
     valore:
-      finestra.faseTurno,
+      finestra,
 
     fonte:
       "FINESTRE_GIORNATE"
@@ -3465,6 +3600,72 @@ function ruoloItaliano(ruolo) {
 
 
 /* ============================================================
+   ALLENATORE
+
+   ESPN restituisce spesso "coach"/"coaches" come ARRAY
+   di oggetti (es. [{ firstName, lastName, displayName }]),
+   non come oggetto singolo. Il vecchio codice leggeva
+   direttamente r.coach.displayName, che su un array
+   risultava sempre undefined.
+============================================================ */
+
+function estraiAllenatore(r) {
+
+  const candidati = [
+
+    r?.coach,
+
+    r?.coaches,
+
+    r?.team?.coach,
+
+    r?.team?.coaches
+
+  ];
+
+  for (const candidato of candidati) {
+
+    if (!candidato) {
+      continue;
+    }
+
+    const elemento =
+      Array.isArray(candidato)
+        ? candidato[0]
+        : candidato;
+
+    if (!elemento) {
+      continue;
+    }
+
+    const nomeCompleto =
+      elemento?.displayName ||
+      elemento?.fullName ||
+      elemento?.name ||
+      elemento?.athlete?.displayName ||
+      elemento?.athlete?.fullName ||
+      (
+        elemento?.firstName &&
+        elemento?.lastName
+          ? elemento.firstName +
+            " " +
+            elemento.lastName
+          : null
+      ) ||
+      null;
+
+    if (nomeCompleto) {
+      return nomeCompleto;
+    }
+
+  }
+
+  return null;
+
+}
+
+
+/* ============================================================
    FORMAZIONI
 ============================================================ */
 
@@ -3505,14 +3706,8 @@ function creaFormazioni(
         r?.formationUsed ||
         null,
 
-     allenatore:
-  r?.coach?.displayName ||
-  r?.coach?.fullName ||
-  r?.coaches?.[0]?.displayName ||
-  r?.coaches?.[0]?.fullName ||
-  r?.team?.coach?.displayName ||
-  r?.team?.coach?.fullName ||
-  null,
+      allenatore:
+        estraiAllenatore(r),
 
       titolari: [],
 
@@ -3682,52 +3877,37 @@ function creaRigori(
 
 
   /* ==========================================================
-     CERCA SOLO INDICATORI ESPLICITI DI UNA SERIE DI RIGORI
+     INDICATORE ESPLICITO SOLO DALLO STATO PARTITA
 
-     NON bisogna cercare semplicemente "penalty" o "rigori",
-     perché ESPN può utilizzare questi termini anche nelle
-     normali statistiche della partita.
+     NON cerchiamo più su tutto il JSON (data + competition),
+     perché testi di commento, statistiche o cronaca possono
+     citare "penalty"/"shootout" anche in una normalissima
+     partita di campionato finita 1-3, generando falsi positivi.
+
+     Guardiamo SOLO i campi di stato ESPN, che descrivono
+     davvero come è terminata la partita.
   ========================================================== */
 
-  const testo =
-    JSON.stringify({
-      data,
-      competition
-    }).toLowerCase();
-
+  const statoTesto = String(
+    competition?.status?.type?.name ||
+    competition?.status?.type?.description ||
+    competition?.status?.type?.detail ||
+    competition?.status?.type?.shortDetail ||
+    ""
+  ).toLowerCase();
 
   const shootoutEsplicito =
-    testo.includes("penalty shootout") ||
-    testo.includes("penalty shoot-out") ||
-    testo.includes("shootout") ||
-    testo.includes("shoot-out") ||
-    testo.includes("decided on penalties") ||
-    testo.includes("decided by penalties") ||
-    testo.includes("won on penalties") ||
-    testo.includes("wins on penalties") ||
-    testo.includes("ended in penalties") ||
-    testo.includes("match decided by penalties") ||
-    testo.includes("game decided by penalties") ||
-    testo.includes("penalty kicks to decide") ||
-    testo.includes("penalty kicks decided") ||
-    testo.includes("rigori decisivi") ||
-    testo.includes("serie di rigori") ||
-    testo.includes("terminata ai rigori") ||
-    testo.includes("finita ai rigori");
+    statoTesto.includes("shootout") ||
+    statoTesto.includes("shoot-out") ||
+    statoTesto.includes("penalties") ||
+    statoTesto.includes("pens") ||
+    statoTesto.includes("rigori");
 
 
   /* ==========================================================
      PUNTEGGIO RIGORI ESPLICITO
 
      shootoutScore è il campo principale da utilizzare.
-
-     NON utilizziamo più:
-       penaltyScore
-       penalties
-
-     perché possono rappresentare statistiche sui rigori
-     durante i 90/120 minuti e NON necessariamente una
-     serie finale di rigori.
   ========================================================== */
 
   const rigoriHome =
@@ -3740,18 +3920,34 @@ function creaRigori(
     null;
 
 
-  /* ==========================================================
-     CONTROLLO PUNTEGGI SHOOTOUT
+  const numRigoriHome =
+    Number(rigoriHome);
 
-     Se ESPN fornisce entrambi gli shootoutScore,
-     abbiamo una conferma molto forte della serie di rigori.
+  const numRigoriAway =
+    Number(rigoriAway);
+
+
+  /* ==========================================================
+     PUNTEGGIO SHOOTOUT VALIDO
+
+     ESPN a volte restituisce shootoutScore a 0 anche per
+     partite normali (mai andate ai rigori). Consideriamo
+     quindi il punteggio valido SOLO se:
+
+     - entrambi i valori sono numeri validi
+     - almeno uno dei due è maggiore di 0
+     - i due punteggi sono diversi tra loro
+       (una serie di rigori non può terminare in parità)
   ========================================================== */
 
-  const punteggioShootoutPresente =
-    rigoriHome !== null &&
-    rigoriHome !== undefined &&
-    rigoriAway !== null &&
-    rigoriAway !== undefined;
+  const punteggioShootoutValido =
+    Number.isFinite(numRigoriHome) &&
+    Number.isFinite(numRigoriAway) &&
+    (
+      numRigoriHome > 0 ||
+      numRigoriAway > 0
+    ) &&
+    numRigoriHome !== numRigoriAway;
 
 
   /* ==========================================================
@@ -3759,48 +3955,35 @@ function creaRigori(
 
      La partita è terminata ai rigori SOLO se:
 
-     1. ESPN dichiara esplicitamente una serie di rigori
+     1. Lo stato ESPN lo dichiara esplicitamente
 
      OPPURE
 
-     2. ESPN fornisce entrambi i punteggi shootoutScore.
+     2. ESPN fornisce un punteggio shootout valido
+        (non 0-0 e non uguale).
   ========================================================== */
 
   if (
     shootoutEsplicito ||
-    punteggioShootoutPresente
+    punteggioShootoutValido
   ) {
 
     risultato.partitaTerminataAiRigori =
       true;
 
 
-    /* ========================================================
-       PUNTEGGIO RIGORI CASA
-    ======================================================== */
-
-    if (
-      rigoriHome !== null &&
-      rigoriHome !== undefined
-    ) {
+    if (Number.isFinite(numRigoriHome)) {
 
       risultato.casa =
-        rigoriHome;
+        numRigoriHome;
 
     }
 
 
-    /* ========================================================
-       PUNTEGGIO RIGORI TRASFERTA
-    ======================================================== */
-
-    if (
-      rigoriAway !== null &&
-      rigoriAway !== undefined
-    ) {
+    if (Number.isFinite(numRigoriAway)) {
 
       risultato.trasferta =
-        rigoriAway;
+        numRigoriAway;
 
     }
 
@@ -3937,6 +4120,131 @@ function trovaMVP(data) {
    (es. infortuni) e tempo di recupero.
 ============================================================ */
 
+function testoItalianoEvento(evento) {
+
+  const tipo = evento?.tipo || "";
+  const giocatore = evento?.giocatore || null;
+  const assist = evento?.assist || null;
+  const squadra = evento?.squadra || null;
+
+  const suffissoSquadra =
+    squadra ? ` (${squadra})` : "";
+
+  switch (tipo) {
+
+    case "Gol":
+
+      return (
+        giocatore
+          ? `Gol di ${giocatore}${suffissoSquadra}`
+          : `Gol${suffissoSquadra}`
+      ) + (
+        assist
+          ? ` - assist di ${assist}`
+          : ""
+      );
+
+    case "Autogol":
+
+      return giocatore
+        ? `Autogol di ${giocatore}${suffissoSquadra}`
+        : `Autogol${suffissoSquadra}`;
+
+    case "Rigore":
+
+      return giocatore
+        ? `Calcio di rigore per ${giocatore}${suffissoSquadra}`
+        : `Calcio di rigore${suffissoSquadra}`;
+
+    case "Ammonizione":
+
+      return giocatore
+        ? `Cartellino giallo per ${giocatore}${suffissoSquadra}`
+        : `Cartellino giallo${suffissoSquadra}`;
+
+    case "Espulsione":
+
+      return giocatore
+        ? `Cartellino rosso per ${giocatore}${suffissoSquadra}`
+        : `Cartellino rosso${suffissoSquadra}`;
+
+    case "Sostituzione":
+
+      return (
+        squadra
+          ? `Sostituzione (${squadra})`
+          : "Sostituzione"
+      ) + (
+        giocatore
+          ? `: ${giocatore}`
+          : ""
+      ) + (
+        assist
+          ? ` / ${assist}`
+          : ""
+      );
+
+    case "Inizio partita":
+
+      return "Inizia la partita.";
+
+    case "Fine partita":
+
+      return "Termina la partita.";
+
+    case "Intervallo":
+
+      return "Intervallo.";
+
+    case "Fine primo tempo":
+
+      return "Fine primo tempo.";
+
+    case "Inizio secondo tempo":
+
+      return "Inizia il secondo tempo.";
+
+    case "Tempi supplementari":
+
+      return "Iniziano i tempi supplementari.";
+
+    case "Fine tempi supplementari":
+
+      return "Fine dei tempi supplementari.";
+
+    case "Serie di rigori":
+
+      return "Si va ai calci di rigore.";
+
+    case "Interruzione":
+
+      return "Gioco interrotto.";
+
+    case "Ripresa":
+
+      return "Gioco ripreso.";
+
+    case "Tempo di recupero":
+
+      return "Tempo di recupero.";
+
+    case "Partita posticipata":
+
+      return "Partita posticipata.";
+
+    case "Partita annullata":
+
+      return "Partita annullata.";
+
+    default:
+
+      return tipo || "";
+
+  }
+
+}
+
+
 const TIPI_EVENTO_CRONACA = [
 
   "Gol",
@@ -3970,45 +4278,91 @@ function creaCronaca(
     return [];
   }
 
-  return plays
+  const eventiGrezzi =
+    plays
 
-    .map(function (p) {
+      .map(function (p) {
 
-      return {
-
-        minuto:
-          minutoEvento(p),
-
-        tipo:
+        const tipo =
           traduciEvento(
             tipoEvento(p)
-          ),
+          );
 
-        giocatore:
-          nomeGiocatore(p),
+        const evento = {
 
-        assist:
-          assistGiocatore(p),
+          minuto:
+            minutoEvento(p),
 
-        squadra:
-          squadraEvento(p),
+          tipo:
+            tipo,
 
-        testo:
-          p?.text ||
-          p?.description ||
-          null
+          giocatore:
+            nomeGiocatore(p),
 
-      };
+          assist:
+            assistGiocatore(p),
 
-    })
+          squadra:
+            squadraEvento(p)
 
-    .filter(function (evento) {
+        };
 
-      return TIPI_EVENTO_CRONACA.includes(
-        evento.tipo
-      );
+        /*
+        Il testo viene generato in italiano
+        a partire dai campi strutturati,
+        NON copiato dal testo originale ESPN
+        (che è in inglese).
+        */
 
-    });
+        evento.testo =
+          testoItalianoEvento(
+            evento
+          );
+
+        return evento;
+
+      })
+
+      .filter(function (evento) {
+
+        return TIPI_EVENTO_CRONACA.includes(
+          evento.tipo
+        );
+
+      });
+
+
+  /* ==========================================================
+     RIMOZIONE DUPLICATI CONSECUTIVI
+
+     ESPN a volte restituisce lo stesso evento tecnico
+     più volte di seguito (stesso minuto, stesso tipo,
+     stesso testo). Li rimuoviamo per non rendere la
+     cronaca confusa.
+  ========================================================== */
+
+  const eventiPuliti = [];
+
+  for (const evento of eventiGrezzi) {
+
+    const precedente =
+      eventiPuliti[eventiPuliti.length - 1];
+
+    const eDuplicato =
+      precedente &&
+      precedente.minuto === evento.minuto &&
+      precedente.tipo === evento.tipo &&
+      precedente.testo === evento.testo;
+
+    if (!eDuplicato) {
+
+      eventiPuliti.push(evento);
+
+    }
+
+  }
+
+  return eventiPuliti;
 
 }
 
