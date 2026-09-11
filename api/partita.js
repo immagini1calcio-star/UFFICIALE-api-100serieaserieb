@@ -3779,16 +3779,13 @@ function ruoloItaliano(ruolo) {
    risultava sempre undefined.
 ============================================================ */
 
-function estraiAllenatore(r) {
+function estraiAllenatore(r, data, idSquadra) {
 
   const candidati = [
 
     r?.coach,
-
     r?.coaches,
-
     r?.team?.coach,
-
     r?.team?.coaches
 
   ];
@@ -3799,33 +3796,106 @@ function estraiAllenatore(r) {
       continue;
     }
 
-    const elemento =
+    const lista =
       Array.isArray(candidato)
-        ? candidato[0]
-        : candidato;
+        ? candidato
+        : [candidato];
 
-    if (!elemento) {
-      continue;
+    for (const elemento of lista) {
+
+      if (!elemento) {
+        continue;
+      }
+
+      const nome =
+        elemento?.displayName ||
+        elemento?.fullName ||
+        elemento?.name ||
+        elemento?.athlete?.displayName ||
+        elemento?.athlete?.fullName ||
+        (
+          elemento?.firstName &&
+          elemento?.lastName
+            ? elemento.firstName +
+              " " +
+              elemento.lastName
+            : null
+        );
+
+      if (nome) {
+        return nome;
+      }
+
     }
 
-    const nomeCompleto =
-      elemento?.displayName ||
-      elemento?.fullName ||
-      elemento?.name ||
-      elemento?.athlete?.displayName ||
-      elemento?.athlete?.fullName ||
-      (
-        elemento?.firstName &&
-        elemento?.lastName
-          ? elemento.firstName +
-            " " +
-            elemento.lastName
-          : null
-      ) ||
-      null;
+  }
 
-    if (nomeCompleto) {
-      return nomeCompleto;
+  /*
+  FALLBACK:
+  ESPN può mettere il coach dentro boxscore.teams
+  */
+
+  const teams =
+    data?.boxscore?.teams ||
+    [];
+
+  if (Array.isArray(teams)) {
+
+    for (const squadra of teams) {
+
+      if (
+        idSquadra &&
+        squadra?.team?.id &&
+        String(squadra.team.id) !== String(idSquadra)
+      ) {
+        continue;
+      }
+
+      const candidatiBoxscore = [
+        squadra?.coach,
+        squadra?.coaches
+      ];
+
+      for (
+        const candidato of candidatiBoxscore
+      ) {
+
+        if (!candidato) {
+          continue;
+        }
+
+        const lista =
+          Array.isArray(candidato)
+            ? candidato
+            : [candidato];
+
+        for (
+          const elemento of lista
+        ) {
+
+          const nome =
+            elemento?.displayName ||
+            elemento?.fullName ||
+            elemento?.name ||
+            elemento?.athlete?.displayName ||
+            elemento?.athlete?.fullName ||
+            (
+              elemento?.firstName &&
+              elemento?.lastName
+                ? elemento.firstName +
+                  " " +
+                  elemento.lastName
+                : null
+            );
+
+          if (nome) {
+            return nome;
+          }
+
+        }
+
+      }
+
     }
 
   }
