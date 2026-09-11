@@ -1132,6 +1132,21 @@ function traduciEvento(tipo) {
 
 
   /* ==========================================================
+     RECUPERO / TEMPO AGGIUNTO
+  ========================================================== */
+
+  if (
+    t.includes("stoppage time") ||
+    t.includes("added time") ||
+    t.includes("injury time") ||
+    t.includes("recupero") ||
+    t.includes("minuti di recupero")
+  ) {
+    return "Tempo di recupero";
+  }
+
+
+  /* ==========================================================
      GOL
   ========================================================== */
 
@@ -1513,28 +1528,16 @@ function creaMarcatori(plays) {
 
     .map(function (p) {
 
-      const autorete =
-        p?.ownGoal === true ||
-        p?.ownGoal === "true" ||
-        tipoEvento(p).includes("own") ||
-        tipoEvento(p).includes("autogol");
-
       return {
 
         minuto:
           minutoEvento(p),
 
-        giocatore:
-          nomeGiocatore(p),
-
-        assist:
-          assistGiocatore(p),
-
         squadra:
           squadraEvento(p),
 
-        autorete:
-          autorete
+        giocatore:
+          nomeGiocatore(p)
 
       };
 
@@ -1577,11 +1580,11 @@ function creaCartellini(plays) {
         minuto:
           minutoEvento(p),
 
-        giocatore:
-          nomeGiocatore(p),
-
         squadra:
           squadraEvento(p),
+
+        giocatore:
+          nomeGiocatore(p),
 
         tipo:
           tipo.includes("red") ||
@@ -1758,14 +1761,14 @@ function creaSostituzioni(plays) {
       minuto:
         minutoEvento(p),
 
-      entrato:
+      squadra:
+        squadraEvento(p),
+
+      entra:
         cognomeAtleta(entrato),
 
-      uscito:
-        cognomeAtleta(uscito),
-
-      squadra:
-        squadraEvento(p)
+      esce:
+        cognomeAtleta(uscito)
 
     });
 
@@ -1779,6 +1782,37 @@ function creaSostituzioni(plays) {
 /* ============================================================
    ARBITRI
 ============================================================ */
+
+function puliviNomeArbitro(nome) {
+
+  if (!nome) {
+    return null;
+  }
+
+  let testo = String(nome);
+
+  /*
+  Rimuove parentesi, codici, numeri
+  e caratteri non pertinenti a un
+  nome e cognome.
+  */
+
+  testo = testo
+    .replace(/\(.*?\)/g, " ")
+    .replace(/\[.*?\]/g, " ")
+    .replace(/[0-9]/g, " ")
+    .replace(/[_#*]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (!testo) {
+    return null;
+  }
+
+  return testo;
+
+}
+
 
 function creaArbitri(data, competition) {
 
@@ -1927,6 +1961,19 @@ function creaArbitri(data, competition) {
       null;
 
   }
+
+
+  /*
+  Pulizia finale:
+  restituiamo solo nome e cognome
+  dell'arbitro principale, senza
+  codici o caratteri strani.
+  */
+
+  risultati.arbitro =
+    puliviNomeArbitro(
+      risultati.arbitro
+    );
 
   return risultati;
 
@@ -3882,7 +3929,38 @@ function trovaMVP(data) {
 
 /* ============================================================
    CRONACA
+
+   MOSTRA SOLO GLI EVENTI RILEVANTI:
+   gol, autogol, rigori, cartellini,
+   sostituzioni, inizio/fine partita,
+   inizio/fine tempi, interruzioni
+   (es. infortuni) e tempo di recupero.
 ============================================================ */
+
+const TIPI_EVENTO_CRONACA = [
+
+  "Gol",
+  "Autogol",
+  "Rigore",
+  "Ammonizione",
+  "Espulsione",
+  "Sostituzione",
+  "Inizio partita",
+  "Fine partita",
+  "Intervallo",
+  "Fine primo tempo",
+  "Inizio secondo tempo",
+  "Tempi supplementari",
+  "Fine tempi supplementari",
+  "Serie di rigori",
+  "Interruzione",
+  "Ripresa",
+  "Tempo di recupero",
+  "Partita posticipata",
+  "Partita annullata"
+
+];
+
 
 function creaCronaca(
   plays
@@ -3892,8 +3970,9 @@ function creaCronaca(
     return [];
   }
 
-  return plays.map(
-    function (p) {
+  return plays
+
+    .map(function (p) {
 
       return {
 
@@ -3921,8 +4000,15 @@ function creaCronaca(
 
       };
 
-    }
-  );
+    })
+
+    .filter(function (evento) {
+
+      return TIPI_EVENTO_CRONACA.includes(
+        evento.tipo
+      );
+
+    });
 
 }
 
@@ -4110,6 +4196,22 @@ async function handler(
 
 
     /* ========================================================
+       GOL "-" SE LA PARTITA È ANCORA IN PROGRAMMA
+
+       Se la partita non è ancora iniziata,
+       non mostriamo 0 ma "-".
+    ======================================================== */
+
+    if (stato === "In programma") {
+
+      homeTeam.gol = "-";
+
+      awayTeam.gol = "-";
+
+    }
+
+
+    /* ========================================================
        STATISTICHE
     ======================================================== */
 
@@ -4282,30 +4384,15 @@ async function handler(
 
       /* ======================================================
          INFORMAZIONI
+
+         Nell'arbitro viene mostrato solo
+         nome e cognome dell'arbitro principale.
       ====================================================== */
 
       info: {
 
         arbitro:
           arbitri.arbitro,
-
-        assistente1:
-          arbitri.assistente1,
-
-        assistente2:
-          arbitri.assistente2,
-
-        quartoUfficiale:
-          arbitri.quartoUfficiale,
-
-        VAR:
-          arbitri.var,
-
-        AVAR:
-          arbitri.avar,
-
-        arbitri:
-          arbitri,
 
         stadio:
           venue?.fullName ||
@@ -4416,7 +4503,7 @@ async function handler(
 
 
       /* ======================================================
-         CRONACA COMPLETA
+         CRONACA (SOLO EVENTI RILEVANTI)
       ====================================================== */
 
       cronaca:
