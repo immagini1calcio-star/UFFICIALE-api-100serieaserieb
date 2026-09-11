@@ -4415,25 +4415,75 @@ function testoItalianoEvento(evento) {
 
 const TIPI_EVENTO_CRONACA = [
 
+  // GOL
   "Gol",
   "Autogol",
+
+  // RIGORI
   "Rigore",
+  "Rigore parato",
+  "Rigore sbagliato",
+  "Serie di rigori",
+
+  // CARTELLINI
   "Ammonizione",
+  "Seconda ammonizione",
   "Espulsione",
+
+  // SOSTITUZIONI
   "Sostituzione",
+
+  // INIZIO / FINE
   "Inizio partita",
   "Fine partita",
   "Intervallo",
   "Fine primo tempo",
   "Inizio secondo tempo",
+
+  // TEMPI SUPPLEMENTARI
   "Tempi supplementari",
+  "Inizio tempi supplementari",
+  "Intervallo tempi supplementari",
   "Fine tempi supplementari",
-  "Serie di rigori",
+
+  // INTERRUZIONI
   "Interruzione",
   "Ripresa",
+  "Gioco interrotto",
+  "Gioco ripreso",
+
+  // PARTITA
   "Tempo di recupero",
   "Partita posticipata",
-  "Partita annullata"
+  "Partita annullata",
+
+  // AZIONI DI GIOCO
+  "Fallo",
+  "Fallo di mano",
+  "Fuorigioco",
+  "Calcio d'angolo",
+  "Punizione",
+  "Rimessa laterale",
+  "Rinvio dal fondo",
+  "Calcio d'inizio",
+
+  // TIRO
+  "Tiro",
+  "Tiro in porta",
+  "Tiro fuori",
+  "Tiro bloccato",
+  "Palo",
+  "Traversa",
+  "Parata",
+
+  // VAR
+  "VAR",
+
+  // INFORTUNI
+  "Infortunio",
+
+  // ALTRO
+  "Assist"
 
 ];
 
