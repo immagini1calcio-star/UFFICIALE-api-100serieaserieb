@@ -3946,8 +3946,12 @@ function creaFormazioni(
         r?.formationUsed ||
         null,
 
-      allenatore:
-        estraiAllenatore(r),
+allenatore:
+  estraiAllenatore(
+    r,
+    data,
+    r?.team?.id
+  ),
 
       titolari: [],
 
