@@ -3312,10 +3312,12 @@ function getFaseTurno(
   competizione
 ) {
 
-  const dataPartita =
-    competition?.date ||
-    data?.header?.date ||
-    null;
+const dataPartita =
+  competition?.date ||
+  competition?.startDate ||
+  data?.header?.competitions?.[0]?.date ||
+  data?.header?.date ||
+  null;
 
 
   /*
