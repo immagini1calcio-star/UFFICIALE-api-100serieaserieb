@@ -1048,26 +1048,32 @@ function tipoEvento(play) {
   ).toLowerCase();
 
   /*
-  PRIORITÀ ASSOLUTA:
-  interruzioni e riprese.
-  Devono essere riconosciute prima
-  di kickoff/start/end.
+  START DELAY = GIOCO INTERROTTO
+  END DELAY   = GIOCO RIPRESO
   */
 
   if (
-    /start delay|delay in match|delay in the match|drinks break|injury/i.test(
-      testo
-    )
+    /start delay/i.test(testo)
   ) {
-    return "Interruzione";
+    return "Gioco interrotto";
   }
 
   if (
-    /end delay|delay over|ready to continue|match resumes|resume/i.test(
-      testo
-    )
+    /end delay/i.test(testo)
   ) {
-    return "Ripresa";
+    return "Gioco ripreso";
+  }
+
+  if (
+    /drinks break|injury delay|match delayed|game delayed|match interrupted|game interrupted|interruption|interrupted/i.test(testo)
+  ) {
+    return "Gioco interrotto";
+  }
+
+  if (
+    /delay over|ready to continue|ready to resume|match resumes|game resumes|match resumed|game resumed|resume|resumed/i.test(testo)
+  ) {
+    return "Gioco ripreso";
   }
 
   return testo;
