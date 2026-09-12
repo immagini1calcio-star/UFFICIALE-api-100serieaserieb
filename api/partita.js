@@ -399,6 +399,7 @@ const ALIAS_SQUADRE = {
   "köln": "Colonia",
   "fc koln": "Colonia",
   "1. fc koln": "Colonia",
+  "FC Cologne": "Colonia",
 
   "elversberg": "Elversberg",
   "sv elversberg": "Elversberg",
