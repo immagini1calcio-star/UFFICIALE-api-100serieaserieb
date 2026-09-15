@@ -2482,7 +2482,20 @@ const FINESTRE_GIORNATE = {
 
   ],
 
+/* =========================
+     COPPA ITALIA
+  ========================= */
 
+  "ita.coppa_italia": [
+
+    { inizio:"2026-09-01", fine:"2026-09-18", faseTurno:"Sedicesimi di finale" },
+    { inizio:"2026-12-02", fine:"2026-12-25", faseTurno:"Ottavi di finale" },
+    { inizio:"2027-02-02", fine:"2027-02-20", faseTurno:"Quarti di finale" },
+    { inizio:"2027-03-02", fine:"2027-04-23", faseTurno:"Semifinali" },
+    { inizio:"2027-05-17", fine:"2027-05-22", faseTurno:"Finale" }
+
+     ],
+   
   /* =========================
      SERIE B
   ========================= */
