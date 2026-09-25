@@ -26,6 +26,14 @@ paese: "Italia"
 
 },
 
+"uefa.nations": {
+
+nome: "Nations League",
+
+paese: "Europa"
+
+},
+
 "ita.nazionale": {
 
 nome: "Nazionale Italiana",
