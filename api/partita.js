@@ -44,10 +44,7 @@ const COMPETIZIONI = {
     paese: "Italia"
   },
 
-  "ita.fifa": {
-    nome: "Nazionale Italia",
-    paese: "Italia"
-  },
+
 
   "uefa.champions": {
     nome: "Champions League",
@@ -61,6 +58,11 @@ const COMPETIZIONI = {
 
   "uefa.europa.conf": {
     nome: "Conference League",
+    paese: "Europa"
+  },
+
+  "uefa.nations": {
+    nome: "Nations League",
     paese: "Europa"
   },
 
