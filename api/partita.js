@@ -2502,7 +2502,7 @@ const FINESTRE_GIORNATE = {
      NATIONS LEAGUE
   ========================= */
 
-  "nations_league": [
+  "uefa.nations": [
 
     { inizio:"2026-09-24", fine:"2026-09-26", faseTurno:"Giornata 1" },
     { inizio:"2026-09-27", fine:"2026-09-30", faseTurno:"Giornata 2" },
