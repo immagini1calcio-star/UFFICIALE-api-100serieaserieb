@@ -2506,7 +2506,7 @@ const FINESTRE_GIORNATE = {
 
     { inizio:"2026-09-24", fine:"2026-09-26", faseTurno:"Giornata 1" },
     { inizio:"2026-09-27", fine:"2026-09-30", faseTurno:"Giornata 2" },
-    { inizio:"2027-09-31", fine:"2026-10-04", faseTurno:"Giornata 3" },
+    { inizio:"2026-09-31", fine:"2026-10-04", faseTurno:"Giornata 3" },
     { inizio:"2026-10-05", fine:"2026-10-10", faseTurno:"Giornata 4" }
 
      ],
