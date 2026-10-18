@@ -888,8 +888,6 @@ function normalizzaNomeSquadra(nome) {
 
 /* ============================================================
    COGNOME
-   (mantenuta per compatibilità: ora i nomi dei giocatori
-   vengono restituiti con nomeAbbreviato)
 ============================================================ */
 
 function ultimoCognome(nome) {
@@ -907,79 +905,6 @@ function ultimoCognome(nome) {
   }
 
   return testo.split(" ").pop();
-
-}
-
-
-/* ============================================================
-   NOME ABBREVIATO
-
-   Restituisce nome e cognome completi, con il PRIMO nome
-   abbreviato all'iniziale seguita dal punto e il resto
-   con la prima lettera maiuscola di ogni parola.
-
-   Esempi:
-   "Lucas da Cunha"        → "L. Da Cunha"
-   "Lautaro Martinez"      → "L. Martinez"
-   "L. da Cunha"           → "L. Da Cunha"
-   "Vinicius Junior"       → "V. Junior"
-   "Neymar"                → "Neymar"  (nome unico)
-============================================================ */
-
-function maiuscolaIniziale(parola) {
-
-  if (!parola) {
-    return parola;
-  }
-
-  return (
-    parola.charAt(0).toUpperCase() +
-    parola.slice(1)
-  );
-
-}
-
-
-function nomeAbbreviato(nome) {
-
-  if (!nome) {
-    return null;
-  }
-
-  const testo = String(nome)
-    .trim()
-    .replace(/\s+/g, " ");
-
-  if (!testo) {
-    return null;
-  }
-
-  const parole = testo.split(" ");
-
-  /*
-  Nome unico (es. "Neymar"): nessuna abbreviazione.
-  */
-
-  if (parole.length === 1) {
-    return maiuscolaIniziale(parole[0]);
-  }
-
-  /*
-  Primo nome → iniziale + punto.
-  Funziona anche se ESPN restituisce già
-  un'iniziale (es. "L." → "L.").
-  */
-
-  const iniziale =
-    parole[0].charAt(0).toUpperCase() + ".";
-
-  const resto =
-    parole
-      .slice(1)
-      .map(maiuscolaIniziale)
-      .join(" ");
-
-  return iniziale + " " + resto;
 
 }
 
@@ -1021,17 +946,11 @@ function nomeCompletoAtleta(atleta) {
 }
 
 
-/*
-NOTA: il nome della funzione è rimasto "cognomeAtleta"
-per non toccare tutte le chiamate, ma ora restituisce
-nome abbreviato + cognome (es. "L. Da Cunha").
-*/
-
 function cognomeAtleta(obj) {
 
   const atleta = estraiAtleta(obj);
 
-  return nomeAbbreviato(
+  return ultimoCognome(
     nomeCompletoAtleta(atleta)
   );
 
@@ -1684,7 +1603,6 @@ function traduciEvento(tipo) {
   return String(tipo);
 }
 
-
 /* ============================================================
    DATI SQUADRA
 ============================================================ */
@@ -2093,16 +2011,6 @@ function creaSostituzioni(plays) {
 
 /* ============================================================
    ARBITRI
-
-   FONTI (in ordine):
-   1. summary ESPN → gameInfo.officials / competition.officials
-   2. FALLBACK Core API ESPN → /competitions/{id}/officials
-      (vedi arbitriDaCoreAPI)
-
-   IMPORTANTE: in ESPN il ruolo dell'ufficiale NON è una stringa
-   ma di solito un oggetto "position" { name, displayName }.
-   La vecchia versione leggeva String(position) → "[object Object]"
-   e non riconosceva mai il ruolo.
 ============================================================ */
 
 function puliviNomeArbitro(nome) {
@@ -2136,61 +2044,13 @@ function puliviNomeArbitro(nome) {
 }
 
 
-function ruoloUfficiale(u) {
+function creaArbitri(data, competition) {
 
-  return [
-    u?.role,
-    u?.position?.displayName,
-    u?.position?.name,
-    u?.position,
-    u?.type?.text,
-    u?.type?.name
-  ]
-    .filter(function (x) {
-      return (
-        typeof x === "string" &&
-        x.trim() !== ""
-      );
-    })
-    .join(" ")
-    .toLowerCase();
-
-}
-
-
-function nomeUfficiale(u) {
-
-  return (
-    u?.displayName ||
-    u?.fullName ||
-    u?.name ||
-    null
-  );
-
-}
-
-
-function creaArbitri(data, competition, extra) {
-
-  const ufficiali = [].concat(
-
-    Array.isArray(competition?.officials)
-      ? competition.officials
-      : [],
-
-    Array.isArray(data?.officials)
-      ? data.officials
-      : [],
-
-    Array.isArray(data?.gameInfo?.officials)
-      ? data.gameInfo.officials
-      : [],
-
-    Array.isArray(extra)
-      ? extra
-      : []
-
-  );
+  const ufficiali =
+    competition?.officials ||
+    data?.officials ||
+    data?.gameInfo?.officials ||
+    [];
 
   const risultati = {
 
@@ -2203,95 +2063,110 @@ function creaArbitri(data, competition, extra) {
 
   };
 
-  let ruoloTrovato = false;
+  if (!Array.isArray(ufficiali)) {
+    return risultati;
+  }
 
   for (const ufficiale of ufficiali) {
 
     const nome =
-      nomeUfficiale(ufficiale);
+      ufficiale?.displayName ||
+      ufficiale?.fullName ||
+      ufficiale?.name ||
+      null;
 
     if (!nome) {
       continue;
     }
 
-    const ruolo =
-      ruoloUfficiale(ufficiale);
+    const ruolo = String(
+      ufficiale?.role ||
+      ufficiale?.type?.text ||
+      ufficiale?.type?.name ||
+      ufficiale?.position ||
+      ""
+    ).toLowerCase();
 
-    if (ruolo) {
-      ruoloTrovato = true;
-    }
-
-
-    /*
-    ORDINE IMPORTANTE:
-    "assistant video" (AVAR) e "video" (VAR)
-    vanno controllati PRIMA di "assistant" e "referee",
-    perché i loro ruoli contengono quelle parole.
-    */
 
     if (
-      ruolo.includes("avar") ||
-      ruolo.includes("assistant video") ||
-      ruolo.includes("assistant var")
+      ruolo.includes("referee") &&
+      !ruolo.includes("assistant")
     ) {
 
-      if (!risultati.avar) {
-        risultati.avar = nome;
+      if (!risultati.arbitro) {
+        risultati.arbitro = nome;
       }
+
+      continue;
 
     }
 
-    else if (
-      ruolo === "var" ||
-      /\bvar\b/.test(ruolo) ||
-      ruolo.includes("video")
+
+    if (
+      ruolo.includes("arbitro") &&
+      !ruolo.includes("assistente")
     ) {
 
-      if (!risultati.var) {
-        risultati.var = nome;
+      if (!risultati.arbitro) {
+        risultati.arbitro = nome;
       }
+
+      continue;
 
     }
 
-    else if (
-      ruolo.includes("fourth") ||
-      ruolo.includes("4th") ||
-      ruolo.includes("quarto")
-    ) {
 
-      if (!risultati.quartoUfficiale) {
-        risultati.quartoUfficiale = nome;
-      }
-
-    }
-
-    else if (
-      ruolo.includes("assistant") ||
-      ruolo.includes("assistente") ||
-      ruolo.includes("linesman")
+    if (
+      ruolo.includes("assistant referee") ||
+      ruolo === "assistant" ||
+      ruolo.includes("assistant")
     ) {
 
       if (!risultati.assistente1) {
         risultati.assistente1 = nome;
       }
 
-      else if (
-        !risultati.assistente2 &&
-        risultati.assistente1 !== nome
-      ) {
+      else if (!risultati.assistente2) {
         risultati.assistente2 = nome;
       }
 
+      continue;
+
     }
 
-    else if (
-      ruolo.includes("referee") ||
-      ruolo.includes("arbitro")
+
+    if (
+      ruolo.includes("fourth") ||
+      ruolo.includes("4th") ||
+      ruolo.includes("quarto")
     ) {
 
-      if (!risultati.arbitro) {
-        risultati.arbitro = nome;
-      }
+      risultati.quartoUfficiale = nome;
+
+      continue;
+
+    }
+
+
+    if (
+      ruolo === "var" ||
+      ruolo.includes("video assistant referee") ||
+      ruolo.includes("video referee")
+    ) {
+
+      risultati.var = nome;
+
+      continue;
+
+    }
+
+
+    if (
+      ruolo.includes("avar") ||
+      ruolo.includes("assistant video assistant")
+    ) {
+
+      risultati.avar = nome;
 
     }
 
@@ -2300,18 +2175,20 @@ function creaArbitri(data, competition, extra) {
 
   /*
   Fallback:
-  SOLO se ESPN non indica alcun ruolo per nessun ufficiale,
+  se ESPN non indica il ruolo del primo ufficiale,
   utilizziamo il primo ufficiale disponibile come arbitro.
   */
 
   if (
     !risultati.arbitro &&
-    !ruoloTrovato &&
     ufficiali.length > 0
   ) {
 
     risultati.arbitro =
-      nomeUfficiale(ufficiali[0]);
+      ufficiali[0]?.displayName ||
+      ufficiali[0]?.fullName ||
+      ufficiali[0]?.name ||
+      null;
 
   }
 
@@ -2329,107 +2206,6 @@ function creaArbitri(data, competition, extra) {
     );
 
   return risultati;
-
-}
-
-
-/* ============================================================
-   ARBITRI - FALLBACK CORE API
-
-   Se il summary non contiene gli ufficiali di gara,
-   proviamo l'endpoint Core di ESPN:
-
-   https://sports.core.api.espn.com/v2/sports/soccer/leagues/
-   {lega}/events/{id}/competitions/{id}/officials
-
-   Per il calcio l'id della competition coincide
-   normalmente con l'id dell'evento.
-
-   La risposta può contenere gli ufficiali già completi
-   oppure solo dei "$ref" da risolvere uno per uno.
-   Richiede Node 18+ (fetch globale).
-============================================================ */
-
-async function arbitriDaCoreAPI(competizione, id) {
-
-  try {
-
-    if (typeof fetch !== "function") {
-      return [];
-    }
-
-    const url =
-      "https://sports.core.api.espn.com/v2/sports/soccer/leagues/" +
-      competizione +
-      "/events/" +
-      encodeURIComponent(id) +
-      "/competitions/" +
-      encodeURIComponent(id) +
-      "/officials?limit=20";
-
-    const risposta =
-      await fetch(url);
-
-    if (!risposta.ok) {
-      return [];
-    }
-
-    const json =
-      await risposta.json();
-
-    const items =
-      Array.isArray(json?.items)
-        ? json.items
-        : [];
-
-    const risolti =
-      await Promise.all(
-
-        items.map(async function (item) {
-
-          if (nomeUfficiale(item)) {
-            return item;
-          }
-
-          if (!item?.$ref) {
-            return null;
-          }
-
-          try {
-
-            const r =
-              await fetch(
-                String(item.$ref)
-                  .replace(/^http:/, "https:")
-              );
-
-            if (!r.ok) {
-              return null;
-            }
-
-            return await r.json();
-
-          }
-
-          catch (errore) {
-
-            return null;
-
-          }
-
-        })
-
-      );
-
-    return risolti.filter(Boolean);
-
-  }
-
-  catch (errore) {
-
-    return [];
-
-  }
 
 }
 
@@ -4246,17 +4022,11 @@ allenatore:
       /*
       IMPORTANTE:
       nelle formazioni viene restituito
-      NOME ABBREVIATO + COGNOME
-      (es. "L. Da Cunha").
-
-      Il nome del campo resta "cognome"
-      per non rompere il frontend, ma
-      il valore ora contiene anche
-      l'iniziale del nome.
+      ESCLUSIVAMENTE IL COGNOME.
       */
 
       const cognome =
-        nomeAbbreviato(
+        ultimoCognome(
           nomeCompleto
         );
 
@@ -4834,11 +4604,6 @@ function trovaMVP(data) {
 
   ];
 
-  /*
-  L'MVP viene restituito con nome abbreviato + cognome
-  (es. "L. Da Cunha"), come gli altri giocatori.
-  */
-
   function estraiMVP(valore) {
 
     if (!valore) {
@@ -4846,13 +4611,13 @@ function trovaMVP(data) {
     }
 
     if (typeof valore === "string") {
-      return nomeAbbreviato(valore);
+      return ultimoCognome(valore);
     }
 
     if (
       valore?.displayName
     ) {
-      return nomeAbbreviato(
+      return ultimoCognome(
         valore.displayName
       );
     }
@@ -4860,7 +4625,7 @@ function trovaMVP(data) {
     if (
       valore?.fullName
     ) {
-      return nomeAbbreviato(
+      return ultimoCognome(
         valore.fullName
       );
     }
@@ -4868,7 +4633,7 @@ function trovaMVP(data) {
     if (
       valore?.athlete?.displayName
     ) {
-      return nomeAbbreviato(
+      return ultimoCognome(
         valore.athlete.displayName
       );
     }
@@ -4876,7 +4641,7 @@ function trovaMVP(data) {
     if (
       valore?.player?.displayName
     ) {
-      return nomeAbbreviato(
+      return ultimoCognome(
         valore.player.displayName
       );
     }
@@ -4898,7 +4663,7 @@ function trovaMVP(data) {
 
         if (nome) {
 
-          return nomeAbbreviato(
+          return ultimoCognome(
             nome
           );
 
@@ -5455,38 +5220,13 @@ async function handler(
 
     /* ========================================================
        ARBITRI
-
-       1. summary ESPN (gameInfo.officials)
-       2. se manca l'arbitro → fallback Core API ESPN
     ======================================================== */
 
-    let arbitri =
+    const arbitri =
       creaArbitri(
         data,
         competition
       );
-
-
-    if (!arbitri.arbitro) {
-
-      const extra =
-        await arbitriDaCoreAPI(
-          competizione,
-          id
-        );
-
-      if (extra.length > 0) {
-
-        arbitri =
-          creaArbitri(
-            data,
-            competition,
-            extra
-          );
-
-      }
-
-    }
 
 
     /* ========================================================
@@ -5634,29 +5374,12 @@ async function handler(
 
          Nell'arbitro viene mostrato solo
          nome e cognome dell'arbitro principale.
-         Se disponibili, vengono restituiti anche
-         assistenti, quarto ufficiale, VAR e AVAR.
       ====================================================== */
 
       info: {
 
         arbitro:
           arbitri.arbitro,
-
-        assistenti:
-          [
-            arbitri.assistente1,
-            arbitri.assistente2
-          ].filter(Boolean),
-
-        quartoUfficiale:
-          arbitri.quartoUfficiale,
-
-        var:
-          arbitri.var,
-
-        avar:
-          arbitri.avar,
 
         stadio:
           venue?.fullName ||
