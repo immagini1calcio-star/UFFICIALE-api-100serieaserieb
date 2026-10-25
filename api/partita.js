@@ -2035,12 +2035,6 @@ function puliviNomeArbitro(nome) {
 
   let testo = String(nome);
 
-  /*
-  Rimuove parentesi, codici, numeri
-  e caratteri non pertinenti a un
-  nome e cognome.
-  */
-
   testo = testo
     .replace(/\(.*?\)/g, " ")
     .replace(/\[.*?\]/g, " ")
@@ -2058,12 +2052,53 @@ function puliviNomeArbitro(nome) {
 }
 
 
+function nomeUfficiale(ufficiale) {
+
+  return (
+    ufficiale?.displayName ||
+    ufficiale?.fullName ||
+    ufficiale?.name ||
+    ufficiale?.athlete?.displayName ||
+    ufficiale?.athlete?.fullName ||
+    null
+  );
+
+}
+
+
+function ruoloUfficiale(ufficiale) {
+
+  /*
+  In ESPN "position" può essere una stringa oppure
+  un oggetto { name, displayName }: gestiamo entrambi.
+  */
+
+  const pos = ufficiale?.position;
+
+  const candidati = [
+    typeof pos === "string" ? pos : null,
+    pos?.displayName,
+    pos?.name,
+    ufficiale?.role,
+    ufficiale?.type?.text,
+    ufficiale?.type?.name
+  ];
+
+  return candidati
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
+}
+
+
 function creaArbitri(data, competition) {
 
   const ufficiali =
+    data?.gameInfo?.officials ||
     competition?.officials ||
     data?.officials ||
-    data?.gameInfo?.officials ||
+    data?.header?.competitions?.[0]?.officials ||
     [];
 
   const risultati = {
@@ -2077,152 +2112,73 @@ function creaArbitri(data, competition) {
 
   };
 
-  if (!Array.isArray(ufficiali)) {
+  if (!Array.isArray(ufficiali) || ufficiali.length === 0) {
     return risultati;
   }
 
-  for (const ufficiale of ufficiali) {
-
-    const nome =
-      ufficiale?.displayName ||
-      ufficiale?.fullName ||
-      ufficiale?.name ||
-      null;
-
-    if (!nome) {
-      continue;
-    }
-
-    const ruolo = String(
-      ufficiale?.role ||
-      ufficiale?.type?.text ||
-      ufficiale?.type?.name ||
-      ufficiale?.position ||
-      ""
-    ).toLowerCase();
-
-
-    if (
-      ruolo.includes("referee") &&
-      !ruolo.includes("assistant")
-    ) {
-
-      if (!risultati.arbitro) {
-        risultati.arbitro = nome;
-      }
-
-      continue;
-
-    }
-
-
-    if (
-      ruolo.includes("arbitro") &&
-      !ruolo.includes("assistente")
-    ) {
-
-      if (!risultati.arbitro) {
-        risultati.arbitro = nome;
-      }
-
-      continue;
-
-    }
-
-
-    if (
-      ruolo.includes("assistant referee") ||
-      ruolo === "assistant" ||
-      ruolo.includes("assistant")
-    ) {
-
-      if (!risultati.assistente1) {
-        risultati.assistente1 = nome;
-      }
-
-      else if (!risultati.assistente2) {
-        risultati.assistente2 = nome;
-      }
-
-      continue;
-
-    }
-
-
-    if (
-      ruolo.includes("fourth") ||
-      ruolo.includes("4th") ||
-      ruolo.includes("quarto")
-    ) {
-
-      risultati.quartoUfficiale = nome;
-
-      continue;
-
-    }
-
-
-    if (
-      ruolo === "var" ||
-      ruolo.includes("video assistant referee") ||
-      ruolo.includes("video referee")
-    ) {
-
-      risultati.var = nome;
-
-      continue;
-
-    }
-
-
-    if (
-      ruolo.includes("avar") ||
-      ruolo.includes("assistant video assistant")
-    ) {
-
-      risultati.avar = nome;
-
-    }
-
-  }
-
-
   /*
-  Fallback:
-  se ESPN non indica il ruolo del primo ufficiale,
-  utilizziamo il primo ufficiale disponibile come arbitro.
+  Ruoli da escludere: assistenti, quarto uomo, VAR, AVAR.
   */
 
-  if (
-    !risultati.arbitro &&
-    ufficiali.length > 0
-  ) {
-
-    risultati.arbitro =
-      ufficiali[0]?.displayName ||
-      ufficiali[0]?.fullName ||
-      ufficiali[0]?.name ||
-      null;
-
-  }
-
+  const nonArbitro = [
+    "assistant",
+    "assistente",
+    "fourth",
+    "4th",
+    "quarto",
+    "var",
+    "video",
+    "avar"
+  ];
 
   /*
-  Pulizia finale:
-  restituiamo solo nome e cognome
-  dell'arbitro principale, senza
-  codici o caratteri strani.
+  1) Cerca chi ha ruolo "referee" / "arbitro"
+     escludendo tutti gli altri ufficiali.
   */
 
-  risultati.arbitro =
-    puliviNomeArbitro(
-      risultati.arbitro
+  let scelto = ufficiali.find(u => {
+
+    const ruolo = ruoloUfficiale(u);
+
+    if (!ruolo || !nomeUfficiale(u)) {
+      return false;
+    }
+
+    const eArbitro =
+      ruolo.includes("referee") ||
+      ruolo.includes("arbitro");
+
+    const escluso = nonArbitro.some(
+      parola => ruolo.includes(parola)
     );
+
+    return eArbitro && !escluso;
+
+  });
+
+  /*
+  2) Fallback: ufficiale con order = 1,
+     poi il primo della lista.
+  */
+
+  if (!scelto) {
+
+    scelto =
+      ufficiali.find(
+        u => Number(u?.order) === 1 && nomeUfficiale(u)
+      ) ||
+      ufficiali.find(u => nomeUfficiale(u)) ||
+      null;
+
+  }
+
+  risultati.arbitro = puliviNomeArbitro(
+    nomeUfficiale(scelto)
+  );
 
   return risultati;
 
 }
-
 
 /* ============================================================
    STATO
