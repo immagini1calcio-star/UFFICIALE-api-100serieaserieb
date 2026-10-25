@@ -904,7 +904,21 @@ function ultimoCognome(nome) {
     return null;
   }
 
-  return testo.split(" ").pop();
+  const parti = testo.split(" ");
+
+  // Un solo termine (es. "Neymar"): lo lascia intero
+  if (parti.length === 1) {
+    return parti[0];
+  }
+
+  const primo = parti.shift();
+
+  // Se è già abbreviato ("L."), lo mantiene; altrimenti prende l'iniziale
+  const iniziale = primo.endsWith(".")
+    ? primo
+    : primo.charAt(0).toUpperCase() + ".";
+
+  return iniziale + " " + parti.join(" ");
 
 }
 
