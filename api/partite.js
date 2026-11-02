@@ -42,11 +42,27 @@ paese: "Italia"
 
 },
 
-"eng.1": {
+"usa.1": {
 
-nome: "Premier League",
+nome: "MLS",
 
-paese: "Inghilterra"
+paese: "Stati Uniti d'America"
+
+},
+
+"bel.1": {
+
+nome: "Pro League",
+
+paese: "Belgio"
+
+},
+
+"arg.1": {
+
+nome: "Primera Division",
+
+paese: "Argentina"
 
 },
 
@@ -57,8 +73,22 @@ nome: "Liga Turca",
 paese: "Turchia"
 
 },
-
   
+"eng.1": {
+
+nome: "Premier League",
+
+paese: "Inghilterra"
+
+},
+
+"bra.1": {
+
+nome: "Serie A Brasiliana",
+
+paese: "Brasile"
+
+},
   
 "esp.1": {
 
