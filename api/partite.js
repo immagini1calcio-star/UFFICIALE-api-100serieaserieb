@@ -50,6 +50,16 @@ paese: "Inghilterra"
 
 },
 
+"tur.1": {
+
+nome: "Liga Turca",
+
+paese: "Turchia"
+
+},
+
+  
+  
 "esp.1": {
 
 nome: "LaLiga",
