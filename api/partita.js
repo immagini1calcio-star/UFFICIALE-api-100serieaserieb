@@ -76,6 +76,11 @@ const COMPETIZIONI = {
     paese: "Spagna"
   },
 
+   "esp.1": {
+    nome: "Super Liga",
+    paese: "Turchia"
+  },
+
   "eng.1": {
     nome: "Premier League",
     paese: "Inghilterra"
