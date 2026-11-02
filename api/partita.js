@@ -44,8 +44,6 @@ const COMPETIZIONI = {
     paese: "Italia"
   },
 
-
-
   "uefa.champions": {
     nome: "Champions League",
     paese: "Europa"
@@ -79,6 +77,26 @@ const COMPETIZIONI = {
    "tur.1": {
     nome: "Super Liga",
     paese: "Turchia"
+  },
+
+   "usa.1": {
+    nome: "MLS",
+    paese: "Stati Uniti d'America"
+  },
+   
+   "bel.1": {
+    nome: "Pro League",
+    paese: "Belgio"
+  },
+
+   "arg.1": {
+    nome: "Primera Division",
+    paese: "Argentina"
+  },
+
+   "bra.1": {
+    nome: "Serie A Brasiliana",
+    paese: "Brasile"
   },
 
   "eng.1": {
