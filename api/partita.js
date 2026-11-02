@@ -2500,7 +2500,128 @@ const FINESTRE_GIORNATE = {
     { inizio:"2026-09-24", fine:"2026-09-26", faseTurno:"Giornata 1" },
     { inizio:"2026-09-27", fine:"2026-09-30", faseTurno:"Giornata 2" },
     { inizio:"2026-09-31", fine:"2026-10-04", faseTurno:"Giornata 3" },
-    { inizio:"2026-10-05", fine:"2026-10-10", faseTurno:"Giornata 4" }
+    { inizio:"2026-10-05", fine:"2026-10-10", faseTurno:"Giornata 4" },
+    { inizio:"2026-11-12", fine:"2026-11-14", faseTurno:"Giornata 5" },
+    { inizio:"2026-11-15", fine:"2026-11-17", faseTurno:"Giornata 6" }
+
+     ],
+   
+/* =========================
+     MLS
+  ========================= */
+
+  "usa.1": [
+
+    { inizio:"2026-11-12", fine:"2026-11-14", faseTurno:"Giornata 5" },
+    { inizio:"2026-11-15", fine:"2026-11-17", faseTurno:"Giornata 6" }
+
+     ],
+
+/* =========================
+     PRO LEAGUE
+  ========================= */
+
+  "bel.1": [
+
+    { inizio: "2026-08-07", fine: "2026-08-09", faseTurno: "Giornata 1" },
+    { inizio: "2026-08-14", fine: "2026-08-16", faseTurno: "Giornata 2" },
+    { inizio: "2026-08-21", fine: "2026-08-23", faseTurno: "Giornata 3" },
+    { inizio: "2026-08-28", fine: "2026-08-30", faseTurno: "Giornata 4" },
+    { inizio: "2026-09-04", fine: "2026-09-06", faseTurno: "Giornata 5" },
+    { inizio: "2026-09-11", fine: "2026-09-13", faseTurno: "Giornata 6" },
+    { inizio: "2026-09-18", fine: "2026-09-20", faseTurno: "Giornata 7" },
+    { inizio: "2026-10-09", fine: "2026-10-11", faseTurno: "Giornata 8" },
+    { inizio: "2026-10-23", fine: "2026-10-25", faseTurno: "Giornata 9" },
+    { inizio: "2026-10-30", fine: "2026-11-01", faseTurno: "Giornata 10" },
+    { inizio: "2026-11-06", fine: "2026-11-08", faseTurno: "Giornata 11" },
+    { inizio: "2026-11-20", fine: "2026-11-22", faseTurno: "Giornata 12" },
+    { inizio: "2026-11-27", fine: "2026-11-29", faseTurno: "Giornata 13" },
+    { inizio: "2026-12-11", fine: "2026-12-13", faseTurno: "Giornata 14" },
+    { inizio: "2026-12-18", fine: "2026-12-20", faseTurno: "Giornata 15" },
+    { inizio: "2026-12-26", fine: "2026-12-27", faseTurno: "Giornata 16" },
+    { inizio: "2027-01-15", fine: "2027-01-17", faseTurno: "Giornata 17" },
+    { inizio: "2027-01-22", fine: "2027-01-24", faseTurno: "Giornata 18" },
+    { inizio: "2027-01-29", fine: "2027-01-31", faseTurno: "Giornata 19" },
+    { inizio: "2027-02-05", fine: "2027-02-07", faseTurno: "Giornata 20" },
+    { inizio: "2027-02-12", fine: "2027-02-14", faseTurno: "Giornata 21" },
+    { inizio: "2027-02-19", fine: "2027-02-21", faseTurno: "Giornata 22" },
+    { inizio: "2027-02-26", fine: "2027-02-28", faseTurno: "Giornata 23" },
+    { inizio: "2027-03-05", fine: "2027-03-07", faseTurno: "Giornata 24" },
+    { inizio: "2027-03-12", fine: "2027-03-14", faseTurno: "Giornata 25" },
+    { inizio: "2027-03-19", fine: "2027-03-21", faseTurno: "Giornata 26" },
+    { inizio: "2027-04-02", fine: "2027-04-04", faseTurno: "Giornata 27" },
+    { inizio: "2027-04-09", fine: "2027-04-11", faseTurno: "Giornata 28" },
+    { inizio: "2027-04-16", fine: "2027-04-18", faseTurno: "Giornata 29" },
+    { inizio: "2027-04-23", fine: "2027-04-25", faseTurno: "Giornata 30" },
+    { inizio: "2027-04-30", fine: "2027-05-02", faseTurno: "Giornata 31" },
+    { inizio: "2027-05-07", fine: "2027-05-09", faseTurno: "Giornata 32" },
+    { inizio: "2027-05-14", fine: "2027-05-16", faseTurno: "Giornata 33" },
+    { inizio: "2027-05-21", fine: "2027-05-23", faseTurno: "Giornata 34" }
+
+     ],
+
+/* =========================
+     PRIMERA DIVISION
+  ========================= */
+
+  "arg.1": [
+
+    { inizio:"2026-11-12", fine:"2026-11-14", faseTurno:"Giornata 5" },
+    { inizio:"2026-11-15", fine:"2026-11-17", faseTurno:"Giornata 6" }
+
+     ],
+
+/* =========================
+     SERIE A BRASILIANA
+  ========================= */
+
+  "bra.1": [
+
+    { inizio:"2026-11-12", fine:"2026-11-14", faseTurno:"Giornata 5" },
+    { inizio:"2026-11-15", fine:"2026-11-17", faseTurno:"Giornata 6" }
+
+     ],
+
+/* =========================
+     LIGA TURCA
+  ========================= */
+
+  "tur.1": [
+
+    { inizio: "2026-08-14", fine: "2026-08-17", faseTurno: "Giornata 1" },
+    { inizio: "2026-08-21", fine: "2026-08-24", faseTurno: "Giornata 2" },
+    { inizio: "2026-08-28", fine: "2026-08-31", faseTurno: "Giornata 3" },
+    { inizio: "2026-09-04", fine: "2026-09-07", faseTurno: "Giornata 4" },
+    { inizio: "2026-09-11", fine: "2026-09-14", faseTurno: "Giornata 5" },
+    { inizio: "2026-09-18", fine: "2026-09-21", faseTurno: "Giornata 6" },
+    { inizio: "2026-09-25", fine: "2026-09-28", faseTurno: "Giornata 7" },
+    { inizio: "2026-10-16", fine: "2026-10-19", faseTurno: "Giornata 8" },
+    { inizio: "2026-10-23", fine: "2026-10-26", faseTurno: "Giornata 9" },
+    { inizio: "2026-10-30", fine: "2026-11-02", faseTurno: "Giornata 10" },
+    { inizio: "2026-11-06", fine: "2026-11-09", faseTurno: "Giornata 11" },
+    { inizio: "2026-11-20", fine: "2026-11-23", faseTurno: "Giornata 12" }, 
+    { inizio: "2026-11-27", fine: "2026-11-30", faseTurno: "Giornata 13" },
+    { inizio: "2026-12-04", fine: "2026-12-07", faseTurno: "Giornata 14" },
+    { inizio: "2026-12-11", fine: "2026-12-14", faseTurno: "Giornata 15" },
+    { inizio: "2026-12-18", fine: "2026-12-21", faseTurno: "Giornata 16" },
+    { inizio: "2027-01-15", fine: "2027-01-18", faseTurno: "Giornata 17" },
+    { inizio: "2027-01-22", fine: "2027-01-25", faseTurno: "Giornata 18" },
+    { inizio: "2027-01-29", fine: "2027-02-01", faseTurno: "Giornata 19" },
+    { inizio: "2027-02-05", fine: "2027-02-08", faseTurno: "Giornata 20" },
+    { inizio: "2027-02-12", fine: "2027-02-15", faseTurno: "Giornata 21" },
+    { inizio: "2027-02-19", fine: "2027-02-22", faseTurno: "Giornata 22" },
+    { inizio: "2027-02-26", fine: "2027-03-01", faseTurno: "Giornata 23" },
+    { inizio: "2027-03-05", fine: "2027-03-08", faseTurno: "Giornata 24" },
+    { inizio: "2027-03-12", fine: "2027-03-15", faseTurno: "Giornata 25" },
+    { inizio: "2027-03-19", fine: "2027-03-22", faseTurno: "Giornata 26" },
+    { inizio: "2027-04-02", fine: "2027-04-05", faseTurno: "Giornata 27" },
+    { inizio: "2027-04-09", fine: "2027-04-12", faseTurno: "Giornata 28" },
+    { inizio: "2027-04-16", fine: "2027-04-19", faseTurno: "Giornata 29" },
+    { inizio: "2027-04-23", fine: "2027-04-26", faseTurno: "Giornata 30" },
+    { inizio: "2027-04-30", fine: "2027-05-03", faseTurno: "Giornata 31" },
+    { inizio: "2027-05-07", fine: "2027-05-10", faseTurno: "Giornata 32" },
+    { inizio: "2027-05-14", fine: "2027-05-17", faseTurno: "Giornata 33" },
+    { inizio: "2027-05-21", fine: "2027-05-23", faseTurno: "Giornata 34" }
 
      ],
    
