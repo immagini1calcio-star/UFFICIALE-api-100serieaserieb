@@ -3847,66 +3847,337 @@ function creaStatistiche(data) {
 
 /* ============================================================
    FORMAZIONI
+
+   ORDINE DEI RUOLI (dal portiere all'attacco,
+   da sinistra a destra):
+
+   1.  P    Portiere
+   2.  ASA  Ala sinistra arretrata (esterno sinistro a tutta fascia)
+   3.  TS   Terzino sinistro
+   4.  DC   Difensore centrale
+   5.  TD   Terzino destro
+   6.  ADA  Ala destra arretrata (esterno destro a tutta fascia)
+   7.  CDC  Centrocampista difensivo centrale
+   8.  CC   Centrocampista centrale
+   9.  ES   Esterno sinistro
+   10. COC  Centrocampista offensivo centrale
+   11. ED   Esterno destro
+   12. AT   Attaccante trequartista (seconda punta)
+   13. AS   Ala sinistra (attacco)
+   14. ATT  Attaccante centrale
+   15. AD   Ala destra (attacco)
+
+   ATTENZIONE: AS / AD (attacco) sono DIVERSI da
+   ASA / ADA (difesa).
 ============================================================ */
 
-function ruoloItaliano(ruolo) {
+const ORDINE_RUOLI_FORMAZIONE = [
+  "P",
+  "ASA",
+  "TS",
+  "DC",
+  "TD",
+  "ADA",
+  "CDC",
+  "CC",
+  "ES",
+  "COC",
+  "ED",
+  "AT",
+  "AS",
+  "ATT",
+  "AD"
+];
 
-  if (!ruolo) {
+
+const NOMI_RUOLI_FORMAZIONE = {
+
+  P: "Portiere",
+  ASA: "Ala sinistra arretrata",
+  TS: "Terzino sinistro",
+  DC: "Difensore centrale",
+  TD: "Terzino destro",
+  ADA: "Ala destra arretrata",
+  CDC: "Centrocampista difensivo centrale",
+  CC: "Centrocampista centrale",
+  ES: "Esterno sinistro",
+  COC: "Centrocampista offensivo centrale",
+  ED: "Esterno destro",
+  AT: "Attaccante trequartista",
+  AS: "Ala sinistra",
+  ATT: "Attaccante",
+  AD: "Ala destra"
+
+};
+
+
+/*
+ABBREVIAZIONI ESPN -> CODICE ITALIANO
+*/
+
+const RUOLI_ESPN_A_CODICE = {
+
+  // PORTIERE
+  G: "P",
+  GK: "P",
+
+  // DIFESA
+  LWB: "ASA",
+  LB: "TS",
+  CD: "DC",
+  "CD-L": "DC",
+  "CD-R": "DC",
+  CB: "DC",
+  LCB: "DC",
+  RCB: "DC",
+  SW: "DC",
+  RB: "TD",
+  RWB: "ADA",
+
+  // CENTROCAMPO
+  DM: "CDC",
+  CDM: "CDC",
+  "DM-L": "CDC",
+  "DM-R": "CDC",
+  CM: "CC",
+  "CM-L": "CC",
+  "CM-R": "CC",
+  LM: "ES",
+  "AM-L": "ES",
+  AM: "COC",
+  CAM: "COC",
+  RM: "ED",
+  "AM-R": "ED",
+
+  // ATTACCO
+  SS: "AT",
+  LW: "AS",
+  LF: "AS",
+  CF: "ATT",
+  "CF-L": "ATT",
+  "CF-R": "ATT",
+  F: "ATT",
+  FW: "ATT",
+  ST: "ATT",
+  RF: "AD",
+  RW: "AD"
+
+};
+
+
+/*
+Trova il codice italiano partendo dall'abbreviazione ESPN
+(es. "CD-L") oppure, se non è in tabella, dal nome esteso
+in inglese (es. "Center Left Defender").
+*/
+
+function codiceRuoloFormazione(abbreviazione, nomeEsteso) {
+
+  const abbr =
+    String(abbreviazione || "")
+      .trim()
+      .toUpperCase();
+
+  if (abbr && RUOLI_ESPN_A_CODICE[abbr]) {
+    return RUOLI_ESPN_A_CODICE[abbr];
+  }
+
+  const n =
+    String(nomeEsteso || abbreviazione || "")
+      .toLowerCase();
+
+  if (!n) {
+    return null;
+  }
+
+  const sx = n.includes("left");
+  const dx = n.includes("right");
+  const centro =
+    n.includes("center") ||
+    n.includes("centre");
+
+  if (n.includes("goalkeeper")) {
+    return "P";
+  }
+
+  if (
+    n.includes("wing back") ||
+    n.includes("wing-back") ||
+    n.includes("wingback")
+  ) {
+    return sx ? "ASA" : dx ? "ADA" : null;
+  }
+
+  if (n.includes("sweeper")) {
+    return "DC";
+  }
+
+  if (n.includes("back") && !centro) {
+    return sx ? "TS" : dx ? "TD" : "DC";
+  }
+
+  if (
+    n.includes("defender") ||
+    n.includes("back")
+  ) {
+    return "DC";
+  }
+
+  if (n.includes("defensive mid")) {
+    return "CDC";
+  }
+
+  if (n.includes("second striker")) {
+    return "AT";
+  }
+
+  if (n.includes("attacking mid")) {
+    return (sx && !centro)
+      ? "ES"
+      : (dx && !centro)
+        ? "ED"
+        : "COC";
+  }
+
+  if (n.includes("midfield")) {
+    return centro
+      ? "CC"
+      : sx
+        ? "ES"
+        : dx
+          ? "ED"
+          : "CC";
+  }
+
+  if (n.includes("winger")) {
+    return sx ? "AS" : dx ? "AD" : "ATT";
+  }
+
+  if (
+    n.includes("forward") ||
+    n.includes("striker")
+  ) {
+    return centro
+      ? "ATT"
+      : sx
+        ? "AS"
+        : dx
+          ? "AD"
+          : "ATT";
+  }
+
+  return null;
+
+}
+
+
+/*
+Lato (sinistra = -1, centro = 0, destra = 1),
+usato per ordinare giocatori con lo stesso ruolo
+(es. CD-L prima di CD-R).
+*/
+
+function latoRuoloFormazione(abbreviazione, nomeEsteso) {
+
+  const abbr =
+    String(abbreviazione || "")
+      .trim()
+      .toUpperCase();
+
+  if (abbr.endsWith("-L")) {
+    return -1;
+  }
+
+  if (abbr.endsWith("-R")) {
+    return 1;
+  }
+
+  const n =
+    String(nomeEsteso || "")
+      .toLowerCase();
+
+  if (n.includes("left")) {
+    return -1;
+  }
+
+  if (n.includes("right")) {
+    return 1;
+  }
+
+  return 0;
+
+}
+
+
+/*
+Reparto per ordinare le riserve:
+0 = portieri, 1 = difensori,
+2 = centrocampisti, 3 = attaccanti, 9 = sconosciuto.
+*/
+
+function repartoRuoloFormazione(abbreviazione, nomeEsteso) {
+
+  const a =
+    String(abbreviazione || "")
+      .trim()
+      .toUpperCase();
+
+  if (a === "G") return 0;
+  if (a === "D") return 1;
+  if (a === "M") return 2;
+  if (a === "F") return 3;
+
+  const codice =
+    codiceRuoloFormazione(
+      abbreviazione,
+      nomeEsteso
+    );
+
+  if (!codice) {
+    return 9;
+  }
+
+  const indice =
+    ORDINE_RUOLI_FORMAZIONE.indexOf(codice);
+
+  if (indice === 0) return 0;
+  if (indice <= 5) return 1;
+  if (indice <= 10) return 2;
+
+  return 3;
+
+}
+
+
+function ruoloItaliano(ruolo, nomeEsteso) {
+
+  if (!ruolo && !nomeEsteso) {
     return null;
   }
 
   const r =
-    String(ruolo)
+    String(ruolo || "")
+      .trim()
       .toUpperCase();
 
+  const n =
+    String(nomeEsteso || "")
+      .toLowerCase();
 
-  const mappa = {
-
-    G: "Portiere",
-    GK: "Portiere",
-
-    CB: "Difensore",
-    CD: "Difensore",
-    "CD-L": "Difensore",
-    "CD-R": "Difensore",
-
-    LB: "Difensore",
-    RB: "Difensore",
-    LWB: "Difensore",
-    RWB: "Difensore",
-
-    DM: "Centrocampista",
-    CM: "Centrocampista",
-    "CM-L": "Centrocampista",
-    "CM-R": "Centrocampista",
-    "AM-L": "Centrocampista",
-    "AM-R": "Centrocampista",
-
-    LM: "Centrocampista",
-    RM: "Centrocampista",
-
-    AM: "Centrocampista",
-    CAM: "Centrocampista",
-
-    LW: "Attaccante",
-    RW: "Attaccante",
-
-    CF: "Attaccante",
-    "CF-L": "Attaccante",
-    "CF-R": "Attaccante",
-
-    ST: "Attaccante",
-    FW: "Attaccante",
-    F: "Attaccante",
-
-    SUB: "Riserva"
-
-  };
-
+  if (
+    r === "SUB" ||
+    n.includes("substitute")
+  ) {
+    return "Riserva";
+  }
 
   return (
-    mappa[r] ||
-    ruolo
+    codiceRuoloFormazione(
+      ruolo,
+      nomeEsteso
+    ) ||
+    ruolo ||
+    nomeEsteso
   );
 
 }
@@ -4116,6 +4387,16 @@ allenatore:
     }
 
 
+    /*
+    Elenchi temporanei: i giocatori vengono
+    prima raccolti e poi ordinati per ruolo.
+    */
+
+    const titolariOrdinabili = [];
+
+    const riserveOrdinabili = [];
+
+
     for (
       const p of giocatori
     ) {
@@ -4164,10 +4445,25 @@ allenatore:
         null;
 
 
+      const nomeRuoloEsteso =
+        p?.position?.displayName ||
+        atleta?.position?.displayName ||
+        null;
+
+
       const titolare =
         p?.starter === true ||
         p?.lineupStatus === "starter" ||
         p?.status === "starter";
+
+
+      const codiceRuolo =
+        codiceRuoloFormazione(
+          p?.position?.abbreviation ||
+          atleta?.position?.abbreviation ||
+          null,
+          nomeRuoloEsteso
+        );
 
 
       const giocatore = {
@@ -4178,8 +4474,14 @@ allenatore:
 
         ruolo:
           ruoloItaliano(
-            ruoloOriginale
+            ruoloOriginale,
+            nomeRuoloEsteso
           ),
+
+        ruoloEsteso:
+          codiceRuolo
+            ? NOMI_RUOLI_FORMAZIONE[codiceRuolo]
+            : null,
 
         ruoloESPN:
           ruoloOriginale,
@@ -4191,19 +4493,97 @@ allenatore:
 
       if (titolare) {
 
-        formazione.titolari.push(
-          giocatore
-        );
+        titolariOrdinabili.push({
+
+          giocatore,
+
+          indice:
+            codiceRuolo
+              ? ORDINE_RUOLI_FORMAZIONE.indexOf(
+                  codiceRuolo
+                )
+              : 99,
+
+          lato:
+            latoRuoloFormazione(
+              p?.position?.abbreviation ||
+              atleta?.position?.abbreviation ||
+              null,
+              nomeRuoloEsteso
+            ),
+
+          posto:
+            Number(p?.formationPlace) || 99
+
+        });
 
       } else {
 
-        formazione.riserve.push(
-          giocatore
-        );
+        riserveOrdinabili.push({
+
+          giocatore,
+
+          reparto:
+            repartoRuoloFormazione(
+              atleta?.position?.abbreviation ||
+              null,
+              atleta?.position?.displayName ||
+              null
+            )
+
+        });
 
       }
 
     }
+
+
+    /*
+    ORDINAMENTO TITOLARI:
+    1. ordine dei ruoli voluto (P, ASA, TS, DC, ...)
+    2. sinistra -> destra (es. CD-L prima di CD-R)
+    3. formationPlace di ESPN come ultimo spareggio
+    I ruoli non riconosciuti finiscono in fondo.
+    */
+
+    titolariOrdinabili.sort(function (a, b) {
+
+      return (
+        (a.indice - b.indice) ||
+        (a.lato - b.lato) ||
+        (a.posto - b.posto)
+      );
+
+    });
+
+
+    /*
+    ORDINAMENTO RISERVE:
+    per reparto naturale (portieri, difensori,
+    centrocampisti, attaccanti) se ESPN lo fornisce.
+    A parità, l'ordine originale ESPN viene mantenuto.
+    */
+
+    riserveOrdinabili.sort(function (a, b) {
+
+      return a.reparto - b.reparto;
+
+    });
+
+
+    formazione.titolari =
+      titolariOrdinabili.map(
+        function (x) {
+          return x.giocatore;
+        }
+      );
+
+    formazione.riserve =
+      riserveOrdinabili.map(
+        function (x) {
+          return x.giocatore;
+        }
+      );
 
 
     const idSquadra =
