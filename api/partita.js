@@ -4149,6 +4149,306 @@ function repartoRuoloFormazione(abbreviazione, nomeEsteso) {
 }
 
 
+/*
+SIGLA VISIBILE:
+il portiere si scrive "PT"; tutte le altre sigle
+coincidono con il codice (TS, DC, COC, ATT, ...).
+*/
+
+function siglaVisibileRuolo(codice) {
+
+  if (codice === "P") {
+    return "PT";
+  }
+
+  return codice;
+
+}
+
+
+/*
+Ruoli "generici" (solo reparto): se ESPN non fornisce
+il ruolo preciso, viene usata una sigla di reparto:
+D = difensore, C = centrocampista, A = attaccante.
+*/
+
+const RUOLI_GENERICI_REPARTO = {
+
+  D: { sigla: "D", indice: 3 },
+  M: { sigla: "C", indice: 7 },
+  F: { sigla: "A", indice: 13 }
+
+};
+
+
+/*
+Raccoglie TUTTI i possibili campi in cui ESPN
+potrebbe scrivere il ruolo del giocatore.
+*/
+
+function candidatiRuoloPartita(p, atleta) {
+
+  const lista = [];
+
+  function aggiungi(abbreviazione, nome) {
+
+    if (!abbreviazione && !nome) {
+      return;
+    }
+
+    lista.push({
+
+      abbr:
+        abbreviazione
+          ? String(abbreviazione)
+          : null,
+
+      nome:
+        nome
+          ? String(nome)
+          : null
+
+    });
+
+  }
+
+  function aggiungiCampo(valore) {
+
+    if (!valore) {
+      return;
+    }
+
+    if (typeof valore === "string") {
+
+      aggiungi(valore, valore);
+
+      return;
+
+    }
+
+    if (typeof valore === "object") {
+
+      aggiungi(
+        valore.abbreviation ||
+        valore.shortName ||
+        null,
+        valore.displayName ||
+        valore.name ||
+        valore.text ||
+        null
+      );
+
+    }
+
+  }
+
+  // 1. ruolo che il giocatore ha in QUESTA partita
+  aggiungiCampo(p?.position);
+
+  aggiungiCampo(p?.formationPosition);
+
+  aggiungiCampo(p?.lineupPosition);
+
+  aggiungiCampo(p?.positionName);
+
+  aggiungiCampo(p?.positionAbbreviation);
+
+  aggiungiCampo(p?.role);
+
+  aggiungiCampo(p?.roleName);
+
+  // 2. ruolo "abituale" del giocatore (ultima spiaggia)
+  aggiungiCampo(atleta?.position);
+
+  return lista;
+
+}
+
+
+/*
+Ruolo del giocatore in questa partita.
+
+Restituisce:
+  codice : codice interno (P, TS, DC, ...) oppure null
+  sigla  : sigla da scrivere davanti al nome (PT, TS, ...)
+  abbr   : abbreviazione originale ESPN
+  indice : posizione nell'ordine dei ruoli
+  lato   : -1 sinistra, 0 centro, 1 destra
+  preciso: true se il ruolo è quello esatto
+*/
+
+function trovaRuoloPartita(p, atleta) {
+
+  const candidati =
+    candidatiRuoloPartita(p, atleta);
+
+  let generico = null;
+
+  for (const c of candidati) {
+
+    const abbr =
+      String(c.abbr || "")
+        .trim()
+        .toUpperCase();
+
+    const nome =
+      String(c.nome || "")
+        .trim()
+        .toLowerCase();
+
+    // le riserve hanno "SUB" / "Substitute": non è un ruolo
+    if (
+      abbr === "SUB" ||
+      nome.includes("substitute")
+    ) {
+      continue;
+    }
+
+    const eGenerico =
+      abbr === "M" ||
+      abbr === "D" ||
+      abbr === "F" ||
+      nome === "midfielder" ||
+      nome === "defender" ||
+      nome === "forward" ||
+      nome === "striker" ||
+      nome === "attacker";
+
+    if (!eGenerico) {
+
+      const codice =
+        codiceRuoloFormazione(
+          c.abbr,
+          c.nome
+        );
+
+      if (codice) {
+
+        return {
+
+          codice,
+
+          sigla:
+            siglaVisibileRuolo(codice),
+
+          abbr:
+            c.abbr || c.nome,
+
+          indice:
+            ORDINE_RUOLI_FORMAZIONE.indexOf(
+              codice
+            ),
+
+          lato:
+            latoRuoloFormazione(
+              c.abbr,
+              c.nome
+            ),
+
+          preciso: true
+
+        };
+
+      }
+
+    } else if (!generico) {
+
+      generico = c;
+
+    }
+
+  }
+
+  /*
+  Il portiere ha SEMPRE formationPlace = 1:
+  regola sicura anche quando ESPN scrive solo "M".
+  */
+
+  if (
+    p?.starter === true &&
+    Number(p?.formationPlace) === 1
+  ) {
+
+    return {
+
+      codice: "P",
+
+      sigla: "PT",
+
+      abbr:
+        (candidati[0] && candidati[0].abbr) ||
+        "formationPlace=1",
+
+      indice: 0,
+
+      lato: 0,
+
+      preciso: true
+
+    };
+
+  }
+
+  if (generico) {
+
+    const abbr =
+      String(generico.abbr || "")
+        .trim()
+        .toUpperCase();
+
+    const nome =
+      String(generico.nome || "")
+        .trim()
+        .toLowerCase();
+
+    let chiave = "F";
+
+    if (abbr === "M" || nome.startsWith("mid")) {
+      chiave = "M";
+    } else if (abbr === "D" || nome.startsWith("def")) {
+      chiave = "D";
+    }
+
+    return {
+
+      codice: null,
+
+      sigla:
+        RUOLI_GENERICI_REPARTO[chiave].sigla,
+
+      abbr:
+        generico.abbr || generico.nome,
+
+      indice:
+        RUOLI_GENERICI_REPARTO[chiave].indice,
+
+      lato: 0,
+
+      preciso: false
+
+    };
+
+  }
+
+  return {
+
+    codice: null,
+
+    sigla: null,
+
+    abbr: null,
+
+    indice: 99,
+
+    lato: 0,
+
+    preciso: false
+
+  };
+
+}
+
+
 function ruoloItaliano(ruolo, nomeEsteso) {
 
   if (!ruolo && !nomeEsteso) {
@@ -4437,54 +4737,53 @@ allenatore:
         null;
 
 
-      const ruoloOriginale =
-        p?.position?.abbreviation ||
-        atleta?.position?.abbreviation ||
-        p?.position?.displayName ||
-        atleta?.position?.displayName ||
-        null;
-
-
-      const nomeRuoloEsteso =
-        p?.position?.displayName ||
-        atleta?.position?.displayName ||
-        null;
-
-
       const titolare =
         p?.starter === true ||
         p?.lineupStatus === "starter" ||
         p?.status === "starter";
 
 
-      const codiceRuolo =
-        codiceRuoloFormazione(
-          p?.position?.abbreviation ||
-          atleta?.position?.abbreviation ||
-          null,
-          nomeRuoloEsteso
+      /*
+      RUOLO IN QUESTA PARTITA
+      */
+
+      const ruoloPartita =
+        trovaRuoloPartita(
+          p,
+          atleta
         );
 
 
+      /*
+      NOME GIOCATORE NELLE FORMAZIONI:
+
+      SIGLA: Cognome
+      es. "PT: J. Butez", "TS: G. Blu"
+      */
+
       const giocatore = {
 
-        cognome,
+        cognome:
+          ruoloPartita.sigla
+            ? ruoloPartita.sigla +
+              ": " +
+              cognome
+            : cognome,
 
         numero,
 
         ruolo:
-          ruoloItaliano(
-            ruoloOriginale,
-            nomeRuoloEsteso
-          ),
+          ruoloPartita.sigla,
 
         ruoloEsteso:
-          codiceRuolo
-            ? NOMI_RUOLI_FORMAZIONE[codiceRuolo]
+          ruoloPartita.codice
+            ? NOMI_RUOLI_FORMAZIONE[
+                ruoloPartita.codice
+              ]
             : null,
 
         ruoloESPN:
-          ruoloOriginale,
+          ruoloPartita.abbr,
 
         titolare
 
@@ -4498,19 +4797,10 @@ allenatore:
           giocatore,
 
           indice:
-            codiceRuolo
-              ? ORDINE_RUOLI_FORMAZIONE.indexOf(
-                  codiceRuolo
-                )
-              : 99,
+            ruoloPartita.indice,
 
           lato:
-            latoRuoloFormazione(
-              p?.position?.abbreviation ||
-              atleta?.position?.abbreviation ||
-              null,
-              nomeRuoloEsteso
-            ),
+            ruoloPartita.lato,
 
           posto:
             Number(p?.formationPlace) || 99
@@ -4524,12 +4814,15 @@ allenatore:
           giocatore,
 
           reparto:
-            repartoRuoloFormazione(
-              atleta?.position?.abbreviation ||
-              null,
-              atleta?.position?.displayName ||
-              null
-            )
+            ruoloPartita.indice === 99
+              ? 9
+              : ruoloPartita.indice === 0
+                ? 0
+                : ruoloPartita.indice <= 5
+                  ? 1
+                  : ruoloPartita.indice <= 10
+                    ? 2
+                    : 3
 
         });
 
@@ -5184,6 +5477,94 @@ function trovaMVP(data) {
   }
 
   return null;
+}
+
+
+/* ============================================================
+   DEBUG FORMAZIONI
+
+   Si attiva aggiungendo &debug=1 all'URL.
+   Mostra come ESPN scrive davvero i ruoli.
+============================================================ */
+
+function creaDebugFormazioni(data) {
+
+  const rosters =
+    data?.rosters ||
+    data?.lineups ||
+    [];
+
+  if (!Array.isArray(rosters)) {
+    return [];
+  }
+
+  return rosters.map(function (r) {
+
+    const giocatori =
+      Array.isArray(r?.roster)
+        ? r.roster
+        : Array.isArray(r?.athletes)
+          ? r.athletes
+          : [];
+
+    return {
+
+      squadra:
+        r?.team?.displayName ||
+        null,
+
+      homeAway:
+        r?.homeAway ||
+        null,
+
+      modulo:
+        r?.formation ||
+        null,
+
+      chiaviRoster:
+        Object.keys(r || {}),
+
+      esempi:
+        giocatori
+          .slice(0, 12)
+          .map(function (p) {
+
+            const copia =
+              Object.assign({}, p);
+
+            delete copia.stats;
+            delete copia.links;
+
+            copia.chiaviGiocatore =
+              Object.keys(p || {});
+
+            if (p?.athlete) {
+
+              copia.athlete = {
+
+                displayName:
+                  p.athlete.displayName ||
+                  null,
+
+                position:
+                  p.athlete.position ||
+                  null,
+
+                chiaviAtleta:
+                  Object.keys(p.athlete)
+
+              };
+
+            }
+
+            return copia;
+
+          })
+
+    };
+
+  });
+
 }
 
 
@@ -5981,6 +6362,12 @@ async function handler(
 
       formazioni:
         formazioni,
+
+
+      debugFormazioni:
+        req.query.debug === "1"
+          ? creaDebugFormazioni(data)
+          : undefined,
 
 
       /* ======================================================
