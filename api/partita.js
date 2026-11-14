@@ -3848,65 +3848,72 @@ function creaStatistiche(data) {
 /* ============================================================
    FORMAZIONI
 
-   ORDINE DEI RUOLI (dal portiere all'attacco,
-   da sinistra a destra):
+   SIGLE DEI RUOLI:
 
-   1.  P    Portiere
-   2.  ASA  Ala sinistra arretrata (esterno sinistro a tutta fascia)
-   3.  TS   Terzino sinistro
-   4.  DC   Difensore centrale
-   5.  TD   Terzino destro
-   6.  ADA  Ala destra arretrata (esterno destro a tutta fascia)
-   7.  CDC  Centrocampista difensivo centrale
-   8.  CC   Centrocampista centrale
-   9.  ES   Esterno sinistro
-   10. COC  Centrocampista offensivo centrale
-   11. ED   Esterno destro
-   12. AT   Attaccante trequartista (seconda punta)
-   13. AS   Ala sinistra (attacco)
-   14. ATT  Attaccante centrale
-   15. AD   Ala destra (attacco)
+   PT   Portiere
+   DD   Difensore destro (terzino destro)
+   DC   Difensore centrale
+   DS   Difensore sinistro (terzino sinistro)
+   ADA  Ala destra arretrata (esterno destro a tutta fascia)
+   ASA  Ala sinistra arretrata (esterno sinistro a tutta fascia)
+   CDC  Centrocampista difensivo centrale
+   CC   Centrocampista centrale
+   ED   Esterno destro
+   ES   Esterno sinistro
+   COC  Centrocampista offensivo centrale
+   CDA  Ala destra avanzata
+   CSA  Ala sinistra avanzata
+   ATT  Attaccante
 
-   ATTENZIONE: AS / AD (attacco) sono DIVERSI da
-   ASA / ADA (difesa).
+   Nel nome del giocatore le formazioni scrivono "SIGLA: Nome"
+   (es. "PT: J. Butez").
+
+   I MODULI e i ruoli che esistono in ognuno sono nella tabella
+   MODULI_RUOLI: ogni ruolo del modulo viene assegnato a un solo
+   giocatore, quindi non possono esserci due giocatori sulla
+   stessa posizione (es. due difensori destri).
 ============================================================ */
+
+/*
+Ordine di riserva dei ruoli (usato solo quando il modulo non
+è riconosciuto): portiere, difesa, centrocampo, attacco.
+"P" è il codice interno del portiere (la sigla scritta è PT).
+*/
 
 const ORDINE_RUOLI_FORMAZIONE = [
   "P",
-  "ASA",
-  "TS",
+  "DD",
   "DC",
-  "TD",
+  "DS",
   "ADA",
+  "ASA",
   "CDC",
   "CC",
-  "ES",
-  "COC",
   "ED",
-  "AT",
-  "AS",
+  "COC",
+  "ES",
+  "CDA",
   "ATT",
-  "AD"
+  "CSA"
 ];
 
 
 const NOMI_RUOLI_FORMAZIONE = {
 
   P: "Portiere",
-  ASA: "Ala sinistra arretrata",
-  TS: "Terzino sinistro",
+  DD: "Difensore destro",
   DC: "Difensore centrale",
-  TD: "Terzino destro",
+  DS: "Difensore sinistro",
   ADA: "Ala destra arretrata",
+  ASA: "Ala sinistra arretrata",
   CDC: "Centrocampista difensivo centrale",
   CC: "Centrocampista centrale",
+  ED: "Esterno destro",
   ES: "Esterno sinistro",
   COC: "Centrocampista offensivo centrale",
-  ED: "Esterno destro",
-  AT: "Attaccante trequartista",
-  AS: "Ala sinistra",
-  ATT: "Attaccante",
-  AD: "Ala destra"
+  CDA: "Ala destra avanzata",
+  CSA: "Ala sinistra avanzata",
+  ATT: "Attaccante"
 
 };
 
@@ -3922,8 +3929,8 @@ const RUOLI_ESPN_A_CODICE = {
   GK: "P",
 
   // DIFESA
-  LWB: "ASA",
-  LB: "TS",
+  RB: "DD",
+  LB: "DS",
   CD: "DC",
   "CD-L": "DC",
   "CD-R": "DC",
@@ -3931,8 +3938,8 @@ const RUOLI_ESPN_A_CODICE = {
   LCB: "DC",
   RCB: "DC",
   SW: "DC",
-  RB: "TD",
   RWB: "ADA",
+  LWB: "ASA",
 
   // CENTROCAMPO
   DM: "CDC",
@@ -3942,25 +3949,25 @@ const RUOLI_ESPN_A_CODICE = {
   CM: "CC",
   "CM-L": "CC",
   "CM-R": "CC",
+  RM: "ED",
+  "AM-R": "ED",
   LM: "ES",
   "AM-L": "ES",
   AM: "COC",
   CAM: "COC",
-  RM: "ED",
-  "AM-R": "ED",
+  SS: "COC",
 
   // ATTACCO
-  SS: "AT",
-  LW: "AS",
-  LF: "AS",
+  RW: "CDA",
+  RF: "CDA",
+  LW: "CSA",
+  LF: "CSA",
   CF: "ATT",
   "CF-L": "ATT",
   "CF-R": "ATT",
   F: "ATT",
   FW: "ATT",
-  ST: "ATT",
-  RF: "AD",
-  RW: "AD"
+  ST: "ATT"
 
 };
 
@@ -4013,7 +4020,7 @@ function codiceRuoloFormazione(abbreviazione, nomeEsteso) {
   }
 
   if (n.includes("back") && !centro) {
-    return sx ? "TS" : dx ? "TD" : "DC";
+    return sx ? "DS" : dx ? "DD" : "DC";
   }
 
   if (
@@ -4028,7 +4035,7 @@ function codiceRuoloFormazione(abbreviazione, nomeEsteso) {
   }
 
   if (n.includes("second striker")) {
-    return "AT";
+    return "COC";
   }
 
   if (n.includes("attacking mid")) {
@@ -4050,7 +4057,7 @@ function codiceRuoloFormazione(abbreviazione, nomeEsteso) {
   }
 
   if (n.includes("winger")) {
-    return sx ? "AS" : dx ? "AD" : "ATT";
+    return sx ? "CSA" : dx ? "CDA" : "ATT";
   }
 
   if (
@@ -4060,9 +4067,9 @@ function codiceRuoloFormazione(abbreviazione, nomeEsteso) {
     return centro
       ? "ATT"
       : sx
-        ? "AS"
+        ? "CSA"
         : dx
-          ? "AD"
+          ? "CDA"
           : "ATT";
   }
 
@@ -4073,8 +4080,7 @@ function codiceRuoloFormazione(abbreviazione, nomeEsteso) {
 
 /*
 Lato (sinistra = -1, centro = 0, destra = 1),
-usato per ordinare giocatori con lo stesso ruolo
-(es. CD-L prima di CD-R).
+letto dal suffisso ESPN (-L / -R) o dal nome esteso.
 */
 
 function latoRuoloFormazione(abbreviazione, nomeEsteso) {
@@ -4152,7 +4158,7 @@ function repartoRuoloFormazione(abbreviazione, nomeEsteso) {
 /*
 SIGLA VISIBILE:
 il portiere si scrive "PT"; tutte le altre sigle
-coincidono con il codice (TS, DC, COC, ATT, ...).
+coincidono con il codice (DD, DC, COC, ATT, ...).
 */
 
 function siglaVisibileRuolo(codice) {
@@ -4269,8 +4275,8 @@ function candidatiRuoloPartita(p, atleta) {
 Ruolo del giocatore in questa partita.
 
 Restituisce:
-  codice : codice interno (P, TS, DC, ...) oppure null
-  sigla  : sigla da scrivere davanti al nome (PT, TS, ...)
+  codice : codice interno (P, DD, DC, ...) oppure null
+  sigla  : sigla da scrivere davanti al nome (PT, DD, ...)
   abbr   : abbreviazione originale ESPN
   indice : posizione nell'ordine dei ruoli
   lato   : -1 sinistra, 0 centro, 1 destra
@@ -4450,45 +4456,258 @@ function trovaRuoloPartita(p, atleta) {
 
 
 /* ============================================================
+   TABELLA DEI MODULI E DEI RUOLI
+
+   Per ogni modulo: le righe (difesa - centrocampo - attacco)
+   e i 10 ruoli di movimento, scritti da destra verso sinistra
+   (il portiere PT è sempre presente e non è nell'elenco).
+============================================================ */
+
+const MODULI_RUOLI = [
+
+  /* ---------- DIFESA A 4 ---------- */
+
+  {
+    nome: "4-4-2 Classico",
+    righe: [4, 4, 2],
+    ruoli: ["DD", "DC", "DC", "DS", "ED", "CC", "CC", "ES", "ATT", "ATT"]
+  },
+
+  {
+    nome: "4-4-2 a Rombo (4-1-2-1-2)",
+    righe: [4, 1, 2, 1, 2],
+    ruoli: ["DD", "DC", "DC", "DS", "CDC", "CC", "CC", "COC", "ATT", "ATT"]
+  },
+
+  {
+    nome: "4-3-3 Classico",
+    righe: [4, 3, 3],
+    ruoli: ["DD", "DC", "DC", "DS", "CC", "CDC", "CC", "CDA", "ATT", "CSA"]
+  },
+
+  {
+    nome: "4-3-3 Falso Nueve",
+    righe: [4, 3, 3],
+    ruoli: ["DD", "DC", "DC", "DS", "CC", "CDC", "CC", "CDA", "COC", "CSA"]
+  },
+
+  {
+    nome: "4-3-3 Offensivo",
+    righe: [4, 3, 3],
+    ruoli: ["DD", "DC", "DC", "DS", "CC", "CC", "COC", "CDA", "ATT", "CSA"]
+  },
+
+  {
+    nome: "4-3-3 Difensivo (Doppio Mediano)",
+    righe: [4, 3, 3],
+    ruoli: ["DD", "DC", "DC", "DS", "CDC", "CDC", "CC", "CDA", "ATT", "CSA"]
+  },
+
+  {
+    nome: "4-2-3-1 Classico",
+    righe: [4, 2, 3, 1],
+    ruoli: ["DD", "DC", "DC", "DS", "CDC", "CDC", "ED", "COC", "ES", "ATT"]
+  },
+
+  {
+    nome: "4-2-3-1 Stretto",
+    righe: [4, 2, 3, 1],
+    ruoli: ["DD", "DC", "DC", "DS", "CDC", "CDC", "COC", "COC", "COC", "ATT"]
+  },
+
+  {
+    nome: "4-3-1-2",
+    righe: [4, 3, 1, 2],
+    ruoli: ["DD", "DC", "DC", "DS", "CC", "CDC", "CC", "COC", "ATT", "ATT"]
+  },
+
+  {
+    nome: "4-3-2-1 (Albero di Natale)",
+    righe: [4, 3, 2, 1],
+    ruoli: ["DD", "DC", "DC", "DS", "CC", "CDC", "CC", "COC", "COC", "ATT"]
+  },
+
+  {
+    nome: "4-1-4-1",
+    righe: [4, 1, 4, 1],
+    ruoli: ["DD", "DC", "DC", "DS", "CDC", "ED", "CC", "CC", "ES", "ATT"]
+  },
+
+  {
+    nome: "4-5-1 Classico",
+    righe: [4, 5, 1],
+    ruoli: ["DD", "DC", "DC", "DS", "ED", "CC", "CDC", "CC", "ES", "ATT"]
+  },
+
+  {
+    nome: "4-2-2-2",
+    righe: [4, 2, 2, 2],
+    ruoli: ["DD", "DC", "DC", "DS", "CDC", "CDC", "COC", "COC", "ATT", "ATT"]
+  },
+
+  {
+    nome: "4-2-4",
+    righe: [4, 2, 4],
+    ruoli: ["DD", "DC", "DC", "DS", "CC", "CC", "CDA", "ATT", "ATT", "CSA"]
+  },
+
+  /* ---------- DIFESA A 3 ---------- */
+
+  {
+    nome: "3-5-2 Classico",
+    righe: [3, 5, 2],
+    ruoli: ["DC", "DC", "DC", "ADA", "CC", "CDC", "CC", "ASA", "ATT", "ATT"]
+  },
+
+  {
+    nome: "3-5-2 Offensivo",
+    righe: [3, 5, 2],
+    ruoli: ["DC", "DC", "DC", "ADA", "CC", "CC", "COC", "ASA", "ATT", "ATT"]
+  },
+
+  {
+    nome: "3-5-1-1",
+    righe: [3, 5, 1, 1],
+    ruoli: ["DC", "DC", "DC", "ADA", "CC", "CDC", "CC", "ASA", "COC", "ATT"]
+  },
+
+  {
+    nome: "3-4-3 Classico",
+    righe: [3, 4, 3],
+    ruoli: ["DC", "DC", "DC", "ED", "CC", "CC", "ES", "CDA", "ATT", "CSA"]
+  },
+
+  {
+    nome: "3-4-3 Stretto",
+    righe: [3, 4, 3],
+    ruoli: ["DC", "DC", "DC", "ED", "CC", "CC", "ES", "COC", "COC", "ATT"]
+  },
+
+  {
+    nome: "3-4-1-2",
+    righe: [3, 4, 1, 2],
+    ruoli: ["DC", "DC", "DC", "ED", "CC", "CC", "ES", "COC", "ATT", "ATT"]
+  },
+
+  {
+    nome: "3-4-2-1",
+    righe: [3, 4, 2, 1],
+    ruoli: ["DC", "DC", "DC", "ED", "CC", "CC", "ES", "COC", "COC", "ATT"]
+  },
+
+  {
+    nome: "3-1-4-2",
+    righe: [3, 1, 4, 2],
+    ruoli: ["DC", "DC", "DC", "CDC", "ED", "CC", "CC", "ES", "ATT", "ATT"]
+  },
+
+  {
+    nome: "3-3-3-1 (Bielsista)",
+    righe: [3, 3, 3, 1],
+    ruoli: ["DC", "DC", "DC", "CDC", "CC", "CC", "COC", "CDA", "CSA", "ATT"]
+  },
+
+  /* ---------- DIFESA A 5 ---------- */
+
+  {
+    nome: "5-3-2 Classico",
+    righe: [5, 3, 2],
+    ruoli: ["ADA", "DC", "DC", "DC", "ASA", "CC", "CDC", "CC", "ATT", "ATT"]
+  },
+
+  {
+    nome: "5-3-2 Offensivo",
+    righe: [5, 3, 2],
+    ruoli: ["ADA", "DC", "DC", "DC", "ASA", "CC", "CC", "COC", "ATT", "ATT"]
+  },
+
+  {
+    nome: "5-2-1-2",
+    righe: [5, 2, 1, 2],
+    ruoli: ["ADA", "DC", "DC", "DC", "ASA", "CC", "CC", "COC", "ATT", "ATT"]
+  },
+
+  {
+    nome: "5-2-3 (5-2-1-2 Variante)",
+    righe: [5, 2, 3],
+    ruoli: ["ADA", "DC", "DC", "DC", "ASA", "CC", "CC", "CDA", "ATT", "CSA"]
+  },
+
+  {
+    nome: "5-4-1 Classico (Catenaccio)",
+    righe: [5, 4, 1],
+    ruoli: ["ADA", "DC", "DC", "DC", "ASA", "ED", "CC", "CC", "ES", "ATT"]
+  },
+
+  {
+    nome: "5-4-1 a Diamante",
+    righe: [5, 4, 1],
+    ruoli: ["ADA", "DC", "DC", "DC", "ASA", "CDC", "CC", "CC", "COC", "ATT"]
+  },
+
+  {
+    nome: "5-1-3-1",
+    righe: [5, 1, 3, 1],
+    ruoli: ["ADA", "DC", "DC", "DC", "ASA", "CDC", "ED", "COC", "ES", "ATT"]
+  }
+
+];
+
+
+/* ============================================================
    ASSEGNAZIONE RUOLI DAL MODULO
 
    Il ruolo scritto da ESPN per ogni giocatore può essere quello
    "abituale" e non quello usato in quella partita: per questo
-   due giocatori potrebbero risultare sulla stessa posizione
-   (es. due terzini destri).
+   due giocatori potrebbero risultare sulla stessa posizione.
 
-   SOLUZIONE:
-   1. dal modulo (es. 4-2-3-1) si costruisce l'elenco dei ruoli
-      che devono esistere in campo (TS, DC, DC, TD, CDC, CDC...);
-   2. ogni giocatore viene abbinato a UN SOLO ruolo, scegliendo
-      l'abbinamento migliore in base agli indizi di ESPN
-      (ruolo scritto, lato sinistro/destro, formationPlace);
-   3. ogni ruolo viene quindi assegnato una volta sola.
+   1. dal modulo (es. 4-3-3) si prendono le varianti della tabella
+      MODULI_RUOLI (Classico, Falso Nueve, Offensivo, ...);
+   2. si sceglie la variante che spiega meglio i ruoli dei giocatori;
+   3. ogni giocatore viene abbinato a UN SOLO ruolo della variante.
 
-   Se il modulo manca o non è valido, vengono usati i ruoli
-   letti direttamente da ESPN (come prima).
+   Se il modulo manca (ad esempio prima dell'inizio della partita)
+   viene riconosciuto dai ruoli dei giocatori. Se non è possibile,
+   vengono usati i ruoli letti direttamente da ESPN.
 ============================================================ */
 
 const FAMIGLIA_RUOLO_FORMAZIONE = {
 
   P: "P",
 
-  ASA: "DIF",
-  TS: "DIF",
+  DD: "DIF",
   DC: "DIF",
-  TD: "DIF",
+  DS: "DIF",
   ADA: "DIF",
+  ASA: "DIF",
 
   CDC: "MED",
   CC: "MED",
+  ED: "MED",
   ES: "MED",
   COC: "MED",
-  ED: "MED",
 
-  AT: "ATT",
-  AS: "ATT",
-  ATT: "ATT",
-  AD: "ATT"
+  CDA: "ATT",
+  CSA: "ATT",
+  ATT: "ATT"
+
+};
+
+
+/*
+Reparti in cui un ruolo può trovarsi:
+le ali arretrate stanno in difesa o a centrocampo,
+le ali avanzate e il COC a centrocampo o in attacco.
+*/
+
+const FAMIGLIE_COMPATIBILI_FORMAZIONE = {
+
+  ADA: ["DIF", "MED"],
+  ASA: ["DIF", "MED"],
+
+  CDA: ["MED", "ATT"],
+  CSA: ["MED", "ATT"],
+  COC: ["MED", "ATT"]
 
 };
 
@@ -4502,24 +4721,26 @@ const PROFONDITA_RUOLO_FORMAZIONE = {
 
   P: 0,
 
-  ASA: 1,
-  TS: 1,
+  DD: 1,
   DC: 1,
-  TD: 1,
-  ADA: 1,
+  DS: 1,
+
+  ADA: 1.5,
+  ASA: 1.5,
 
   CDC: 2,
 
   CC: 3,
-  ES: 3,
-  ED: 3,
+
+  ED: 3.4,
+  ES: 3.4,
 
   COC: 4,
-  AT: 4.5,
 
-  AS: 5,
-  ATT: 5,
-  AD: 5
+  CDA: 4.6,
+  CSA: 4.6,
+
+  ATT: 5
 
 };
 
@@ -4531,15 +4752,15 @@ I ruoli centrali non sono qui (valgono 0).
 
 const LATO_RUOLO_FORMAZIONE = {
 
+  DS: -1,
   ASA: -1,
-  TS: -1,
   ES: -1,
-  AS: -1,
+  CSA: -1,
 
-  TD: 1,
+  DD: 1,
   ADA: 1,
   ED: 1,
-  AD: 1
+  CDA: 1
 
 };
 
@@ -4547,29 +4768,29 @@ const LATO_RUOLO_FORMAZIONE = {
 /*
 SCHEMI "formationPlace" -> ruolo per i moduli più usati.
 Vengono usati SOLO per i giocatori per cui ESPN non scrive un
-ruolo preciso (es. solo "M"): il ruolo scritto da ESPN, quando
-è preciso, ha sempre la precedenza.
+ruolo preciso (es. solo "M") e come aiuto nei pareggi: il ruolo
+scritto da ESPN, quando è preciso, ha sempre la precedenza.
 */
 
 const SCHEMI_FORMATION_PLACE = {
 
   "4-4-2": {
     1: "P",
-    2: "TD", 5: "DC", 6: "DC", 3: "TS",
+    2: "DD", 5: "DC", 6: "DC", 3: "DS",
     7: "ED", 4: "CC", 8: "CC", 11: "ES",
     9: "ATT", 10: "ATT"
   },
 
   "4-3-3": {
     1: "P",
-    2: "TD", 5: "DC", 6: "DC", 3: "TS",
+    2: "DD", 5: "DC", 6: "DC", 3: "DS",
     4: "CDC", 8: "CC", 10: "CC",
-    7: "AD", 9: "ATT", 11: "AS"
+    7: "CDA", 9: "ATT", 11: "CSA"
   },
 
   "4-2-3-1": {
     1: "P",
-    2: "TD", 5: "DC", 6: "DC", 3: "TS",
+    2: "DD", 5: "DC", 6: "DC", 3: "DS",
     4: "CDC", 8: "CDC",
     7: "ED", 10: "COC", 11: "ES",
     9: "ATT"
@@ -4577,7 +4798,7 @@ const SCHEMI_FORMATION_PLACE = {
 
   "4-1-4-1": {
     1: "P",
-    2: "TD", 5: "DC", 6: "DC", 3: "TS",
+    2: "DD", 5: "DC", 6: "DC", 3: "DS",
     4: "CDC",
     7: "ED", 8: "CC", 10: "CC", 11: "ES",
     9: "ATT"
@@ -4589,7 +4810,7 @@ const SCHEMI_FORMATION_PLACE = {
 /*
 "4-2-3-1" oppure "4231" -> [4, 2, 3, 1]
 Restituisce null se il modulo non è valido
-(devono esserci almeno 3 righe per 10 giocatori di movimento).
+(la somma deve essere 10, i giocatori di movimento).
 */
 
 function righeDaModulo(modulo) {
@@ -4651,222 +4872,241 @@ function righeDaModulo(modulo) {
 }
 
 
-/* ------------------------------------------------------------
-   RUOLI DI OGNI RIGA DEL MODULO (da sinistra a destra)
------------------------------------------------------------- */
+function stesseRighe(a, b) {
 
-function ruoliRigaDifesa(n, c) {
-
-  if (n <= 3) {
-    return new Array(n).fill("DC");
+  if (a.length !== b.length) {
+    return false;
   }
 
-  if (n === 4) {
+  for (let i = 0; i < a.length; i++) {
 
-    const aliArretrate =
-      (c.ASA || 0) >= 1 &&
-      (c.ADA || 0) >= 1;
-
-    return aliArretrate
-      ? ["ASA", "DC", "DC", "ADA"]
-      : ["TS", "DC", "DC", "TD"];
+    if (a[i] !== b[i]) {
+      return false;
+    }
 
   }
 
-  if (n === 5) {
-
-    const terzini =
-      (c.TS || 0) + (c.TD || 0) >= 2 &&
-      (c.ASA || 0) + (c.ADA || 0) === 0;
-
-    return terzini
-      ? ["TS", "DC", "DC", "DC", "TD"]
-      : ["ASA", "DC", "DC", "DC", "ADA"];
-
-  }
-
-  return new Array(n).fill("DC");
+  return true;
 
 }
 
 
-function ruoliRigaCentrocampo(n, indiceRiga, numeroRighe, difensori, c) {
+/* ------------------------------------------------------------
+   MODULO NON PRESENTE IN TABELLA: ruoli generici
+   (da destra verso sinistra)
+------------------------------------------------------------ */
 
-  const prima = indiceRiga === 0;
-  const ultima = indiceRiga === numeroRighe - 1;
-  const piuRighe = numeroRighe > 1;
+function ruoliGenericiPerModulo(righe, c) {
 
+  const ruoli = [];
+
+  const numeroRighe = righe.length - 2;
+
+  // ---- difesa ----
+  const d = righe[0];
+
+  if (d <= 3) {
+
+    for (let i = 0; i < d; i++) {
+      ruoli.push("DC");
+    }
+
+  } else if (d === 4) {
+
+    const ali =
+      (c.ASA || 0) >= 1 &&
+      (c.ADA || 0) >= 1;
+
+    ruoli.push(
+      ...(
+        ali
+          ? ["ADA", "DC", "DC", "ASA"]
+          : ["DD", "DC", "DC", "DS"]
+      )
+    );
+
+  } else if (d === 5) {
+
+    const terzini =
+      (c.DD || 0) + (c.DS || 0) >= 2 &&
+      (c.ASA || 0) + (c.ADA || 0) === 0;
+
+    ruoli.push(
+      ...(
+        terzini
+          ? ["DD", "DC", "DC", "DC", "DS"]
+          : ["ADA", "DC", "DC", "DC", "ASA"]
+      )
+    );
+
+  } else {
+
+    for (let i = 0; i < d; i++) {
+      ruoli.push("DC");
+    }
+
+  }
+
+  // ---- centrocampo ----
   const centro5 =
     (c.CDC || 0) >= 1
       ? "CDC"
       : "CC";
 
-  // Difesa a 3: gli esterni a tutta fascia stanno nella prima
-  // riga di centrocampo (3-5-2, 3-4-3, 3-4-1-2, ...)
-  if (
-    difensori === 3 &&
-    prima &&
-    (n === 4 || n === 5)
-  ) {
+  for (let i = 1; i <= numeroRighe; i++) {
 
-    return n === 5
-      ? ["ASA", "CC", centro5, "CC", "ADA"]
-      : ["ASA", "CC", "CC", "ADA"];
+    const n = righe[i];
+    const prima = i === 1;
+    const ultima = i === numeroRighe;
+    const piuRighe = numeroRighe > 1;
 
-  }
+    if (n === 1) {
 
-  if (n === 1) {
+      ruoli.push(
+        (!piuRighe || prima)
+          ? "CDC"
+          : ultima
+            ? "COC"
+            : "CC"
+      );
 
-    if (!piuRighe || prima) {
-      return ["CDC"];
+    } else if (n === 2) {
+
+      if (piuRighe && prima) {
+
+        ruoli.push("CDC", "CDC");
+
+      } else if (piuRighe && ultima) {
+
+        ruoli.push(
+          ...(
+            (c.ED || 0) >= 1 &&
+            (c.ES || 0) >= 1
+              ? ["ED", "ES"]
+              : ["COC", "COC"]
+          )
+        );
+
+      } else {
+
+        ruoli.push("CC", "CC");
+
+      }
+
+    } else if (n === 3) {
+
+      if (piuRighe && ultima) {
+
+        ruoli.push("ED", "COC", "ES");
+
+      } else {
+
+        ruoli.push(
+          "CC",
+          (c.CDC || 0) >= 1 ? "CDC" : "CC",
+          "CC"
+        );
+
+      }
+
+    } else if (n === 4) {
+
+      ruoli.push("ED", "CC", "CC", "ES");
+
+    } else if (n === 5) {
+
+      ruoli.push(
+        ...(
+          d === 3 && prima
+            ? ["ADA", "CC", centro5, "CC", "ASA"]
+            : ["ED", "CC", centro5, "CC", "ES"]
+        )
+      );
+
+    } else {
+
+      for (let j = 0; j < n; j++) {
+        ruoli.push("CC");
+      }
+
     }
 
-    if (ultima) {
-      return ["COC"];
+  }
+
+  // ---- attacco ----
+  const a = righe[righe.length - 1];
+
+  if (a === 1) {
+
+    ruoli.push("ATT");
+
+  } else if (a === 2) {
+
+    ruoli.push("ATT", "ATT");
+
+  } else if (a === 3) {
+
+    ruoli.push("CDA", "ATT", "CSA");
+
+  } else if (a === 4) {
+
+    ruoli.push("CDA", "ATT", "ATT", "CSA");
+
+  } else {
+
+    for (let j = 0; j < a; j++) {
+      ruoli.push("ATT");
     }
 
-    return ["CC"];
-
   }
 
-  if (n === 2) {
-
-    if (piuRighe && prima) {
-      return ["CDC", "CDC"];
-    }
-
-    if (piuRighe && ultima) {
-
-      return (
-        (c.ES || 0) >= 1 &&
-        (c.ED || 0) >= 1
-      )
-        ? ["ES", "ED"]
-        : ["COC", "COC"];
-
-    }
-
-    return ["CC", "CC"];
-
-  }
-
-  if (n === 3) {
-
-    if (piuRighe && ultima) {
-      return ["ES", "COC", "ED"];
-    }
-
-    return (c.CDC || 0) >= 1
-      ? ["CC", "CDC", "CC"]
-      : ["CC", "CC", "CC"];
-
-  }
-
-  if (n === 4) {
-    return ["ES", "CC", "CC", "ED"];
-  }
-
-  if (n === 5) {
-    return ["ES", "CC", centro5, "CC", "ED"];
-  }
-
-  return new Array(n).fill("CC");
-
-}
-
-
-function ruoliRigaAttacco(n, c) {
-
-  if (n === 1) {
-    return ["ATT"];
-  }
-
-  if (n === 2) {
-
-    return (c.AT || 0) >= 1
-      ? ["AT", "ATT"]
-      : ["ATT", "ATT"];
-
-  }
-
-  if (n === 3) {
-    return ["AS", "ATT", "AD"];
-  }
-
-  if (n === 4) {
-    return ["AS", "ATT", "ATT", "AD"];
-  }
-
-  return new Array(n).fill("ATT");
+  return ruoli;
 
 }
 
 
 /*
-Elenco dei 10 "posti" di movimento del modulo:
-ognuno ha ruolo, famiglia (DIF/MED/ATT) e lato (-1 ... +1).
+Trasforma righe + ruoli in 10 "posti":
+ognuno ha ruolo, reparto della riga e lato naturale.
 */
 
-function postiDelModulo(righe, conteggi) {
-
-  const numeroRighe = righe.length - 2;
-
-  const linee = [];
-
-  linee.push({
-    famiglia: "DIF",
-    ruoli: ruoliRigaDifesa(righe[0], conteggi)
-  });
-
-  for (let i = 1; i <= numeroRighe; i++) {
-
-    linee.push({
-      famiglia: "MED",
-      ruoli: ruoliRigaCentrocampo(
-        righe[i],
-        i - 1,
-        numeroRighe,
-        righe[0],
-        conteggi
-      )
-    });
-
-  }
-
-  linee.push({
-    famiglia: "ATT",
-    ruoli: ruoliRigaAttacco(
-      righe[righe.length - 1],
-      conteggi
-    )
-  });
+function postiDaRuoli(righe, ruoli) {
 
   const posti = [];
 
-  linee.forEach(function (linea, indiceLinea) {
+  let k = 0;
 
-    const n = linea.ruoli.length;
+  righe.forEach(function (n, indiceRiga) {
 
-    linea.ruoli.forEach(function (codice, i) {
+    const famiglia =
+      indiceRiga === 0
+        ? "DIF"
+        : indiceRiga === righe.length - 1
+          ? "ATT"
+          : "MED";
+
+    for (let j = 0; j < n; j++) {
+
+      const codice = ruoli[k];
 
       posti.push({
 
         codice,
 
-        famiglia:
-          linea.famiglia,
+        famiglia,
 
         lato:
-          n === 1
-            ? 0
-            : (i - (n - 1) / 2) / ((n - 1) / 2),
+          LATO_RUOLO_FORMAZIONE[codice] !== undefined
+            ? LATO_RUOLO_FORMAZIONE[codice]
+            : 0,
 
-        linea:
-          indiceLinea
+        indiceSlot: k
 
       });
 
-    });
+      k++;
+
+    }
 
   });
 
@@ -4981,21 +5221,14 @@ function costoPosto(profilo, posto) {
     return 2;
   }
 
-  const aliArretrate =
-    profilo.codice === "ASA" ||
-    profilo.codice === "ADA";
-
-  const famigliaCompatibile =
-    profilo.famiglia === posto.famiglia ||
+  const famiglieOk =
     (
-      aliArretrate &&
-      (
-        posto.famiglia === "DIF" ||
-        posto.famiglia === "MED"
-      )
-    );
+      profilo.codice &&
+      FAMIGLIE_COMPATIBILI_FORMAZIONE[profilo.codice]
+    ) ||
+    [profilo.famiglia];
 
-  if (!famigliaCompatibile) {
+  if (!famiglieOk.includes(posto.famiglia)) {
     return 6;
   }
 
@@ -5055,108 +5288,122 @@ function costoPosto(profilo, posto) {
 
 
 /*
-Moduli che il sistema sa riconoscere quando ESPN non scrive
-(ancora) il modulo, ad esempio prima dell'inizio della partita.
+Profili (indizi) dei giocatori di movimento.
+Se schema è null, contano solo i ruoli precisi di ESPN.
 */
 
-const MODULI_CANDIDATI = [
+function profiliGiocatori(titolari, indiciMovimento, schema) {
 
-  [4, 4, 2],
-  [4, 3, 3],
-  [4, 2, 3, 1],
-  [3, 5, 2],
-  [4, 1, 4, 1],
-  [4, 5, 1],
-  [5, 3, 2],
-  [3, 4, 3],
-  [4, 4, 1, 1],
-  [4, 3, 2, 1],
-  [4, 1, 2, 1, 2],
-  [4, 2, 2, 2],
-  [3, 4, 1, 2],
-  [3, 4, 2, 1],
-  [3, 1, 4, 2],
-  [5, 4, 1],
-  [4, 3, 1, 2]
+  return indiciMovimento.map(function (i) {
 
-];
-
-
-/*
-Se ESPN non fornisce il modulo, cerca quello che spiega meglio
-i ruoli dei giocatori (es. DM, DM, AM-L, AM, AM-R -> 4-2-3-1).
-Restituisce null se non è abbastanza sicuro.
-*/
-
-function dedurreRigheDaRuoli(titolari, indicePortiere) {
-
-  const profili = [];
-
-  titolari.forEach(function (t, i) {
-
-    if (i === indicePortiere) {
-      return;
-    }
-
+    const t = titolari[i];
     const rp = t.ruoloPartita;
 
-    const codice =
+    let codice =
       rp.preciso &&
       rp.codice &&
       rp.codice !== "P"
         ? rp.codice
         : null;
 
-    if (!codice) {
-      return;
+    if (
+      !codice &&
+      schema &&
+      schema[t.posto] &&
+      schema[t.posto] !== "P"
+    ) {
+      codice = schema[t.posto];
     }
 
-    profili.push({
+    let famiglia = null;
+
+    if (codice) {
+
+      famiglia =
+        FAMIGLIA_RUOLO_FORMAZIONE[codice];
+
+    } else if (rp.sigla === "D") {
+
+      famiglia = "DIF";
+
+    } else if (rp.sigla === "C") {
+
+      famiglia = "MED";
+
+    } else if (rp.sigla === "A") {
+
+      famiglia = "ATT";
+
+    }
+
+    let lato = null;
+
+    if (codice) {
+
+      lato =
+        LATO_RUOLO_FORMAZIONE[codice] !== undefined
+          ? LATO_RUOLO_FORMAZIONE[codice]
+          : (rp.lato || 0) * 0.5;
+
+    }
+
+    return {
 
       codice,
 
-      famiglia:
-        FAMIGLIA_RUOLO_FORMAZIONE[codice],
+      famiglia,
 
-      lato:
-        LATO_RUOLO_FORMAZIONE[codice] !== undefined
-          ? LATO_RUOLO_FORMAZIONE[codice]
-          : (rp.lato || 0) * 0.5,
+      lato,
 
       posto: t.posto,
 
-      schema: null
+      schema:
+        (
+          schema &&
+          schema[t.posto] &&
+          schema[t.posto] !== "P"
+        )
+          ? schema[t.posto]
+          : null
 
-    });
-
-  });
-
-  if (profili.length < 8) {
-    return null;
-  }
-
-  const conteggi = {};
-
-  profili.forEach(function (pr) {
-
-    conteggi[pr.codice] =
-      (conteggi[pr.codice] || 0) + 1;
+    };
 
   });
+
+}
+
+
+/*
+Tra le varianti date, sceglie quella con il costo totale minore.
+Restituisce { variante, posti, abbinamento, costo }.
+*/
+
+function scegliVariante(varianti, profili) {
 
   let migliore = null;
-  let costoMigliore = Infinity;
 
-  for (const righe of MODULI_CANDIDATI) {
+  for (const variante of varianti) {
 
     const posti =
-      postiDelModulo(righe, conteggi);
+      postiDaRuoli(
+        variante.righe,
+        variante.ruoli
+      );
+
+    if (posti.length !== 10) {
+      continue;
+    }
 
     const costi =
       profili.map(function (pr) {
 
         return posti.map(function (po) {
-          return costoPosto(pr, po);
+
+          return (
+            costoPosto(pr, po) +
+            (Number(pr.posto) || 99) * 0.0001
+          );
+
         });
 
       });
@@ -5172,27 +5419,49 @@ function dedurreRigheDaRuoli(titolari, indicePortiere) {
       continue;
     }
 
-    let totale = 0;
+    let costo = 0;
 
     abbinamento.forEach(function (a, k) {
-      totale += costi[k][a];
+      costo += costi[k][a];
     });
 
-    if (totale < costoMigliore - 0.000001) {
+    if (
+      !migliore ||
+      costo < migliore.costo - 0.000001
+    ) {
 
-      costoMigliore = totale;
-
-      migliore = righe;
+      migliore = {
+        variante,
+        posti,
+        abbinamento,
+        costo
+      };
 
     }
 
   }
 
-  if (!migliore || costoMigliore > 1.2) {
-    return null;
-  }
-
   return migliore;
+
+}
+
+
+function contaCodici(profili) {
+
+  const conteggi = {};
+
+  profili.forEach(function (pr) {
+
+    if (pr.codice) {
+
+      conteggi[pr.codice] =
+        (conteggi[pr.codice] || 0) + 1;
+
+    }
+
+  });
+
+  return conteggi;
 
 }
 
@@ -5203,14 +5472,14 @@ Applica ai titolari il ruolo assegnato dal modulo.
 titolari: elenco di oggetti
   { giocatore, cognomeBase, ruoloPartita, posto, indice, lato }
 
-Restituisce true se ha assegnato i ruoli,
-false se non è stato possibile (si tengono i ruoli ESPN).
+Restituisce { nome, righe } della variante usata,
+oppure null se non è stato possibile (si tengono i ruoli ESPN).
 */
 
 function assegnaRuoliDaModulo(titolari, modulo) {
 
   if (titolari.length !== 11) {
-    return false;
+    return null;
   }
 
   // ---- portiere: formationPlace 1, oppure ruolo "P" ----
@@ -5229,33 +5498,8 @@ function assegnaRuoliDaModulo(titolari, modulo) {
   }
 
   if (indicePortiere === -1) {
-    return false;
+    return null;
   }
-
-  /*
-  Modulo scritto da ESPN; se manca (o non è valido)
-  viene dedotto dai ruoli dei giocatori.
-  */
-
-  let righe = righeDaModulo(modulo);
-
-  if (!righe) {
-
-    righe =
-      dedurreRigheDaRuoli(
-        titolari,
-        indicePortiere
-      );
-
-  }
-
-  if (!righe) {
-    return false;
-  }
-
-  const schema =
-    SCHEMI_FORMATION_PLACE[righe.join("-")] ||
-    null;
 
   const indiciMovimento = [];
 
@@ -5267,128 +5511,139 @@ function assegnaRuoliDaModulo(titolari, modulo) {
 
   });
 
-  // ---- indizi di ogni giocatore di movimento ----
-  const profili =
-    indiciMovimento.map(function (i) {
+  const righeModulo =
+    righeDaModulo(modulo);
 
-      const t = titolari[i];
-      const rp = t.ruoloPartita;
+  let scelta = null;
 
-      let codice =
-        rp.preciso &&
-        rp.codice &&
-        rp.codice !== "P"
-          ? rp.codice
-          : null;
+  let profili = null;
 
-      if (
-        !codice &&
-        schema &&
-        schema[t.posto] &&
-        schema[t.posto] !== "P"
-      ) {
-        codice = schema[t.posto];
-      }
+  if (righeModulo) {
 
-      let famiglia = null;
+    // ---------- modulo noto: varianti della tabella ----------
+    const schema =
+      SCHEMI_FORMATION_PLACE[righeModulo.join("-")] ||
+      null;
 
-      if (codice) {
+    profili =
+      profiliGiocatori(
+        titolari,
+        indiciMovimento,
+        schema
+      );
 
-        famiglia =
-          FAMIGLIA_RUOLO_FORMAZIONE[codice];
+    let candidati =
+      MODULI_RUOLI.filter(function (v) {
+        return stesseRighe(v.righe, righeModulo);
+      });
 
-      } else if (rp.sigla === "D") {
+    if (candidati.length === 0) {
 
-        famiglia = "DIF";
+      candidati = [{
 
-      } else if (rp.sigla === "C") {
+        nome:
+          righeModulo.join("-"),
 
-        famiglia = "MED";
+        righe:
+          righeModulo,
 
-      } else if (rp.sigla === "A") {
-
-        famiglia = "ATT";
-
-      }
-
-      let lato = null;
-
-      if (codice) {
-
-        lato =
-          LATO_RUOLO_FORMAZIONE[codice] !== undefined
-            ? LATO_RUOLO_FORMAZIONE[codice]
-            : (rp.lato || 0) * 0.5;
-
-      }
-
-      return {
-
-        codice,
-
-        famiglia,
-
-        lato,
-
-        posto: t.posto,
-
-        schema:
-          (
-            schema &&
-            schema[t.posto] &&
-            schema[t.posto] !== "P"
+        ruoli:
+          ruoliGenericiPerModulo(
+            righeModulo,
+            contaCodici(profili)
           )
-            ? schema[t.posto]
-            : null
 
-      };
-
-    });
-
-  const conteggi = {};
-
-  profili.forEach(function (pr) {
-
-    if (pr.codice) {
-
-      conteggi[pr.codice] =
-        (conteggi[pr.codice] || 0) + 1;
+      }];
 
     }
 
-  });
+    scelta =
+      scegliVariante(candidati, profili);
 
-  const posti =
-    postiDelModulo(righe, conteggi);
+    /*
+    Se i ruoli non combaciano per niente con il modulo
+    scritto da ESPN (es. rombo scritto come 4-4-2),
+    si prova anche con tutte le varianti della tabella.
+    */
 
-  if (posti.length !== profili.length) {
-    return false;
-  }
+    const precisi =
+      profili.filter(function (pr) {
+        return pr.codice;
+      }).length;
 
-  // ---- matrice dei costi e abbinamento ----
-  const costi =
-    profili.map(function (pr) {
+    if (
+      scelta &&
+      scelta.costo > 1.6 &&
+      precisi >= 8
+    ) {
 
-      return posti.map(function (po) {
-
-        return (
-          costoPosto(pr, po) +
-          (Number(pr.posto) || 99) * 0.0001
+      const alternativa =
+        scegliVariante(
+          MODULI_RUOLI,
+          profili
         );
 
+      if (
+        alternativa &&
+        alternativa.costo + 1 <= scelta.costo
+      ) {
+        scelta = alternativa;
+      }
+
+    }
+
+  } else {
+
+    // ---------- modulo assente: riconosciuto dai ruoli ----------
+    const profiliPrecisi =
+      profiliGiocatori(
+        titolari,
+        indiciMovimento,
+        null
+      ).filter(function (pr) {
+        return pr.codice;
       });
 
-    });
+    if (profiliPrecisi.length < 8) {
+      return null;
+    }
 
-  const abbinamento =
-    abbinamentoCostoMinimo(costi);
+    const prova =
+      scegliVariante(
+        MODULI_RUOLI,
+        profiliPrecisi
+      );
 
-  if (abbinamento.some(function (a) { return a < 0; })) {
-    return false;
+    if (!prova || prova.costo > 1.2) {
+      return null;
+    }
+
+    const schema =
+      SCHEMI_FORMATION_PLACE[
+        prova.variante.righe.join("-")
+      ] || null;
+
+    profili =
+      profiliGiocatori(
+        titolari,
+        indiciMovimento,
+        schema
+      );
+
+    scelta =
+      scegliVariante(
+        [prova.variante],
+        profili
+      );
+
+  }
+
+  if (!scelta) {
+    return null;
   }
 
   // ---- scrittura dei ruoli ----
-  function scrivi(t, codice, lato) {
+  function scrivi(t, codice, indice) {
 
     const sigla =
       siglaVisibileRuolo(codice);
@@ -5402,24 +5657,26 @@ function assegnaRuoliDaModulo(titolari, modulo) {
     t.giocatore.ruoloEsteso =
       NOMI_RUOLI_FORMAZIONE[codice] || null;
 
-    t.indice =
-      ORDINE_RUOLI_FORMAZIONE.indexOf(codice);
+    t.indice = indice;
 
-    t.lato = lato;
+    t.lato = 0;
 
   }
 
-  scrivi(titolari[indicePortiere], "P", 0);
+  scrivi(titolari[indicePortiere], "P", -1);
 
   indiciMovimento.forEach(function (i, k) {
 
-    const posto = posti[abbinamento[k]];
+    const posto = scelta.posti[scelta.abbinamento[k]];
 
-    scrivi(titolari[i], posto.codice, posto.lato);
+    scrivi(titolari[i], posto.codice, posto.indiceSlot);
 
   });
 
-  return true;
+  return {
+    nome: scelta.variante.nome,
+    righe: scelta.variante.righe
+  };
 
 }
 
@@ -5815,7 +6072,7 @@ allenatore:
       NOME GIOCATORE NELLE FORMAZIONI:
 
       SIGLA: Cognome
-      es. "PT: J. Butez", "TS: G. Blu"
+      es. "PT: J. Butez", "DS: G. Blu"
       */
 
       const giocatore = {
@@ -5900,15 +6157,30 @@ allenatore:
     Se il modulo non è valido restano i ruoli letti da ESPN.
     */
 
-    assegnaRuoliDaModulo(
-      titolariOrdinabili,
-      formazione.modulo
-    );
+    const esitoModulo =
+      assegnaRuoliDaModulo(
+        titolariOrdinabili,
+        formazione.modulo
+      );
+
+    if (esitoModulo) {
+
+      formazione.variante =
+        esitoModulo.nome;
+
+      if (!formazione.modulo) {
+
+        formazione.modulo =
+          esitoModulo.righe.join("-");
+
+      }
+
+    }
 
 
     /*
     ORDINAMENTO TITOLARI:
-    1. ordine dei ruoli voluto (P, ASA, TS, DC, ...)
+    1. ordine dei ruoli del modulo (PT, DD, DC, DS, ...)
     2. sinistra -> destra (es. CD-L prima di CD-R)
     3. formationPlace di ESPN come ultimo spareggio
     I ruoli non riconosciuti finiscono in fondo.
@@ -6951,6 +7223,20 @@ function creaCronaca(
 
 
 /* ============================================================
+   AGGIORNAMENTO OGNI MINUTO
+
+   La partita si aggiorna OGNI MINUTO, tutto il giorno, per
+   TUTTE le partite: finite, in programma e in corso.
+
+   La risposta può essere riutilizzata dalla cache al massimo
+   per 60 secondi: alla prima richiesta dopo un minuto i dati
+   vengono riletti da ESPN.
+============================================================ */
+
+const AGGIORNAMENTO_SECONDI = 60;
+
+
+/* ============================================================
    ENDPOINT
 ============================================================ */
 
@@ -7214,9 +7500,25 @@ async function handler(
        RISPOSTA
     ======================================================== */
 
+    res.setHeader(
+      "Cache-Control",
+      "public, max-age=0, s-maxage=" +
+        AGGIORNAMENTO_SECONDI
+    );
+
     return res.status(200).json({
 
       success: true,
+
+      aggiornamento: {
+
+        ogniSecondi:
+          AGGIORNAMENTO_SECONDI,
+
+        aggiornatoAlle:
+          new Date().toISOString()
+
+      },
 
       partita: {
 
